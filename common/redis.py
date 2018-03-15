@@ -10,7 +10,8 @@ redis_port = config.get("Redis", "REDIS_PORT")
 redis_db = config.get("Redis", "REDIS_DB")
 redis_pwd = config.get("Redis", "REDIS_PASSWORD")
 
-redisConnect = redis.StrictRedis(redis_host, redis_port, redis_db, redis_pwd)
+# decode_responses 默认是False 这样返回的值是bytes类型 需要decode 才能转换成字符串
+redisConnect = redis.StrictRedis(redis_host, redis_port, redis_db, redis_pwd, decode_responses=True)
 
 
 class RedisTool:
