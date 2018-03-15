@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
+from flask import g
 from common.log import Logger
 from common.audit_log import audit_log
 from common.db import DB
 from common.utility import uuid_prefix
+from common.sso import login_required
 import json
 
 logger = Logger()
@@ -17,6 +19,7 @@ parser.add_argument("salt_master_password", type=str, required=True, trim=True)
 
 
 class Product(Resource):
+    @login_required
     def get(self, product_id):
         db = DB()
         status, result = db.select_by_id("product", product_id)
@@ -29,8 +32,9 @@ class Product(Resource):
             return {"status": False, "message": result}, 200
         return {"product": product}
 
+    @login_required
     def delete(self, product_id):
-        user = get_user(self)
+        user = g.user
         db = DB()
         status, result = db.delete_by_id("product", product_id)
         if status is not True:
@@ -41,8 +45,9 @@ class Product(Resource):
         audit_log(user, product_id, product_id, "product", "delete")
         return {"status": True, "message": ""}, 201
 
+    @login_required
     def put(self, product_id):
-        user = get_user(self)
+        user = g.user
         args = parser.parse_args()
         args["id"] = product_id
         product = args
@@ -56,6 +61,7 @@ class Product(Resource):
 
 
 class ProductList(Resource):
+    @login_required
     def get(self):
         db = DB()
         status, result = db.select("product", "")
@@ -68,10 +74,11 @@ class ProductList(Resource):
             return {"status": False, "message": result}, 200
         return {"products": {"product": product_list}}
 
+    @login_required
     def post(self):
         args = parser.parse_args()
         args["id"] = uuid_prefix("p")
-        user = get_user(self)
+        user = g.user
         product = args
         db = DB()
         status, result = db.insert("product", json.dumps(product, ensure_ascii=False))
