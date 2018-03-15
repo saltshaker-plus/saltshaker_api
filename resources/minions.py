@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
-from flask_httpauth import HTTPBasicAuth
 from flask import g
 from common.log import Logger
 from common.audit_log import audit_log
@@ -8,7 +7,6 @@ from common.utility import salt_api_for_product
 from common.sso import login_required
 
 logger = Logger()
-auth = HTTPBasicAuth()
 
 parser = reqparse.RequestParser()
 parser.add_argument("product_id", type=str, required=True, trim=True)

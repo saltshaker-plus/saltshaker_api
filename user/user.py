@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
-from flask_httpauth import HTTPBasicAuth
 from common.log import Logger
 from common.db import DB
 from passlib.apps import custom_app_context
@@ -8,7 +7,6 @@ import json
 
 
 logger = Logger()
-auth = HTTPBasicAuth()
 
 parser = reqparse.RequestParser()
 parser.add_argument("username", type=str, required=True, trim=True)
@@ -32,9 +30,4 @@ class User(Resource):
                 return {"status": False, "message": "The user name already exists"}, 200
         else:
             return {"status": False, "message": result}, 200
-
-
-class Login(Resource):
-    def post(self):
-        return {"status": False, "message": "hhh"}, 200
 

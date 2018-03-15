@@ -14,6 +14,7 @@ secret_key = config.get("Token", "SECRET_KEY")
 expires_in = int(config.get("Token", "EXPIRES_IN"))
 cookie_key = config.get("Token", "COOKIE_KEY")
 
+
 serializer = Serializer(secret_key, expires_in=expires_in)
 
 
@@ -52,3 +53,16 @@ def create_token(username):
     token = serializer.dumps({'username': username})
     RedisTool.setex(token, expires_in, username)
     return cookie_key, token
+
+
+# 基于 Passlib 的离散哈希 BasicAuth
+def verify_password(username, password):
+    db = DB()
+    status, result = db.select("user", "where data -> '$.username'='%s'" % username)
+    if status:
+        if len(result) > 0:
+            password_hash = eval(result[0][0]).get("password")
+            if custom_app_context.verify(password, password_hash):
+                return True
+    else:
+        return False
