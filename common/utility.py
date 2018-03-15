@@ -1,7 +1,4 @@
 # -*- coding:utf-8 -*-
-from passlib.apps import custom_app_context
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from flask import g
 from common.db import DB
 from common.saltstack_api import SaltAPI
 import uuid
