@@ -3,6 +3,7 @@ from flask_restful import Resource, reqparse
 from common.log import Logger
 from common.db import DB
 from passlib.apps import custom_app_context
+from common.utility import uuid_prefix
 import json
 
 
@@ -21,7 +22,8 @@ class User(Resource):
         if status:
             if len(result) == 0:
                 password_hash = custom_app_context.encrypt(args["password"])
-                user = {"username": args["username"],
+                user = {"id": uuid_prefix("u"),
+                        "username": args["username"],
                         "password": password_hash}
                 db = DB()
                 db.insert("user", json.dumps(user, ensure_ascii=False))
