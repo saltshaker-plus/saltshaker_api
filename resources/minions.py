@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
 from flask_httpauth import HTTPBasicAuth
-from flask import make_response, jsonify, g
+from flask import g
 from common.log import Logger
 from common.audit_log import audit_log
-from common.utility import salt_api_for_product, verify_password
+from common.utility import salt_api_for_product
+from common.sso import login_required
 
 logger = Logger()
 auth = HTTPBasicAuth()
@@ -15,20 +16,8 @@ parser.add_argument("action", type=str, trim=True)
 parser.add_argument("minion_id", type=str, trim=True, action="append")
 
 
-# 错误提示重新定义
-@auth.error_handler
-def unauthorized():
-    return make_response(jsonify({"status": False, "message": "Unauthorized access"}), 401)
-
-
-# 验证密码
-@auth.verify_password
-def auth_password(username, password):
-    return verify_password(username, password)
-
-
 class MinionsStatus(Resource):
-    @auth.login_required
+    @login_required
     def get(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
@@ -40,7 +29,7 @@ class MinionsStatus(Resource):
 
 
 class MinionsKeys(Resource):
-    @auth.login_required
+    @login_required
     def get(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
@@ -50,7 +39,7 @@ class MinionsKeys(Resource):
             result = salt_api.list_all_key()
             return result
 
-    @auth.login_required
+    @login_required
     def post(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])

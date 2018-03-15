@@ -31,39 +31,4 @@ def salt_api_for_product(product_id):
     return salt_api
 
 
-# 基于Pass lib 的离散哈希BasicAuth
-def verify_password(username, password):
-    db = DB()
-    status, result = db.select("user", "where data -> '$.username'='%s'" % username)
-    if status:
-        if len(result) > 0:
-            password_hash = eval(result[0][0]).get("password")
-            if custom_app_context.verify(password, password_hash):
-                # 保存在全局变量g中
-                g.user = username
-                return True
-    else:
-        return False
 
-
-USER_LIST = {
-    1: {'name': 'Michael'},
-    2: {'name': 'Tom'},
-}
-
-for user_id in USER_LIST.keys():
-    serializer = Serializer('saltshaker secret key', expires_in=1800)
-    token = serializer.dumps({'id': user_id})
-    print('Token for {}: {}\n'.format(USER_LIST[user_id]['name'], token))
-
-
-def verify_token(token):
-    g.user = None
-    try:
-        data = serializer.loads(token)
-    except Exception as e:
-        return False
-    if 'id' in data:
-        g.user = USER_LIST[data['id']]['name']
-        return True
-    return False
