@@ -13,6 +13,7 @@ def uuid_prefix(prefix):
 def salt_api_for_product(product_id):
     db = DB()
     status, result = db.select_by_id("product", product_id)
+    db.close_mysql()
     if status is True:
         if result:
             product = eval(result[0][0])

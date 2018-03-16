@@ -19,17 +19,27 @@ mysql_charset = config.get("Mysql", "MYSQL_CHARSET")
 
 class DB(object):
     def __init__(self):
+        self.host = mysql_host
+        self.port = int(mysql_port)
+        self.user = mysql_user
+        self.password = mysql_password
+        self.db = mysql_db
+        self.charset = mysql_charset
+        self.conn, self.cursor = self.connect_mysql()
+
+    def connect_mysql(self):
         try:
-            self.conn = pymysql.Connect(
-                host=mysql_host,
-                port=int(mysql_port),
-                user=mysql_user,
-                passwd=mysql_password,
-                db=mysql_db,
-                charset=mysql_charset
+            conn = pymysql.Connect(
+                host=self.host,
+                port=self.port,
+                user=self.user,
+                passwd=self.password,
+                db=self.db,
+                charset=self.charset
             )
-            self.conn.autocommit(False)
-            self.cursor = self.conn.cursor()
+            conn.autocommit(False)
+            cursor = conn.cursor()
+            return conn, cursor
         except Exception as e:
             logger.info("Connect mysql error: %s" % e)
 
@@ -65,14 +75,10 @@ class DB(object):
         try:
             self.cursor.execute(sql)
             self.conn.commit()
-            self.cursor.close()
-            self.conn.close()
             return True, self.cursor.rowcount
         except Exception as e:
             logger.info("Delete by id error: %s" % e)
             self.conn.rollback()
-            self.cursor.close()
-            self.conn.close()
             return False, str(e)
 
     def update_by_id(self, table, data, id):
@@ -81,14 +87,10 @@ class DB(object):
         try:
             self.cursor.execute(sql)
             self.conn.commit()
-            self.cursor.close()
-            self.conn.close()
             return True, self.cursor.rowcount
         except Exception as e:
             logger.info("Insert error: %s" % e)
             self.conn.rollback()
-            self.cursor.close()
-            self.conn.close()
             return False, str(e)
 
     def insert(self, table, data):
@@ -101,12 +103,15 @@ class DB(object):
         try:
             self.cursor.execute(sql)
             self.conn.commit()
-            self.cursor.close()
-            self.conn.close()
             return True, self.cursor.rowcount
         except Exception as e:
             logger.info("Insert error: %s" % e)
             self.conn.rollback()
-            self.cursor.close()
-            self.conn.close()
             return False, str(e)
+        # finally:
+        #     self.cursor.close()
+        #     self.conn.close()
+
+    def close_mysql(self):
+        self.cursor.close()
+        self.conn.close()

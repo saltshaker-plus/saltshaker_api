@@ -59,6 +59,7 @@ def create_token(username):
 def verify_password(username, password):
     db = DB()
     status, result = db.select("user", "where data -> '$.username'='%s'" % username)
+    db.close_mysql()
     if status:
         if len(result) > 0:
             password_hash = eval(result[0][0]).get("password")

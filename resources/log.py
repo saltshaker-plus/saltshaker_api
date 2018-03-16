@@ -17,6 +17,7 @@ class LogList(Resource):
         args = parser.parse_args()
         db = DB()
         status, result = db.select_by_id("audit_log", args["product_id"])
+        db.close_mysql()
         log_list = []
         if status is True:
             if result:

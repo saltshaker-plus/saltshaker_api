@@ -25,8 +25,8 @@ class User(Resource):
                 user = {"id": uuid_prefix("u"),
                         "username": args["username"],
                         "password": password_hash}
-                db = DB()
                 db.insert("user", json.dumps(user, ensure_ascii=False))
+                db.close_mysql()
                 return {"status": True, "message": ""}, 200
             else:
                 return {"status": False, "message": "The user name already exists"}, 200

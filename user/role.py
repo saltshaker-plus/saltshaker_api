@@ -91,6 +91,6 @@ class RoleList(Resource):
                     logger.error("Add role error: %s" % result)
                     return {"status": False, "message": result}, 200
             else:
-                return {"status": False, "message": "The name already exists"}, 200
+                return {"status": False, "message": "The role name already exists"}, 200
         audit_log(user, args["id"], "", "role", "add")
         return {"status": True, "message": ""}, 201

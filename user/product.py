@@ -23,6 +23,7 @@ class Product(Resource):
     def get(self, product_id):
         db = DB()
         status, result = db.select_by_id("product", product_id)
+        db.close_mysql()
         if status is True:
             if result:
                 product = eval(result[0][0])
@@ -30,13 +31,14 @@ class Product(Resource):
                 return {"status": False, "message": "%s does not exist" % product_id}, 200
         else:
             return {"status": False, "message": result}, 200
-        return {"product": product}
+        return {"product": product}, 200
 
     @login_required
     def delete(self, product_id):
         user = g.user
         db = DB()
         status, result = db.delete_by_id("product", product_id)
+        db.close_mysql()
         if status is not True:
             logger.error("Delete product error: %s" % result)
             return {"status": False, "message": result}, 200
@@ -53,6 +55,7 @@ class Product(Resource):
         product = args
         db = DB()
         status, result = db.update_by_id("product", json.dumps(product, ensure_ascii=False), product_id)
+        db.close_mysql()
         if status is not True:
             logger.error("Modify product error: %s" % result)
             return {"status": False, "message": result}, 200
@@ -65,6 +68,7 @@ class ProductList(Resource):
     def get(self):
         db = DB()
         status, result = db.select("product", "")
+        db.close_mysql()
         product_list = []
         if status is True:
             if result:
@@ -72,7 +76,7 @@ class ProductList(Resource):
                     product_list.append(eval(i[0]))
         else:
             return {"status": False, "message": result}, 200
-        return {"products": {"product": product_list}}
+        return {"products": {"product": product_list}}, 200
 
     @login_required
     def post(self):
@@ -81,9 +85,15 @@ class ProductList(Resource):
         user = g.user
         product = args
         db = DB()
-        status, result = db.insert("product", json.dumps(product, ensure_ascii=False))
-        if status is not True:
-            logger.error("Add product error: %s" % result)
-            return {"status": False, "message": result}, 200
+        status, result = db.select("role", "where data -> '$.name'='%s'" % args["name"])
+        if status:
+            if len(result) == 0:
+                status, result = db.insert("product", json.dumps(product, ensure_ascii=False))
+                db.close_mysql()
+                if status is not True:
+                    logger.error("Add product error: %s" % result)
+                    return {"status": False, "message": result}, 200
+            else:
+                return {"status": False, "message": "The product name already exists"}, 200
         audit_log(user, args["id"], args["id"], "product", "add")
         return {"status": True, "message": ""}, 201
