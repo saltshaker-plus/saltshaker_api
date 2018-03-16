@@ -85,15 +85,18 @@ class ProductList(Resource):
         user = g.user
         product = args
         db = DB()
-        status, result = db.select("role", "where data -> '$.name'='%s'" % args["name"])
-        if status:
+        status, result = db.select("product", "where data -> '$.name'='%s'" % args["name"])
+        if status is True:
             if len(result) == 0:
-                status, result = db.insert("product", json.dumps(product, ensure_ascii=False))
+                insert_status, insert_result = db.insert("product", json.dumps(product, ensure_ascii=False))
                 db.close_mysql()
-                if status is not True:
-                    logger.error("Add product error: %s" % result)
-                    return {"status": False, "message": result}, 200
+                if insert_status is not True:
+                    logger.error("Add product error: %s" % insert_result)
+                    return {"status": False, "message": insert_result}, 200
+                audit_log(user, args["id"], "", "product", "add")
+                return {"status": True, "message": ""}, 201
             else:
                 return {"status": False, "message": "The product name already exists"}, 200
-        audit_log(user, args["id"], args["id"], "product", "add")
-        return {"status": True, "message": ""}, 201
+        else:
+            logger.error("Select product name error: %s" % result)
+            return {"status": False, "message": result}, 200

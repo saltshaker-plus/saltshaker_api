@@ -83,14 +83,17 @@ class RoleList(Resource):
         role = args
         db = DB()
         status, result = db.select("role", "where data -> '$.name'='%s'" % args["name"])
-        if status:
+        if status is True:
             if len(result) == 0:
-                status, result = db.insert("role", json.dumps(role, ensure_ascii=False))
+                insert_status, insert_result = db.insert("role", json.dumps(role, ensure_ascii=False))
                 db.close_mysql()
-                if status is not True:
-                    logger.error("Add role error: %s" % result)
-                    return {"status": False, "message": result}, 200
+                if insert_status is not True:
+                    logger.error("Add role error: %s" % insert_result)
+                    return {"status": False, "message": insert_result}, 200
+                audit_log(user, args["id"], "", "role", "add")
+                return {"status": True, "message": ""}, 201
             else:
                 return {"status": False, "message": "The role name already exists"}, 200
-        audit_log(user, args["id"], "", "role", "add")
-        return {"status": True, "message": ""}, 201
+        else:
+            logger.error("Select role name error: %s" % result)
+            return {"status": False, "message": result}, 200
