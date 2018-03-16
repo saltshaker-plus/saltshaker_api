@@ -20,6 +20,7 @@ class Role(Resource):
     def get(self, role_id):
         db = DB()
         status, result = db.select_by_id("role", role_id)
+        db.close_mysql()
         if status is True:
             if result:
                 role = eval(result[0][0])
@@ -27,20 +28,20 @@ class Role(Resource):
                 return {"status": False, "message": "%s does not exist" % role_id}, 200
         else:
             return {"status": False, "message": result}, 200
-        return {"role": role}
+        return {"role": role}, 200
 
     @login_required
     def delete(self, role_id):
-
         user = g.user
         db = DB()
         status, result = db.delete_by_id("role", role_id)
+        db.close_mysql()
         if status is not True:
             logger.error("Delete role error: %s" % result)
             return {"status": False, "message": result}, 200
         if result is 0:
             return {"status": False, "message": "%s does not exist" % role_id}, 200
-        audit_log(user, role_id, role_id, "role", "delete")
+        audit_log(user, role_id, "", "role", "delete")
         return {"status": True, "message": ""}, 201
 
     @login_required
@@ -51,10 +52,11 @@ class Role(Resource):
         role = args
         db = DB()
         status, result = db.update_by_id("role", json.dumps(role, ensure_ascii=False), role_id)
+        db.close_mysql()
         if status is not True:
             logger.error("Modify role error: %s" % result)
             return {"status": False, "message": result}, 200
-        audit_log(user, args["id"], role_id, "role", "edit")
+        audit_log(user, role_id, "", "role", "edit")
         return {"status": True, "message": ""}, 201
 
 
@@ -63,6 +65,7 @@ class RoleList(Resource):
     def get(self):
         db = DB()
         status, result = db.select("role", "")
+        db.close_mysql()
         role_list = []
         if status is True:
             if result:
@@ -70,7 +73,7 @@ class RoleList(Resource):
                     role_list.append(eval(i[0]))
         else:
             return {"status": False, "message": result}, 200
-        return {"roles": {"role": role_list}}
+        return {"roles": {"role": role_list}}, 200
 
     @login_required
     def post(self):
@@ -79,9 +82,15 @@ class RoleList(Resource):
         user = g.user
         role = args
         db = DB()
-        status, result = db.insert("role", json.dumps(role, ensure_ascii=False))
-        if status is not True:
-            logger.error("Add role error: %s" % result)
-            return {"status": False, "message": result}, 200
-        audit_log(user, "", args["id"], "role", "add")
+        status, result = db.select("role", "where data -> '$.name'='%s'" % args["name"])
+        if status:
+            if len(result) == 0:
+                status, result = db.insert("role", json.dumps(role, ensure_ascii=False))
+                db.close_mysql()
+                if status is not True:
+                    logger.error("Add role error: %s" % result)
+                    return {"status": False, "message": result}, 200
+            else:
+                return {"status": False, "message": "The name already exists"}, 200
+        audit_log(user, args["id"], "", "role", "add")
         return {"status": True, "message": ""}, 201
