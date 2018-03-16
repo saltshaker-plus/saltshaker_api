@@ -26,8 +26,11 @@ class User(Resource):
         db.close_mysql()
         if status is True:
             if result:
-                user = eval(result[0][0])
-                user.pop("password")
+                try:
+                    user = eval(result[0][0])
+                    user.pop("password")
+                except Exception as e:
+                    return {"status": False, "message": str(e)}, 200
             else:
                 return {"status": False, "message": "%s does not exist" % user_id}, 200
         else:
@@ -77,9 +80,12 @@ class UserList(Resource):
         if status is True:
             if result:
                 for i in result:
-                    info = eval(i[0])
-                    info.pop("password")
-                    user_list.append(info)
+                    try:
+                        info = eval(i[0])
+                        info.pop("password")
+                        user_list.append(info)
+                    except Exception as e:
+                        return {"status": False, "message": str(e)}, 200
         else:
             return {"status": False, "message": result}, 200
         return {"users": {"user": user_list}}, 200

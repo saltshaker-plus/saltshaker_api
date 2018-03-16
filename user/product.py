@@ -26,7 +26,10 @@ class Product(Resource):
         db.close_mysql()
         if status is True:
             if result:
-                product = eval(result[0][0])
+                try:
+                    product = eval(result[0][0])
+                except Exception as e:
+                    return {"status": False, "message": str(e)}, 200
             else:
                 return {"status": False, "message": "%s does not exist" % product_id}, 200
         else:
@@ -73,7 +76,10 @@ class ProductList(Resource):
         if status is True:
             if result:
                 for i in result:
-                    product_list.append(eval(i[0]))
+                    try:
+                        product_list.append(eval(i[0]))
+                    except Exception as e:
+                        return {"status": False, "message": str(e)}, 200
         else:
             return {"status": False, "message": result}, 200
         return {"products": {"product": product_list}}, 200

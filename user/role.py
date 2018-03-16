@@ -23,7 +23,10 @@ class Role(Resource):
         db.close_mysql()
         if status is True:
             if result:
-                role = eval(result[0][0])
+                try:
+                    role = eval(result[0][0])
+                except Exception as e:
+                    return {"status": False, "message": str(e)}, 200
             else:
                 return {"status": False, "message": "%s does not exist" % role_id}, 200
         else:
@@ -70,7 +73,10 @@ class RoleList(Resource):
         if status is True:
             if result:
                 for i in result:
-                    role_list.append(eval(i[0]))
+                    try:
+                        role_list.append(eval(i[0]))
+                    except Exception as e:
+                        return {"status": False, "message": str(e)}, 200
         else:
             return {"status": False, "message": result}, 200
         return {"roles": {"role": role_list}}, 200
