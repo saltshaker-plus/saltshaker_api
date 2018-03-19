@@ -6,6 +6,9 @@ from common.redis import RedisTool
 from common.db import DB
 import os
 from flask import request, g
+from common.log import Logger
+
+logger = Logger()
 
 config = configparser.ConfigParser()
 conf_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
@@ -24,7 +27,8 @@ def login_required(func):
         # 通过 Cookie Token 进行认证
         token = request.cookies.get(cookie_key)
         try:
-            g.user = RedisTool.get(token)
+            user_info = eval(RedisTool.get(token))
+            g.user = user_info.get("username")
         except Exception as e:
             return {"status": False, "message": str(e)}, 500
         if RedisTool.get(token):
@@ -34,11 +38,11 @@ def login_required(func):
         elif 'Authorization' in request.headers:
             try:
                 scheme, cred = request.headers['Authorization'].split(None, 1)
-            except ValueError:
-                # 不正确的 Authorization header
-                pass
+                user_info = eval(RedisTool.get(cred))
+            except Exception as e:
+                return {"status": False, "message": str(e)}, 500
             else:
-                g.user = RedisTool.get(cred)
+                g.user = user_info.get("username")
                 if scheme == 'Bearer' and RedisTool.get(cred):
                     RedisTool.expire(token, expires_in)
                     return func(*args, **kwargs)
@@ -51,7 +55,16 @@ def login_required(func):
 
 def create_token(username):
     token = serializer.dumps({'username': username})
-    RedisTool.setex(token, expires_in, username)
+    db = DB()
+    status, result = db.select("user", "where data -> '$.username'='%s'" % username)
+    db.close_mysql()
+    if status:
+        if len(result) > 0:
+            try:
+                info = eval(result[0][0])
+                RedisTool.setex(token, expires_in, info)
+            except Exception as e:
+                logger.error("Verify password error: %s" % e)
     return cookie_key, token
 
 
@@ -62,8 +75,13 @@ def verify_password(username, password):
     db.close_mysql()
     if status:
         if len(result) > 0:
-            password_hash = eval(result[0][0]).get("password")
-            if custom_app_context.verify(password, password_hash):
+            try:
+                password_hash = eval(result[0][0]).get("password")
+                custom_app_context.verify(password, password_hash)
                 return True
+            except Exception as e:
+                logger.error("Verify password error: %s" % e)
+                return False
     else:
+        logger.error("Verify password error: %s" % result)
         return False
