@@ -54,6 +54,12 @@ class Role(Resource):
         args["id"] = role_id
         role = args
         db = DB()
+        status, result = db.select("role", "where data -> '$.name'='%s'" % args["name"])
+        if status is True:
+            if len(result) != 0:
+                info = eval(result[0][0])
+                if role_id != info.get("id"):
+                    return {"status": False, "message": "The role name already exists"}, 200
         status, result = db.update_by_id("role", json.dumps(role, ensure_ascii=False), role_id)
         db.close_mysql()
         if status is not True:

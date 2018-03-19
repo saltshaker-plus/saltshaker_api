@@ -56,6 +56,12 @@ class Groups(Resource):
         args["id"] = groups_id
         groups = args
         db = DB()
+        status, result = db.select("groups", "where data -> '$.name'='%s'" % args["name"])
+        if status is True:
+            if len(result) != 0:
+                info = eval(result[0][0])
+                if groups_id != info.get("id"):
+                    return {"status": False, "message": "The groups name already exists"}, 200
         status, result = db.update_by_id("groups", json.dumps(groups, ensure_ascii=False), groups_id)
         db.close_mysql()
         if status is not True:
