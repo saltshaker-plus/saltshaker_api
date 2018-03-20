@@ -26,11 +26,12 @@ def login_required(func):
     def verify_token(*args, **kwargs):
         # 通过 Cookie Token 进行认证
         token = request.cookies.get(cookie_key)
-        try:
-            user_info = eval(RedisTool.get(token))
-            g.user = user_info.get("username")
-        except Exception as e:
-            return {"status": False, "message": str(e)}, 500
+        if token:
+            try:
+                user_info = eval(RedisTool.get(token))
+                g.user = user_info.get("username")
+            except Exception as e:
+                return {"status": False, "message": str(e)}, 500
         if RedisTool.get(token):
             RedisTool.expire(token, expires_in)
             return func(*args, **kwargs)

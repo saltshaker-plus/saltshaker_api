@@ -63,7 +63,7 @@ def login():
             response = make_response('<a href=/saltshaker/api/v1.0/role>Role</a></br>'
                                      '<a href=/saltshaker/api/v1.0/product>Product</a></br>'
                                      '<a href=/saltshaker/api/v1.0/user>User</a></br>'
-                                     '<a href=/saltshaker/api/v1.0/group>Group</a></br>'
+                                     '<a href=/saltshaker/api/v1.0/groups>Groups</a></br>'
                                      '<p>' + token.decode('utf-8') + '</p>'
                                      )
             response.set_cookie(cookie_key, token, expires_in)
