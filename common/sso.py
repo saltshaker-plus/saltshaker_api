@@ -31,19 +31,21 @@ def login_required(func):
                 user_info = eval(RedisTool.get(token))
                 g.user = user_info.get("username")
             except Exception as e:
-                return {"status": False, "message": str(e)}, 500
-        if RedisTool.get(token):
-            RedisTool.expire(token, expires_in)
-            return func(*args, **kwargs)
+                logger.error("Verify token error: %s" % e)
+                return {"status": False, "message": "Unauthorized access"}, 401
+            if RedisTool.get(token):
+                RedisTool.expire(token, expires_in)
+                return func(*args, **kwargs)
         # 通过 Bearer Token 进行认证
         elif 'Authorization' in request.headers:
             try:
                 scheme, cred = request.headers['Authorization'].split(None, 1)
                 user_info = eval(RedisTool.get(cred))
-            except Exception as e:
-                return {"status": False, "message": str(e)}, 500
-            else:
                 g.user = user_info.get("username")
+            except Exception as e:
+                logger.error("Verify token error: %s" % e)
+                return {"status": False, "message": "Unauthorized access"}, 401
+            else:
                 if scheme == 'Bearer' and RedisTool.get(cred):
                     RedisTool.expire(token, expires_in)
                     return func(*args, **kwargs)
