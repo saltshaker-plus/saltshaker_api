@@ -15,10 +15,10 @@ logger = Logger()
 parser = reqparse.RequestParser()
 parser.add_argument("username", type=str, required=True, trim=True)
 parser.add_argument("password", type=str, required=True, trim=True)
-parser.add_argument("product", type=str, required=True, action="append")
-parser.add_argument("groups", type=str, required=True, action="append")
-parser.add_argument("role", type=str, required=True, action="append")
-parser.add_argument("acl", type=str, required=True, action="append")
+parser.add_argument("product", type=str, default=[], action="append")
+parser.add_argument("groups", type=str, default=[], action="append")
+parser.add_argument("role", type=str, default=[], action="append")
+parser.add_argument("acl", type=str, default=[], action="append")
 
 
 class User(Resource):
