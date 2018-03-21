@@ -12,6 +12,8 @@ parser = reqparse.RequestParser()
 parser.add_argument("product_id", type=str, required=True, trim=True)
 parser.add_argument("action", type=str, trim=True)
 parser.add_argument("minion_id", type=str, trim=True, action="append")
+parser.add_argument("minion", type=str, trim=True)
+parser.add_argument("item", type=str, trim=True)
 
 
 class MinionsStatus(Resource):
@@ -68,3 +70,27 @@ class MinionsKeys(Resource):
             else:
                 return {"status": False,
                         "message": "Missing required parameter in the JSON body or the post body or the query string"}
+
+
+class MinionsGrains(Resource):
+    @login_required
+    def get(self):
+        args = parser.parse_args()
+        salt_api = salt_api_for_product(args["product_id"])
+        if isinstance(salt_api, dict):
+            return salt_api
+        else:
+            if args["minion"]:
+                if args["item"]:
+                    result = salt_api.grain(args["minion"], args["item"])
+                    if result:
+                        return result
+                    return {"status": False, "message": "The specified minion does not exist"}
+                else:
+                    result = salt_api.grains(args["minion"])
+                    if result:
+                        return result
+                    return {"status": False, "message": "The specified minion does not exist"}
+            else:
+                return {"status": False, "message": "The specified minion arguments error"}
+

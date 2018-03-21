@@ -141,9 +141,20 @@ class SaltAPI(object):
         else:
             return {"status": False, "message": "salt api error : " + content}
 
-    def grains(self, tgt, arg):
+    def grain(self, tgt, arg):
         # Grains.item
         params = {'client': 'local', 'tgt': tgt, 'fun': 'grains.item', 'arg': arg}
+        obj = urllib.parse.urlencode(params).encode('utf-8')
+        content = self.post_request(obj)
+        if isinstance(content, dict):
+            ret = content['return'][0]
+            return ret
+        else:
+            return {"status": False, "message": "salt api error : " + content}
+
+    def grains(self, tgt):
+        # Grains.items
+        params = {'client': 'local', 'tgt': tgt, 'fun': 'grains.items'}
         obj = urllib.parse.urlencode(params).encode('utf-8')
         content = self.post_request(obj)
         if isinstance(content, dict):
@@ -230,5 +241,5 @@ class SaltAPI(object):
 
 if __name__ == '__main__':
     sapi = SaltAPI(url='http://127.0.0.1:8000', user='saltapi', passwd='saltapi')
-    jids = sapi.shell_remote_execution('echo', 'uptime')
+    jids = sapi.grain("echo","uuid")
     print(jids)

@@ -1,6 +1,6 @@
 from flask import Flask, request, make_response
 from flask_restful import Api
-from resources.minions import MinionsKeys, MinionsStatus
+from resources.minions import MinionsKeys, MinionsStatus, MinionsGrains
 from user.product import ProductList, Product
 from user.role import RoleList, Role
 from user.user import UserList, User
@@ -47,6 +47,7 @@ api.add_resource(Groups, "/saltshaker/api/v1.0/groups/<string:groups_id>")
 # minions
 api.add_resource(MinionsStatus, "/saltshaker/api/v1.0/minions/status")
 api.add_resource(MinionsKeys, "/saltshaker/api/v1.0/minions/keys")
+api.add_resource(MinionsGrains, "/saltshaker/api/v1.0/minions/grains")
 
 
 # audit log
