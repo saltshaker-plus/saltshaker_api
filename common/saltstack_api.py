@@ -204,8 +204,21 @@ class SaltAPI(object):
             return {"status": False, "message": "salt api error : " + content}
 
     def jobs_list(self):
-        # Get Cache Jobs Defaut 24h '''
+        # Get Cache Jobs Default 24h '''
         url = self.__url + '/jobs/'
+        headers = {'X-Auth-Token': self.__token_id}
+        req = urllib.request.Request(url, headers=headers)
+        opener = urllib.request.urlopen(req)
+        content = json.loads(opener.read())
+        if isinstance(content, dict):
+            jid = content['return'][0]
+            return jid
+        else:
+            return {"status": False, "message": "salt api error : " + content}
+
+    def jobs_info(self, arg):
+        # Get Job detail info '''
+        url = self.__url + '/jobs/' + arg
         headers = {'X-Auth-Token': self.__token_id}
         req = urllib.request.Request(url, headers=headers)
         opener = urllib.request.urlopen(req)
@@ -241,5 +254,5 @@ class SaltAPI(object):
 
 if __name__ == '__main__':
     sapi = SaltAPI(url='http://127.0.0.1:8000', user='saltapi', passwd='saltapi')
-    jids = sapi.grain("echo","uuid")
+    jids = sapi.jobs_info('20180322162445601279')
     print(jids)
