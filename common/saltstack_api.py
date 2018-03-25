@@ -2,6 +2,7 @@
 import urllib.request
 import urllib.parse
 import json
+import requests
 
 
 class SaltAPI(object):
@@ -229,6 +230,18 @@ class SaltAPI(object):
         else:
             return {"status": False, "message": "salt api error : " + content}
 
+    def stats(self):
+        # Expose statistics on the running CherryPy server
+        url = self.__url + '/stats'
+        headers = {'X-Auth-Token': self.__token_id}
+        req = urllib.request.Request(url, headers=headers)
+        opener = urllib.request.urlopen(req)
+        content = json.loads(opener.read())
+        if isinstance(content, dict):
+            return content
+        else:
+            return {"status": False, "message": "salt api error : " + content}
+
     def runner_status(self, arg):
         # Return minion status
         params = {'client': 'runner', 'fun': 'manage.' + arg}
@@ -252,21 +265,15 @@ class SaltAPI(object):
             return {"status": False, "message": "salt api error : " + content}
 
     def events(self):
-        # Get Cache Jobs Default 24h '''
+        # SSE get job info '''
         url = self.__url + '/events'
         headers = {'X-Auth-Token': self.__token_id}
-        print(self.__token_id)
-        req = urllib.request.Request(url, headers=headers)
-        opener = urllib.request.urlopen(req)
-        content = json.loads(opener.read())
-        if isinstance(content, dict):
-            jid = content['return'][0]
-            return jid
-        else:
-            return {"status": False, "message": "salt api error : " + content}
+        req = requests.get(url, stream=True, headers=headers)
+        return req
 
 
 if __name__ == '__main__':
     sapi = SaltAPI(url='http://127.0.0.1:8000', user='saltapi', passwd='saltapi')
-    jids = sapi.events()
+        
+    jids = sapi.stats()
     print(jids)
