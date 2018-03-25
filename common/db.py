@@ -99,7 +99,7 @@ class DB(object):
         self.cursor.execute(sql_create)
         self.conn.commit()
         # 转义'
-        sql = "INSERT INTO %s(data) VALUES('%s') " % (table, data.replace("'", r"\'"))
+        sql = "INSERT INTO %s(data) VALUES('%s') " % (table, data.replace("'", r"\'").replace(r"\n", r'\\n'))
         logger.info(sql)
         try:
             self.cursor.execute(sql)
