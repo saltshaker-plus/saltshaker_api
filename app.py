@@ -1,7 +1,9 @@
+# -*- coding:utf-8 -*-
 from flask import Flask, request, make_response
 from flask_restful import Api
 from resources.minions import MinionsKeys, MinionsStatus, MinionsGrains
 from resources.job import Job, JobList, JobManager
+from resources.event import Event, EventList
 from user.product import ProductList, Product
 from user.role import RoleList, Role
 from user.user import UserList, User
@@ -14,7 +16,7 @@ import configparser
 
 
 config = configparser.ConfigParser()
-conf_path = os.path.dirname(__file__)
+conf_path = os.path.dirname(os.path.realpath(__file__))
 config.read(conf_path + "/saltshaker.conf")
 expires_in = int(config.get("Token", "EXPIRES_IN"))
 
@@ -54,6 +56,10 @@ api.add_resource(MinionsGrains, "/saltshaker/api/v1.0/minions/grains")
 api.add_resource(JobList, "/saltshaker/api/v1.0/job")
 api.add_resource(Job, "/saltshaker/api/v1.0/job/<string:job_id>")
 api.add_resource(JobManager, "/saltshaker/api/v1.0/job/manager")
+
+# event
+api.add_resource(EventList, "/saltshaker/api/v1.0/event")
+api.add_resource(Event, "/saltshaker/api/v1.0/event/<string:job_id>")
 
 # audit log
 api.add_resource(LogList, "/saltshaker/api/v1.0/log")
