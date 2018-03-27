@@ -1,5 +1,8 @@
 ### Saltshaker_plus Restful API
 
+
+#### **要求 python >= 3.0**
+
 ````
 1. 安装依赖
     #pip install -r requirements.txt
