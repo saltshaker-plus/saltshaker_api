@@ -140,3 +140,25 @@ class UserList(Resource):
         else:
             logger.error("Select user error: %s" % result)
             return {"status": False, "message": result}, 200
+
+
+# 当删除acl, role, group等数据时,更新用户权限信息
+def update_user_privilege(table, privilege):
+    db = DB()
+    status, result = db.select("user", "")
+    if status is True:
+        if result:
+            for i in result:
+                try:
+                    info = eval(i[0])
+                    if table in info:
+                        if privilege in info[table]:
+                            info[table].remove(privilege)
+                            db.update_by_id("user", json.dumps(info, ensure_ascii=False), info["id"])
+                except Exception as e:
+                    logger.error("Update user privilege error: %s" % str(e))
+                    return {"status": False, "message": str(e)}
+            return {"status": True, "message": ""}
+    else:
+        logger.error("Update user privilege error: %s" % result)
+        return {"status": False, "message": result}

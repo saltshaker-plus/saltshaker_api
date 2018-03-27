@@ -7,6 +7,7 @@ from common.db import DB
 from common.utility import uuid_prefix
 from common.sso import login_required
 import json
+from user.user import update_user_privilege
 
 logger = Logger()
 
@@ -45,6 +46,9 @@ class Role(Resource):
         if result is 0:
             return {"status": False, "message": "%s does not exist" % role_id}, 200
         audit_log(user, role_id, "", "role", "delete")
+        info = update_user_privilege("role", role_id)
+        if info["status"] is False:
+            return {"status": False, "message": info["message"]}, 200
         return {"status": True, "message": ""}, 201
 
     @login_required

@@ -7,6 +7,7 @@ from common.db import DB
 from common.utility import uuid_prefix
 from common.sso import login_required
 import json
+from user.user import update_user_privilege
 
 logger = Logger()
 
@@ -47,6 +48,9 @@ class ACL(Resource):
         if result is 0:
             return {"status": False, "message": "%s does not exist" % acl_id}, 200
         audit_log(user, acl_id, "", "acl", "delete")
+        info = update_user_privilege("acl", acl_id)
+        if info["status"] is False:
+            return {"status": False, "message": info["message"]}, 200
         return {"status": True, "message": ""}, 201
 
     @login_required
