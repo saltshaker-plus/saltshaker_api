@@ -83,7 +83,7 @@ class User(Resource):
                 return {"status": False, "message": "%s does not exist" % user_id}, 200
         else:
             return {"status": False, "message": result}, 200
-        # 跟新用户信息
+        # 更新用户信息
         users = args
         status, result = db.update_by_id("user", json.dumps(users, ensure_ascii=False), user_id)
         db.close_mysql()
