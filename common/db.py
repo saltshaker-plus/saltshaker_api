@@ -41,7 +41,8 @@ class DB(object):
             cursor = conn.cursor()
             return conn, cursor
         except Exception as e:
-            logger.info("Connect mysql error: %s" % e)
+            logger.error("Connect mysql error: %s" % e)
+            raise
 
     def select_by_id(self, table, id):
         sql = "SELECT * FROM %s WHERE data -> '$.id'='%s'" % (table, id)
@@ -51,22 +52,17 @@ class DB(object):
             result = self.cursor.fetchall()
             return True, result
         except Exception as e:
-            logger.info("Select by id error: %s" % e)
+            logger.error("Select by id error: %s" % e)
             return False, str(e)
 
     def select(self, table, arg):
-        sql_create = "CREATE TABLE IF NOT EXISTS %s(data json)" % table
-        logger.info(sql_create)
-        self.cursor.execute(sql_create)
-        self.conn.commit()
         sql = "SELECT * FROM %s %s" % (table, arg)
-        logger.info(sql)
         try:
             self.cursor.execute(sql)
             result = self.cursor.fetchall()
             return True, result
         except Exception as e:
-            logger.info("Select by id error: %s" % e)
+            logger.error("Select by id error: %s" % e)
             return False, str(e)
 
     def delete_by_id(self, table, id):
@@ -77,7 +73,7 @@ class DB(object):
             self.conn.commit()
             return True, self.cursor.rowcount
         except Exception as e:
-            logger.info("Delete by id error: %s" % e)
+            logger.error("Delete by id error: %s" % e)
             self.conn.rollback()
             return False, str(e)
 
@@ -89,15 +85,11 @@ class DB(object):
             self.conn.commit()
             return True, self.cursor.rowcount
         except Exception as e:
-            logger.info("Insert error: %s" % e)
+            logger.error("Insert error: %s" % e)
             self.conn.rollback()
             return False, str(e)
 
     def insert(self, table, data):
-        sql_create = "CREATE TABLE IF NOT EXISTS %s(data json)" % table
-        logger.info(sql_create)
-        self.cursor.execute(sql_create)
-        self.conn.commit()
         # 转义'
         sql = "INSERT INTO %s(data) VALUES('%s') " % (table, data.replace("'", r"\'").replace(r"\n", r'\\n'))
         logger.info(sql)
@@ -106,12 +98,24 @@ class DB(object):
             self.conn.commit()
             return True, self.cursor.rowcount
         except Exception as e:
-            logger.info("Insert error: %s" % e)
+            logger.error("Insert error: %s" % e)
             self.conn.rollback()
             return False, str(e)
         # finally:
         #     self.cursor.close()
         #     self.conn.close()
+
+    def create_table(self, table):
+        sql_create = "CREATE TABLE IF NOT EXISTS %s(data json)" % table
+        logger.info(sql_create)
+        try:
+            self.cursor.execute(sql_create)
+            self.conn.commit()
+            return True, ""
+        except Exception as e:
+            logger.error("Insert error: %s" % e)
+            self.conn.rollback()
+            return False, str(e)
 
     def close_mysql(self):
         self.cursor.close()
