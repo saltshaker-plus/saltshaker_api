@@ -8,7 +8,7 @@
     #pip install -r requirements.txt
 ````
 ````
-2. 导入FLASK_APP　环境变了以便使用　Flask CLI 工具；路径为所部属的app的路径
+2. 导入FLASK_APP　环境变量以便使用Flask CLI 工具,路径为所部署的app的路径
     #export FLASK_APP=/root/work/github/saltshaker_api/app.py
 ````
 ````
