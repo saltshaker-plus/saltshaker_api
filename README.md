@@ -1,7 +1,7 @@
 ### Saltshaker_plus Restful API
 
 
-#### **要求 python >= 3.0**
+#### **要求 python > 3.0**
 
 ````
 1. 安装依赖
@@ -29,4 +29,7 @@
         Init user successful
         Successful
 ````
-
+````
+4. 启动Flask App
+    python /root/work/github/saltshaker_api/app.py
+````
