@@ -10,8 +10,10 @@ from user.user import UserList, User
 from user.acl import ACLList, ACL
 from user.groups import GroupsList, Groups
 from resources.log import LogList
+from common.cli import init_db
 from common.sso import create_token, verify_password
 import os
+import click
 import configparser
 
 
@@ -63,6 +65,16 @@ api.add_resource(Event, "/saltshaker/api/v1.0/event/<string:job_id>")
 
 # audit log
 api.add_resource(LogList, "/saltshaker/api/v1.0/log")
+
+
+@app.cli.command()
+@click.option('--username', prompt='Enter the initial administrators username', default='admin',
+              help="Enter the initial username")
+@click.option('--password', prompt='Enter the initial Administrators password', hide_input=True,
+              confirmation_prompt=True, help="Enter the initial password")
+def initdb(username, password):
+    """Initialize the database."""
+    init_db(username, password)
 
 
 @app.route('/login', methods=['GET', 'POST'])
