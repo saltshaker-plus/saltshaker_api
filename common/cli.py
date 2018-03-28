@@ -52,7 +52,10 @@ def init_db(username, password):
                 "id": uuid_prefix("u"),
                 "username": username,
                 "password": password_hash,
-                "role": [role_id]
+                "role": [role_id],
+                "acl": [],
+                "groups": [],
+                "product": [],
             }
             insert_status, insert_result = db.insert("user", json.dumps(users, ensure_ascii=False))
             db.close_mysql()
