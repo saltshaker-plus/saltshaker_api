@@ -80,7 +80,12 @@ class GroupsList(Resource):
     def get(self):
         product_id = request.args.get("product_id")
         db = DB()
-        status, result = db.select("groups", "where data -> '$.product_id'='%s'" % product_id)
+        user_info = g.user_info
+        sql_list = []
+        for group in user_info["groups"]:
+            sql_list.append("data -> '$.id'='%s'" % group)
+        sql = " or ".join(sql_list)
+        status, result = db.select("groups", "where data -> '$.product_id'='%s' and %s" % (product_id, sql))
         db.close_mysql()
         groups_list = []
         if status is True:
