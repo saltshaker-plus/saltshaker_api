@@ -10,11 +10,14 @@ from user.user import UserList, User
 from user.acl import ACLList, ACL
 from user.groups import GroupsList, Groups
 from resources.log import LogList
+from resources.cherry_stats import CherryStats
+from resources.execute import ExecuteShell
 from common.cli import init_db
 from common.sso import create_token, verify_password
 import os
 import click
 import configparser
+from common.sse_client import aa
 
 
 config = configparser.ConfigParser()
@@ -63,8 +66,15 @@ api.add_resource(JobManager, "/saltshaker/api/v1.0/job/manager")
 api.add_resource(EventList, "/saltshaker/api/v1.0/event")
 api.add_resource(Event, "/saltshaker/api/v1.0/event/<string:job_id>")
 
+# execute
+api.add_resource(ExecuteShell, "/saltshaker/api/v1.0/execute/shell")
+#api.add_resource(ExecuteModule, "/saltshaker/api/v1.0/execute/module")
+
 # audit log
 api.add_resource(LogList, "/saltshaker/api/v1.0/log")
+
+# CherryPy server stats
+api.add_resource(CherryStats, "/saltshaker/api/v1.0/cherry/stats")
 
 
 @app.cli.command()
@@ -76,6 +86,9 @@ def initdb(username, password):
     """Initialize the database."""
     init_db(username, password)
 
+@app.cli.command()
+def aaa():
+    aa()
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -88,6 +101,8 @@ def login():
                                      '<a href=/saltshaker/api/v1.0/product>Product</a></br>'
                                      '<a href=/saltshaker/api/v1.0/user>User</a></br>'
                                      '<a href=/saltshaker/api/v1.0/groups>Groups</a></br>'
+                                     '<a href=/saltshaker/api/v1.0/event?product_id=p-c5008b0421d611e894b0000c298454d8>'
+                                     'event</a></br>'
                                      '<p>' + token.decode('utf-8') + '</p>'
                                      )
             response.set_cookie(cookie_key, token, expires_in)
