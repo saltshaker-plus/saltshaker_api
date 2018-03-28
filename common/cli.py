@@ -16,7 +16,8 @@ def init_db(username, password):
         "groups",
         "product",
         "audit_log",
-        "event"
+        "event",
+        "cmd_history"
     ]
     for t in tables:
         status, result = db.create_table(t)
