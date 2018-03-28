@@ -30,6 +30,7 @@ def login_required(func):
             try:
                 user_info = eval(RedisTool.get(token))
                 g.user = user_info.get("username")
+                g.user_info = user_info
             except Exception as e:
                 logger.error("Verify token error: %s" % e)
                 return {"status": False, "message": "Unauthorized access"}, 401
@@ -42,6 +43,7 @@ def login_required(func):
                 scheme, cred = request.headers['Authorization'].split(None, 1)
                 user_info = eval(RedisTool.get(cred))
                 g.user = user_info.get("username")
+                g.user_info = user_info
             except Exception as e:
                 logger.error("Verify token error: %s" % e)
                 return {"status": False, "message": "Unauthorized access"}, 401
