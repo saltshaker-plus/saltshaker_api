@@ -4,9 +4,12 @@ from common.utility import uuid_prefix
 from passlib.apps import custom_app_context
 import json
 import click
+import os
 
 
 def init_db(username, password):
+    if not os.path.exists("/var/log/saltshaker_plus"):
+        os.mkdir("/var/log/saltshaker_plus")
     db = DB()
     # 创建数据库表
     tables = [
