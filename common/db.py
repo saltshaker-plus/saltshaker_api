@@ -57,6 +57,7 @@ class DB(object):
 
     def select(self, table, arg):
         sql = "SELECT * FROM %s %s" % (table, arg)
+        logger.info(sql)
         try:
             self.cursor.execute(sql)
             result = self.cursor.fetchall()
