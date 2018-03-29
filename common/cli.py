@@ -31,25 +31,48 @@ def initialize(username, password):
             click.echo("Create %s table is successful" % t)
         else:
             click.echo("Create %s table is false: %s" % (t, result))
-    # 添加角色
-    status, result = db.select("role", "where data -> '$.tag'=%s" % 0)
+    # 添加超级管理员角色
     role_id = uuid_prefix("r")
-    if status is True:
-        if len(result) == 0:
-            role = {
-                "id": role_id,
-                "name": "超级管理员",
-                "description": "所有权限",
-                "tag": 0
-            }
-            insert_status, insert_result = db.insert("role", json.dumps(role, ensure_ascii=False))
-            if insert_status is not True:
-                click.echo("Init role error: %s" % insert_result)
-                return
-        click.echo("Init role successful")
-    else:
-        click.echo("Init role error: %s" % result)
-        return
+    role = [
+        {
+            "id": role_id,
+            "name": "超级管理员",
+            "description": "所有权限",
+            "tag": 0
+        },
+        {
+            "id": uuid_prefix("r"),
+            "name": "产品管理员",
+            "description": "管理产品权限",
+            "tag": 1
+        },
+        {
+            "id": uuid_prefix("r"),
+            "name": "用户管理员",
+            "description": "管理用户权限",
+            "tag": 2
+        },
+        {
+            "id": uuid_prefix("r"),
+            "name": "访问控制管理员",
+            "description": "管理访问控制列权限",
+            "tag": 3
+        },
+            ]
+    for i in range(4):
+        status, result = db.select("role", "where data -> '$.tag'=%s" % i)
+        if status is True:
+            if len(result) == 0:
+                insert_status, insert_result = db.insert("role", json.dumps(role[i], ensure_ascii=False))
+                if insert_status is not True:
+                    click.echo("Init role error: %s" % insert_result)
+                    return
+                click.echo("Init %s role successful" % role[i]["name"])
+            else:
+                click.echo("%s role already exists" % role[i]["name"])
+        else:
+            click.echo("Init role error: %s" % result)
+            return
     # 添加用户
     status, result = db.select("user", "where data -> '$.username'='%s'" % username)
     if status is True:

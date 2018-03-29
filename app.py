@@ -82,7 +82,7 @@ api.add_resource(CherryStats, "/saltshaker/api/v1.0/cherry/stats")
 @click.option('--password', prompt='Enter the initial Administrators password', hide_input=True,
               confirmation_prompt=True, help="Enter the initial password")
 def init(username, password):
-    """Initialize the database."""
+    """Initialize the saltshaker_plus."""
     initialize(username, password)
 
 
