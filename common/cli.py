@@ -1,10 +1,12 @@
 # -*- coding:utf-8 -*-
 from common.db import DB
 from common.utility import uuid_prefix
+from common.const import role_dict
 from passlib.apps import custom_app_context
 import json
 import click
 import os
+import time
 
 
 def initialize(username, password):
@@ -38,28 +40,36 @@ def initialize(username, password):
             "id": role_id,
             "name": "超级管理员",
             "description": "所有权限",
-            "tag": 0
+            "tag": role_dict["superuser"]
+        },
+        {
+            "id": role_id,
+            "name": "普通用户",
+            "description": "默认普通用户",
+            "tag": role_dict["common_user"]
         },
         {
             "id": uuid_prefix("r"),
             "name": "产品管理员",
             "description": "管理产品权限",
-            "tag": 1
+            "tag": role_dict["product"]
         },
         {
             "id": uuid_prefix("r"),
             "name": "用户管理员",
             "description": "管理用户权限",
-            "tag": 2
+            "tag": role_dict["user"]
         },
         {
             "id": uuid_prefix("r"),
             "name": "访问控制管理员",
             "description": "管理访问控制列权限",
-            "tag": 3
+            "tag": role_dict["acl"]
         },
             ]
-    for i in range(4):
+    for i in range(5):
+        # 避免生成的uuid过于相似
+        time.sleep(1)
         status, result = db.select("role", "where data -> '$.tag'=%s" % i)
         if status is True:
             if len(result) == 0:
