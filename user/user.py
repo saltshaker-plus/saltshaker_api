@@ -35,11 +35,11 @@ class User(Resource):
                     user = eval(result[0][0])
                     user.pop("password")
                 except Exception as e:
-                    return {"status": False, "message": str(e)}, 200
+                    return {"status": False, "message": str(e)}, 500
             else:
-                return {"status": False, "message": "%s does not exist" % user_id}, 200
+                return {"status": False, "message": "%s does not exist" % user_id}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"user": user}, 200
 
     # 删除指定用户
@@ -51,11 +51,11 @@ class User(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Delete user error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         if result is 0:
-            return {"status": False, "message": "%s does not exist" % user_id}, 200
+            return {"status": False, "message": "%s does not exist" % user_id}, 404
         audit_log(user, user_id, "", "user", "delete")
-        return {"status": True, "message": ""}, 201
+        return {"status": True, "message": ""}, 204
 
     # 修改指定用户
     @access_required(role_dict["user"])
@@ -79,20 +79,20 @@ class User(Resource):
                     user_info = eval(result[0][0])
                     args["password"] = user_info.get("password")
                 except Exception as e:
-                    return {"status": False, "message": str(e)}, 200
+                    return {"status": False, "message": str(e)}, 500
             else:
-                return {"status": False, "message": "%s does not exist" % user_id}, 200
+                return {"status": False, "message": "%s does not exist" % user_id}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         # 更新用户信息
         users = args
         status, result = db.update_by_id("user", json.dumps(users, ensure_ascii=False), user_id)
         db.close_mysql()
         if status is not True:
             logger.error("Modify user error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         audit_log(user, user_id, "", "user", "edit")
-        return {"status": True, "message": ""}, 201
+        return {"status": True, "message": ""}, 200
 
 
 class UserList(Resource):
@@ -111,9 +111,11 @@ class UserList(Resource):
                         info.pop("password")
                         user_list.append(info)
                     except Exception as e:
-                        return {"status": False, "message": str(e)}, 200
+                        return {"status": False, "message": str(e)}, 500
+            else:
+                return {"status": False, "message": "User does not exist"}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"users": {"user": user_list}}, 200
 
     # 添加用户
@@ -138,14 +140,14 @@ class UserList(Resource):
                 db.close_mysql()
                 if insert_status is not True:
                     logger.error("Add user error: %s" % insert_result)
-                    return {"status": False, "message": insert_result}, 200
+                    return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "user", "add")
                 return {"status": True, "message": ""}, 201
             else:
                 return {"status": False, "message": "The user name already exists"}, 200
         else:
             logger.error("Select user error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
 
 
 # 获取普通用户的id
@@ -182,6 +184,8 @@ def update_user_privilege(table, privilege):
                     logger.error("Update user privilege error: %s" % str(e))
                     return {"status": False, "message": str(e)}
             return {"status": True, "message": ""}
+        else:
+            return {"status": False, "message": "User does not exist"}
     else:
         logger.error("Update user privilege error: %s" % result)
         return {"status": False, "message": result}
