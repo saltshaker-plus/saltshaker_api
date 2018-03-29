@@ -7,9 +7,11 @@ import click
 import os
 
 
-def init_db(username, password):
+def initialize(username, password):
+    # 创建日志路径
     if not os.path.exists("/var/log/saltshaker_plus"):
         os.mkdir("/var/log/saltshaker_plus")
+        click.echo("Create [/var/log/saltshaker_plus/] log path is successful")
     db = DB()
     # 创建数据库表
     tables = [

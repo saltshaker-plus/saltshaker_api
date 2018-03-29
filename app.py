@@ -12,12 +12,11 @@ from user.groups import GroupsList, Groups
 from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell
-from common.cli import init_db
+from common.cli import initialize
 from common.sso import create_token, verify_password
 import os
 import click
 import configparser
-from common.sse_client import aa
 
 
 config = configparser.ConfigParser()
@@ -82,13 +81,10 @@ api.add_resource(CherryStats, "/saltshaker/api/v1.0/cherry/stats")
               help="Enter the initial username")
 @click.option('--password', prompt='Enter the initial Administrators password', hide_input=True,
               confirmation_prompt=True, help="Enter the initial password")
-def initdb(username, password):
+def init(username, password):
     """Initialize the database."""
-    init_db(username, password)
+    initialize(username, password)
 
-@app.cli.command()
-def aaa():
-    aa()
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

@@ -2,6 +2,7 @@
 
 
 #### **要求 python > 3.0**
+#### **要求 Mysql >= 5.7**
 
 ````
 1. 安装依赖
@@ -12,8 +13,8 @@
     #export FLASK_APP=/root/work/github/saltshaker_api/app.py
 ````
 ````
-3. 初始化数据库 键入超级管理员用户名和密码
-    #flask initdb
+3. 初始化相关信息及数据库 键入超级管理员用户名和密码
+    #flask init
     输出如下：
         Enter the initial administrators username [admin]: 
         Enter the initial Administrators password: 
