@@ -24,7 +24,7 @@ class SaltAPI(object):
             opener = urllib.request.urlopen(req, timeout=60)
             content = json.loads(opener.read())
             token_id = content['return'][0]['token']
-        except Exception as e:
+        except Exception as _:
             return ""
         return token_id
 
@@ -33,18 +33,10 @@ class SaltAPI(object):
         headers = {'X-Auth-Token': self.__token_id}
         req = urllib.request.Request(url, obj, headers)
         try:
-            opener = urllib.request.urlopen(req, timeout=60)
+            opener = urllib.request.urlopen(req, timeout=180)
             content = json.loads(opener.read())
         except Exception as e:
             return str(e)
-        return content
-
-    def post_request1(self, obj, prefix='/'):
-        url = self.__url + prefix
-        headers = {'X-Auth-Token': self.__token_id}
-        req = urllib.request.Request(url, obj, headers)
-        opener = urllib.request.urlopen(req)
-        content = opener.info()
         return content
 
     def list_all_key(self):
@@ -274,6 +266,6 @@ class SaltAPI(object):
 
 if __name__ == '__main__':
     sapi = SaltAPI(url='http://127.0.0.1:8000', user='saltapi', passwd='saltapi')
-        
-    jids = sapi.stats()
+    a = "echo,echo,"
+    jids = sapi.shell_remote_execution(a, "uptime")
     print(jids)
