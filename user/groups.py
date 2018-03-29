@@ -30,11 +30,11 @@ class Groups(Resource):
                 try:
                     groups = eval(result[0][0])
                 except Exception as e:
-                    return {"status": False, "message": str(e)}, 200
+                    return {"status": False, "message": str(e)}, 500
             else:
-                return {"status": False, "message": "%s does not exist" % groups_id}, 200
+                return {"status": False, "message": "%s does not exist" % groups_id}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"groups": groups}, 200
 
     @access_required(role_dict["common_user"])
@@ -45,14 +45,14 @@ class Groups(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Delete groups error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         if result is 0:
-            return {"status": False, "message": "%s does not exist" % groups_id}, 200
+            return {"status": False, "message": "%s does not exist" % groups_id}, 404
         audit_log(user, groups_id, "", "groups", "delete")
         info = update_user_privilege("groups", groups_id)
         if info["status"] is False:
-            return {"status": False, "message": info["message"]}, 200
-        return {"status": True, "message": ""}, 201
+            return {"status": False, "message": info["message"]}, 500
+        return {"status": True, "message": ""}, 204
 
     @access_required(role_dict["common_user"])
     def put(self, groups_id):
@@ -71,9 +71,9 @@ class Groups(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Modify groups error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         audit_log(user, groups_id, "", "groups", "edit")
-        return {"status": True, "message": ""}, 201
+        return {"status": True, "message": ""}, 200
 
 
 class GroupsList(Resource):
@@ -95,9 +95,11 @@ class GroupsList(Resource):
                     try:
                         groups_list.append(eval(i[0]))
                     except Exception as e:
-                        return {"status": False, "message": str(e)}, 200
+                        return {"status": False, "message": str(e)}, 500
+            else:
+                return {"status": False, "message": "Group does not exist"}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"groups": {"groups": groups_list}}, 200
 
     @access_required(role_dict["common_user"])
@@ -114,11 +116,11 @@ class GroupsList(Resource):
                 db.close_mysql()
                 if insert_status is not True:
                     logger.error("Add groups error: %s" % insert_result)
-                    return {"status": False, "message": insert_result}, 200
+                    return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "groups", "add")
                 return {"status": True, "message": ""}, 201
             else:
                 return {"status": False, "message": "The groups name already exists"}, 200
         else:
             logger.error("Select groups name error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500

@@ -33,7 +33,7 @@ def access_required(tag):
                     user_info = eval(RedisTool.get(token))
                     # 验证是否有权限访问
                     if not verify_role(user_info, tag):
-                        return {"status": False, "message": "access forbidden"}, 401
+                        return {"status": False, "message": "access forbidden"}, 403
                     g.user_info = user_info
                 except Exception as e:
                     logger.error("Verify token error: %s" % e)
@@ -48,7 +48,7 @@ def access_required(tag):
                     user_info = eval(RedisTool.get(cred))
                     # 验证是否有权限访问
                     if not verify_role(user_info, tag):
-                        return {"status": False, "message": "access forbidden"}, 401
+                        return {"status": False, "message": "access forbidden"}, 403
                     g.user_info = user_info
                 except Exception as e:
                     logger.error("Verify token error: %s" % e)

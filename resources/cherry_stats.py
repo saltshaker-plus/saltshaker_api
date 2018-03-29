@@ -17,7 +17,7 @@ class CherryStats(Resource):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
         if isinstance(salt_api, dict):
-            return salt_api
+            return salt_api, 500
         else:
             result = salt_api.stats()
-            return result
+            return result, 200

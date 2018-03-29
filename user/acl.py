@@ -31,11 +31,11 @@ class ACL(Resource):
                 try:
                     acl = eval(result[0][0])
                 except Exception as e:
-                    return {"status": False, "message": str(e)}, 200
+                    return {"status": False, "message": str(e)}, 500
             else:
-                return {"status": False, "message": "%s does not exist" % acl_id}, 200
+                return {"status": False, "message": "%s does not exist" % acl_id}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"acl": acl}, 200
 
     @access_required(role_dict["acl"])
@@ -46,14 +46,14 @@ class ACL(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Delete acl error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         if result is 0:
-            return {"status": False, "message": "%s does not exist" % acl_id}, 200
+            return {"status": False, "message": "%s does not exist" % acl_id}, 404
         audit_log(user, acl_id, "", "acl", "delete")
         info = update_user_privilege("acl", acl_id)
         if info["status"] is False:
-            return {"status": False, "message": info["message"]}, 200
-        return {"status": True, "message": ""}, 201
+            return {"status": False, "message": info["message"]}, 500
+        return {"status": True, "message": ""}, 204
 
     @access_required(role_dict["acl"])
     def put(self, acl_id):
@@ -72,9 +72,9 @@ class ACL(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Modify acl error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         audit_log(user, acl_id, "", "acl", "edit")
-        return {"status": True, "message": ""}, 201
+        return {"status": True, "message": ""}, 200
 
 
 class ACLList(Resource):
@@ -90,9 +90,11 @@ class ACLList(Resource):
                     try:
                         acl_list.append(eval(i[0]))
                     except Exception as e:
-                        return {"status": False, "message": str(e)}, 200
+                        return {"status": False, "message": str(e)}, 500
+            else:
+                return {"status": False, "message": "Acl does not exist"}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"acls": {"acl": acl_list}}, 200
 
     @access_required(role_dict["acl"])
@@ -109,11 +111,11 @@ class ACLList(Resource):
                 db.close_mysql()
                 if insert_status is not True:
                     logger.error("Add acl error: %s" % insert_result)
-                    return {"status": False, "message": insert_result}, 200
+                    return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "acl", "add")
                 return {"status": True, "message": ""}, 201
             else:
                 return {"status": False, "message": "The acl name already exists"}, 200
         else:
             logger.error("Select acl name error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500

@@ -31,11 +31,11 @@ class Product(Resource):
                 try:
                     product = eval(result[0][0])
                 except Exception as e:
-                    return {"status": False, "message": str(e)}, 200
+                    return {"status": False, "message": str(e)}, 500
             else:
-                return {"status": False, "message": "%s does not exist" % product_id}, 200
+                return {"status": False, "message": "%s does not exist" % product_id}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"product": product}, 200
 
     @access_required(role_dict["product"])
@@ -46,14 +46,14 @@ class Product(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Delete product error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         if result is 0:
-            return {"status": False, "message": "%s does not exist" % product_id}, 200
+            return {"status": False, "message": "%s does not exist" % product_id}, 404
         audit_log(user, product_id, product_id, "product", "delete")
         info = update_user_privilege("product", product_id)
         if info["status"] is False:
-            return {"status": False, "message": info["message"]}, 200
-        return {"status": True, "message": ""}, 201
+            return {"status": False, "message": info["message"]}, 500
+        return {"status": True, "message": ""}, 204
 
     @access_required(role_dict["product"])
     def put(self, product_id):
@@ -72,9 +72,9 @@ class Product(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Modify product error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         audit_log(user, args["id"], product_id, "product", "edit")
-        return {"status": True, "message": ""}, 201
+        return {"status": True, "message": ""}, 200
 
 
 class ProductList(Resource):
@@ -90,9 +90,11 @@ class ProductList(Resource):
                     try:
                         product_list.append(eval(i[0]))
                     except Exception as e:
-                        return {"status": False, "message": str(e)}, 200
+                        return {"status": False, "message": str(e)}, 500
+            else:
+                return {"status": False, "message": "Product does not exist"}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"products": {"product": product_list}}, 200
 
     @access_required(role_dict["product"])
@@ -109,14 +111,14 @@ class ProductList(Resource):
                 db.close_mysql()
                 if insert_status is not True:
                     logger.error("Add product error: %s" % insert_result)
-                    return {"status": False, "message": insert_result}, 200
+                    return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "product", "add")
                 return {"status": True, "message": ""}, 201
             else:
                 return {"status": False, "message": "The product name already exists"}, 200
         else:
             logger.error("Select product name error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
 
 
 

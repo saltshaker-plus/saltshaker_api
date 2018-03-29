@@ -28,7 +28,7 @@ class ExecuteShell(Resource):
         salt_api = salt_api_for_product(args["product_id"])
         user_info = g.user_info
         if isinstance(salt_api, dict):
-            return salt_api
+            return salt_api, 500
         else:
             acl_list = user_info["acl"]
             if acl_list:
@@ -51,9 +51,9 @@ class ExecuteShell(Resource):
                                                 "message": "Deny Warning : You don't have permission run [ %s ]"
                                                            % command}, 200
                             except Exception as e:
-                                return {"status": False, "message": str(e)}, 200
+                                return {"status": False, "message": str(e)}, 500
                     else:
-                        return {"status": False, "message": "acl does not exist"}, 200
+                        return {"status": False, "message": "acl does not exist"}, 404
 
                 # acl deny 验证完成后执行命令
                 host = ",".join(minion_id)
@@ -87,4 +87,4 @@ class ExecuteShell(Resource):
                         'cmd_succeed': cmd_succeed,
                         'cmd_failure': cmd_failure,
                         'failure_minion': failure_minion
-                        }
+                        }, 200
