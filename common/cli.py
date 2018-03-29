@@ -9,9 +9,10 @@ import os
 
 def initialize(username, password):
     # 创建日志路径
-    if not os.path.exists("/var/log/saltshaker_plus"):
-        os.mkdir("/var/log/saltshaker_plus")
-        click.echo("Create [/var/log/saltshaker_plus/] log path is successful")
+    log_path = "/var/log/saltshaker_plus"
+    if not os.path.exists(log_path):
+        os.mkdir(log_path)
+        click.echo("Create [%s] log path is successful" % log_path)
     db = DB()
     # 创建数据库表
     tables = [
