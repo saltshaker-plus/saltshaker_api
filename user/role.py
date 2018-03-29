@@ -5,9 +5,10 @@ from common.log import Logger
 from common.audit_log import audit_log
 from common.db import DB
 from common.utility import uuid_prefix
-from common.sso import login_required
+from common.sso import access_required
 import json
 from user.user import update_user_privilege
+from common.const import role_dict
 
 logger = Logger()
 
@@ -17,7 +18,7 @@ parser.add_argument("description", type=str, required=True, trim=True)
 
 
 class Role(Resource):
-    @login_required
+    @access_required(role_dict["superuser"])
     def get(self, role_id):
         db = DB()
         status, result = db.select_by_id("role", role_id)
@@ -34,9 +35,9 @@ class Role(Resource):
             return {"status": False, "message": result}, 200
         return {"role": role}, 200
 
-    @login_required
+    @access_required(role_dict["superuser"])
     def delete(self, role_id):
-        user = g.user
+        user = g.user_info["username"]
         db = DB()
         status, result = db.delete_by_id("role", role_id)
         db.close_mysql()
@@ -51,9 +52,9 @@ class Role(Resource):
             return {"status": False, "message": info["message"]}, 200
         return {"status": True, "message": ""}, 201
 
-    @login_required
+    @access_required(role_dict["superuser"])
     def put(self, role_id):
-        user = g.user
+        user = g.user_info["username"]
         args = parser.parse_args()
         args["id"] = role_id
         role = args
@@ -74,7 +75,7 @@ class Role(Resource):
 
 
 class RoleList(Resource):
-    @login_required
+    @access_required(role_dict["superuser"])
     def get(self):
         db = DB()
         status, result = db.select("role", "")
@@ -91,11 +92,11 @@ class RoleList(Resource):
             return {"status": False, "message": result}, 200
         return {"roles": {"role": role_list}}, 200
 
-    @login_required
+    @access_required(role_dict["superuser"])
     def post(self):
         args = parser.parse_args()
         args["id"] = uuid_prefix("r")
-        user = g.user
+        user = g.user_info["username"]
         role = args
         db = DB()
         status, result = db.select("role", "where data -> '$.name'='%s'" % args["name"])

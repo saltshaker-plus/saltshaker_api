@@ -5,9 +5,10 @@ from common.db import DB
 from flask import g
 from passlib.apps import custom_app_context
 from common.utility import uuid_prefix
-from common.sso import login_required
+from common.sso import access_required
 from common.audit_log import audit_log
 import json
+from common.const import role_dict
 
 
 logger = Logger()
@@ -23,7 +24,7 @@ parser.add_argument("acl", type=str, default=[], action="append")
 
 class User(Resource):
     # 查看指定用户
-    @login_required
+    @access_required(role_dict["user"])
     def get(self, user_id):
         db = DB()
         status, result = db.select_by_id("user", user_id)
@@ -42,9 +43,9 @@ class User(Resource):
         return {"user": user}, 200
 
     # 删除指定用户
-    @login_required
+    @access_required(role_dict["user"])
     def delete(self, user_id):
-        user = g.user
+        user = g.user_info["username"]
         db = DB()
         status, result = db.delete_by_id("user", user_id)
         db.close_mysql()
@@ -57,9 +58,9 @@ class User(Resource):
         return {"status": True, "message": ""}, 201
 
     # 修改指定用户
-    @login_required
+    @access_required(role_dict["user"])
     def put(self, user_id):
-        user = g.user
+        user = g.user_info["username"]
         args = parser.parse_args()
         args["id"] = user_id
         db = DB()
@@ -96,7 +97,7 @@ class User(Resource):
 
 class UserList(Resource):
     # 查看所有用户
-    @login_required
+    @access_required(role_dict["user"])
     def get(self):
         db = DB()
         status, result = db.select("user", "")
@@ -116,9 +117,9 @@ class UserList(Resource):
         return {"users": {"user": user_list}}, 200
 
     # 添加用户
-    @login_required
+    @access_required(role_dict["user"])
     def post(self):
-        user = g.user
+        user = g.user_info["username"]
         args = parser.parse_args()
         args["id"] = uuid_prefix("u")
         db = DB()
@@ -128,6 +129,11 @@ class UserList(Resource):
                 password_hash = custom_app_context.encrypt(args["password"])
                 args["password"] = password_hash
                 users = args
+                # 默认新添加的用户都是默认用户
+                role_id = get_common_user()
+                if isinstance(role_id, dict):
+                    return role_id
+                users["role"].append(role_id)
                 insert_status, insert_result = db.insert("user", json.dumps(users, ensure_ascii=False))
                 db.close_mysql()
                 if insert_status is not True:
@@ -140,6 +146,23 @@ class UserList(Resource):
         else:
             logger.error("Select user error: %s" % result)
             return {"status": False, "message": result}, 200
+
+
+# 获取普通用户的id
+def get_common_user():
+    db = DB()
+    status, result = db.select("role", "where data -> '$.tag'=%s" % role_dict["common_user"])
+    db.close_mysql()
+    if status is True:
+        if result:
+            try:
+                role = eval(result[0][0])
+                return role["id"]
+            except Exception as e:
+                return {"status": False, "message": str(e)}
+        else:
+            return {"status": False, "message": "Common user does not exist"}
+    return {"status": False, "message": result}
 
 
 # 当删除acl, role, group等数据时,更新用户权限信息

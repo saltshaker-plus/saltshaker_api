@@ -4,8 +4,9 @@ from flask import g
 from common.log import Logger
 from common.audit_log import audit_log
 from common.utility import salt_api_for_product
-from common.sso import login_required
+from common.sso import access_required
 from common.db import DB
+from common.const import role_dict
 import re
 import json
 import time
@@ -19,7 +20,7 @@ parser.add_argument("command", type=str, required=True, trim=True)
 
 
 class ExecuteShell(Resource):
-    @login_required
+    @access_required(role_dict["common_user"])
     def post(self):
         args = parser.parse_args()
         command = args["command"]

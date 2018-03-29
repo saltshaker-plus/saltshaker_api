@@ -3,6 +3,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from passlib.apps import custom_app_context
 import configparser
 from common.redis import RedisTool
+from common.const import role_dict
 from common.db import DB
 import os
 from flask import request, g
@@ -21,41 +22,65 @@ cookie_key = config.get("Token", "COOKIE_KEY")
 serializer = Serializer(secret_key, expires_in=expires_in)
 
 
-# 登录认证token并更新token过期时间
-def login_required(func):
-    def verify_token(*args, **kwargs):
-        # 通过 Cookie Token 进行认证
-        token = request.cookies.get(cookie_key)
-        if token:
-            try:
-                user_info = eval(RedisTool.get(token))
-                g.user = user_info.get("username")
-                g.user_info = user_info
-            except Exception as e:
-                logger.error("Verify token error: %s" % e)
-                return {"status": False, "message": "Unauthorized access"}, 401
-            if RedisTool.get(token):
-                RedisTool.expire(token, expires_in)
-                return func(*args, **kwargs)
-        # 通过 Bearer Token 进行认证
-        elif 'Authorization' in request.headers:
-            try:
-                scheme, cred = request.headers['Authorization'].split(None, 1)
-                user_info = eval(RedisTool.get(cred))
-                g.user = user_info.get("username")
-                g.user_info = user_info
-            except Exception as e:
-                logger.error("Verify token error: %s" % e)
-                return {"status": False, "message": "Unauthorized access"}, 401
-            else:
-                if scheme == 'Bearer' and RedisTool.get(cred):
+# 登录认证token并更新token过期时间,同时验证访问权限
+def access_required(tag):
+    def login_required(func):
+        def verify_token(*args, **kwargs):
+            # 通过 Cookie Token 进行认证
+            token = request.cookies.get(cookie_key)
+            if token:
+                try:
+                    user_info = eval(RedisTool.get(token))
+                    # 验证是否有权限访问
+                    if not verify_role(user_info, tag):
+                        return {"status": False, "message": "access forbidden"}, 401
+                    g.user_info = user_info
+                except Exception as e:
+                    logger.error("Verify token error: %s" % e)
+                    return {"status": False, "message": "Unauthorized access"}, 401
+                if RedisTool.get(token):
                     RedisTool.expire(token, expires_in)
                     return func(*args, **kwargs)
-                else:
+            # 通过 Bearer Token 进行认证
+            elif 'Authorization' in request.headers:
+                try:
+                    scheme, cred = request.headers['Authorization'].split(None, 1)
+                    user_info = eval(RedisTool.get(cred))
+                    # 验证是否有权限访问
+                    if not verify_role(user_info, tag):
+                        return {"status": False, "message": "access forbidden"}, 401
+                    g.user_info = user_info
+                except Exception as e:
+                    logger.error("Verify token error: %s" % e)
                     return {"status": False, "message": "Unauthorized access"}, 401
+                else:
+                    if scheme == 'Bearer' and RedisTool.get(cred):
+                        RedisTool.expire(token, expires_in)
+                        return func(*args, **kwargs)
+                    else:
+                        return {"status": False, "message": "Unauthorized access"}, 401
+            else:
+                return {"status": False, "message": "Unauthorized access"}, 401
+        return verify_token
+    return login_required
+
+
+def verify_role(user_info, tag):
+    for role in user_info["role"]:
+        db = DB()
+        status, result = db.select_by_id("role", role)
+        db.close_mysql()
+        if status is True and result:
+            try:
+                role = eval(result[0][0])
+                if role["tag"] == role_dict["superuser"] or role["tag"] == tag:
+                    return True
+                else:
+                    return False
+            except Exception as _:
+                return False
         else:
-            return {"status": False, "message": "Unauthorized access"}, 401
-    return verify_token
+            return False
 
 
 def create_token(username):

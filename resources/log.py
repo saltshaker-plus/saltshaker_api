@@ -3,7 +3,8 @@ from flask import g
 from flask_restful import Resource, reqparse
 from common.log import Logger
 from common.db import DB
-from common.sso import login_required
+from common.sso import access_required
+from common.const import role_dict
 
 logger = Logger()
 
@@ -12,7 +13,7 @@ parser.add_argument("product_id", type=str, required=True, trim=True)
 
 
 class LogList(Resource):
-    @login_required
+    @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
         db = DB()

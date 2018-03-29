@@ -4,7 +4,8 @@ from flask import g
 from common.log import Logger
 from common.audit_log import audit_log
 from common.utility import salt_api_for_product
-from common.sso import login_required
+from common.sso import access_required
+from common.const import role_dict
 
 logger = Logger()
 
@@ -17,7 +18,7 @@ parser.add_argument("item", type=str, trim=True)
 
 
 class MinionsStatus(Resource):
-    @login_required
+    @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
@@ -29,7 +30,7 @@ class MinionsStatus(Resource):
 
 
 class MinionsKeys(Resource):
-    @login_required
+    @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
@@ -39,11 +40,11 @@ class MinionsKeys(Resource):
             result = salt_api.list_all_key()
             return result
 
-    @login_required
+    @access_required(role_dict["common_user"])
     def post(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
-        user = g.user
+        user = g.user_info["username"]
         if isinstance(salt_api, dict):
             return salt_api
         else:
@@ -73,7 +74,7 @@ class MinionsKeys(Resource):
 
 
 class MinionsGrains(Resource):
-    @login_required
+    @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])

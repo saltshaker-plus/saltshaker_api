@@ -5,9 +5,10 @@ from common.log import Logger
 from common.audit_log import audit_log
 from common.db import DB
 from common.utility import uuid_prefix
-from common.sso import login_required
+from common.sso import access_required
 import json
 from user.user import update_user_privilege
+from common.const import role_dict
 
 logger = Logger()
 
@@ -20,7 +21,7 @@ parser.add_argument("salt_master_password", type=str, required=True, trim=True)
 
 
 class Product(Resource):
-    @login_required
+    @access_required(role_dict["product"])
     def get(self, product_id):
         db = DB()
         status, result = db.select_by_id("product", product_id)
@@ -37,9 +38,9 @@ class Product(Resource):
             return {"status": False, "message": result}, 200
         return {"product": product}, 200
 
-    @login_required
+    @access_required(role_dict["product"])
     def delete(self, product_id):
-        user = g.user
+        user = g.user_info["username"]
         db = DB()
         status, result = db.delete_by_id("product", product_id)
         db.close_mysql()
@@ -54,9 +55,9 @@ class Product(Resource):
             return {"status": False, "message": info["message"]}, 200
         return {"status": True, "message": ""}, 201
 
-    @login_required
+    @access_required(role_dict["product"])
     def put(self, product_id):
-        user = g.user
+        user = g.user_info["username"]
         args = parser.parse_args()
         args["id"] = product_id
         product = args
@@ -77,7 +78,7 @@ class Product(Resource):
 
 
 class ProductList(Resource):
-    @login_required
+    @access_required(role_dict["product"])
     def get(self):
         db = DB()
         status, result = db.select("product", "")
@@ -94,11 +95,11 @@ class ProductList(Resource):
             return {"status": False, "message": result}, 200
         return {"products": {"product": product_list}}, 200
 
-    @login_required
+    @access_required(role_dict["product"])
     def post(self):
         args = parser.parse_args()
         args["id"] = uuid_prefix("p")
-        user = g.user
+        user = g.user_info["username"]
         product = args
         db = DB()
         status, result = db.select("product", "where data -> '$.name'='%s'" % args["name"])
@@ -116,3 +117,6 @@ class ProductList(Resource):
         else:
             logger.error("Select product name error: %s" % result)
             return {"status": False, "message": result}, 200
+
+
+

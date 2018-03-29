@@ -5,9 +5,10 @@ from common.log import Logger
 from common.audit_log import audit_log
 from common.db import DB
 from common.utility import uuid_prefix
-from common.sso import login_required
+from common.sso import access_required
 import json
 from user.user import update_user_privilege
+from common.const import role_dict
 
 logger = Logger()
 
@@ -19,7 +20,7 @@ parser.add_argument("description", type=str, default="")
 
 
 class Groups(Resource):
-    @login_required
+    @access_required(role_dict["common_user"])
     def get(self, groups_id):
         db = DB()
         status, result = db.select_by_id("groups", groups_id)
@@ -36,9 +37,9 @@ class Groups(Resource):
             return {"status": False, "message": result}, 200
         return {"groups": groups}, 200
 
-    @login_required
+    @access_required(role_dict["common_user"])
     def delete(self, groups_id):
-        user = g.user
+        user = g.user_info["username"]
         db = DB()
         status, result = db.delete_by_id("groups", groups_id)
         db.close_mysql()
@@ -53,9 +54,9 @@ class Groups(Resource):
             return {"status": False, "message": info["message"]}, 200
         return {"status": True, "message": ""}, 201
 
-    @login_required
+    @access_required(role_dict["common_user"])
     def put(self, groups_id):
-        user = g.user
+        user = g.user_info["username"]
         args = parser.parse_args()
         args["id"] = groups_id
         groups = args
@@ -76,7 +77,7 @@ class Groups(Resource):
 
 
 class GroupsList(Resource):
-    @login_required
+    @access_required(role_dict["common_user"])
     def get(self):
         product_id = request.args.get("product_id")
         db = DB()
@@ -99,11 +100,11 @@ class GroupsList(Resource):
             return {"status": False, "message": result}, 200
         return {"groups": {"groups": groups_list}}, 200
 
-    @login_required
+    @access_required(role_dict["common_user"])
     def post(self):
         args = parser.parse_args()
         args["id"] = uuid_prefix("g")
-        user = g.user
+        user = g.user_info["username"]
         groups = args
         db = DB()
         status, result = db.select("groups", "where data -> '$.name'='%s'" % args["name"])

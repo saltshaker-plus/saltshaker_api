@@ -4,7 +4,8 @@ from flask import g
 from common.log import Logger
 from common.audit_log import audit_log
 from common.utility import salt_api_for_product
-from common.sso import login_required
+from common.sso import access_required
+from common.const import role_dict
 import os
 
 logger = Logger()
@@ -16,7 +17,7 @@ parser.add_argument("jid", type=str, trim=True)
 
 
 class Job(Resource):
-    @login_required
+    @access_required(role_dict["common_user"])
     def get(self, job_id):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
@@ -28,7 +29,7 @@ class Job(Resource):
 
 
 class JobList(Resource):
-    @login_required
+    @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
@@ -40,7 +41,7 @@ class JobList(Resource):
 
 
 class JobManager(Resource):
-    @login_required
+    @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
@@ -50,11 +51,11 @@ class JobManager(Resource):
             result = salt_api.runner("jobs.active")
             return result, 200
 
-    @login_required
+    @access_required(role_dict["common_user"])
     def delete(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
-        user = g.user
+        user = g.user_info["username"]
         if isinstance(salt_api, dict):
             return salt_api
         else:

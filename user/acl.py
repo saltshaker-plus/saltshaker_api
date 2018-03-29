@@ -5,9 +5,11 @@ from common.log import Logger
 from common.audit_log import audit_log
 from common.db import DB
 from common.utility import uuid_prefix
-from common.sso import login_required
+from common.sso import access_required
 import json
 from user.user import update_user_privilege
+from common.const import role_dict
+
 
 logger = Logger()
 
@@ -19,7 +21,7 @@ parser.add_argument("description", type=str, default="", trim=True)
 
 
 class ACL(Resource):
-    @login_required
+    @access_required(role_dict["acl"])
     def get(self, acl_id):
         db = DB()
         status, result = db.select_by_id("acl", acl_id)
@@ -36,9 +38,9 @@ class ACL(Resource):
             return {"status": False, "message": result}, 200
         return {"acl": acl}, 200
 
-    @login_required
+    @access_required(role_dict["acl"])
     def delete(self, acl_id):
-        user = g.user
+        user = g.user_info["username"]
         db = DB()
         status, result = db.delete_by_id("acl", acl_id)
         db.close_mysql()
@@ -53,9 +55,9 @@ class ACL(Resource):
             return {"status": False, "message": info["message"]}, 200
         return {"status": True, "message": ""}, 201
 
-    @login_required
+    @access_required(role_dict["acl"])
     def put(self, acl_id):
-        user = g.user
+        user = g.user_info["username"]
         args = parser.parse_args()
         args["id"] = acl_id
         acl = args
@@ -76,7 +78,7 @@ class ACL(Resource):
 
 
 class ACLList(Resource):
-    @login_required
+    @access_required(role_dict["acl"])
     def get(self):
         db = DB()
         status, result = db.select("acl", "")
@@ -93,11 +95,11 @@ class ACLList(Resource):
             return {"status": False, "message": result}, 200
         return {"acls": {"acl": acl_list}}, 200
 
-    @login_required
+    @access_required(role_dict["acl"])
     def post(self):
         args = parser.parse_args()
         args["id"] = uuid_prefix("a")
-        user = g.user
+        user = g.user_info["username"]
         acl = args
         db = DB()
         status, result = db.select("acl", "where data -> '$.name'='%s'" % args["name"])
