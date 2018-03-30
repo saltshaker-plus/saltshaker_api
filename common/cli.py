@@ -33,17 +33,16 @@ def initialize(username, password):
             click.echo("Create %s table is successful" % t)
         else:
             click.echo("Create %s table is false: %s" % (t, result))
-    # 添加超级管理员角色
-    role_id = uuid_prefix("r")
+    # 添加角色
     role = [
         {
-            "id": role_id,
+            "id": uuid_prefix("r"),
             "name": "超级管理员",
             "description": "所有权限",
             "tag": role_dict["superuser"]
         },
         {
-            "id": role_id,
+            "id": uuid_prefix("r"),
             "name": "普通用户",
             "description": "默认普通用户",
             "tag": role_dict["common_user"]
@@ -79,6 +78,8 @@ def initialize(username, password):
                     return
                 click.echo("Init %s role successful" % role[i]["name"])
             else:
+                if i == role_dict["superuser"]:
+                    role_id = eval(result[0][0])["id"]
                 click.echo("%s role already exists" % role[i]["name"])
         else:
             click.echo("Init role error: %s" % result)
