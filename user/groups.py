@@ -20,7 +20,7 @@ parser.add_argument("description", type=str, default="")
 
 
 class Groups(Resource):
-    @access_required(role_dict["common_user"])
+    @access_required(role_dict["product"])
     def get(self, groups_id):
         db = DB()
         status, result = db.select_by_id("groups", groups_id)
@@ -37,7 +37,7 @@ class Groups(Resource):
             return {"status": False, "message": result}, 500
         return {"groups": groups}, 200
 
-    @access_required(role_dict["common_user"])
+    @access_required(role_dict["product"])
     def delete(self, groups_id):
         user = g.user_info["username"]
         db = DB()
@@ -54,7 +54,7 @@ class Groups(Resource):
             return {"status": False, "message": info["message"]}, 500
         return {"status": True, "message": ""}, 204
 
-    @access_required(role_dict["common_user"])
+    @access_required(role_dict["product"])
     def put(self, groups_id):
         user = g.user_info["username"]
         args = parser.parse_args()
@@ -77,16 +77,11 @@ class Groups(Resource):
 
 
 class GroupsList(Resource):
-    @access_required(role_dict["common_user"])
+    @access_required(role_dict["product"])
     def get(self):
         product_id = request.args.get("product_id")
         db = DB()
-        user_info = g.user_info
-        sql_list = []
-        for group in user_info["groups"]:
-            sql_list.append("data -> '$.id'='%s'" % group)
-        sql = " or ".join(sql_list)
-        status, result = db.select("groups", "where data -> '$.product_id'='%s' and %s" % (product_id, sql))
+        status, result = db.select("groups", "where data -> '$.product_id'='%s'" % product_id)
         db.close_mysql()
         groups_list = []
         if status is True:
@@ -102,7 +97,7 @@ class GroupsList(Resource):
             return {"status": False, "message": result}, 500
         return {"groups": {"groups": groups_list}}, 200
 
-    @access_required(role_dict["common_user"])
+    @access_required(role_dict["product"])
     def post(self):
         args = parser.parse_args()
         args["id"] = uuid_prefix("g")

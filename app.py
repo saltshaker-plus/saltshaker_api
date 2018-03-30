@@ -11,7 +11,7 @@ from user.acl import ACLList, ACL
 from user.groups import GroupsList, Groups
 from resources.log import LogList
 from resources.cherry_stats import CherryStats
-from resources.execute import ExecuteShell
+from resources.execute import ExecuteShell, ExecuteGroups
 from common.cli import initialize
 from common.sso import create_token, verify_password
 import os
@@ -67,6 +67,7 @@ api.add_resource(Event, "/saltshaker/api/v1.0/event/<string:job_id>")
 
 # execute
 api.add_resource(ExecuteShell, "/saltshaker/api/v1.0/execute/shell")
+api.add_resource(ExecuteGroups, "/saltshaker/api/v1.0/execute/groups")
 #api.add_resource(ExecuteModule, "/saltshaker/api/v1.0/execute/module")
 
 # audit log
@@ -96,7 +97,9 @@ def login():
             response = make_response('<a href=/saltshaker/api/v1.0/role>Role</a></br>'
                                      '<a href=/saltshaker/api/v1.0/product>Product</a></br>'
                                      '<a href=/saltshaker/api/v1.0/user>User</a></br>'
-                                     '<a href=/saltshaker/api/v1.0/groups>Groups</a></br>'
+                                     '<a href=/saltshaker/api/v1.0/groups?product_id='
+                                     'p-b4aaef1e322611e8ab56000c298454d8>Groups</a></br>'
+                                     '<a href=/saltshaker/api/v1.0/execute/groups>Execute Groups</a></br>'
                                      '<a href=/saltshaker/api/v1.0/event?product_id=p-c5008b0421d611e894b0000c298454d8>'
                                      'event</a></br>'
                                      '<p>' + token.decode('utf-8') + '</p>'
