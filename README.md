@@ -1,8 +1,5 @@
 ### Saltshaker_plus Restful API
 
-##Saltshaker 交流学习QQ群:622806083
-![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/qq.png)
-
 #### **要求 python > 3.0**
 #### **要求 Mysql >= 5.7**
 
@@ -36,3 +33,7 @@
 4. 启动Flask App
     python /root/work/github/saltshaker_api/app.py
 ````
+
+
+##Saltshaker 交流学习QQ群:622806083
+##![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/qq.png)
