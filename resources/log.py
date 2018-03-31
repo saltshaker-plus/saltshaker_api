@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-from flask import g
 from flask_restful import Resource, reqparse
 from common.log import Logger
 from common.db import DB
