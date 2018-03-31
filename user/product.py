@@ -19,6 +19,17 @@ parser.add_argument("salt_master_url", type=str, required=True, trim=True)
 parser.add_argument("salt_master_user", type=str, required=True, trim=True)
 parser.add_argument("salt_master_password", type=str, required=True, trim=True)
 
+# GitLab 设置
+parser.add_argument("gitlab_url", type=str, default="", trim=True)
+parser.add_argument("private_token", type=str, default="", trim=True)
+parser.add_argument("oauth_token", type=str, default="", trim=True)
+parser.add_argument("email", type=str, default="", trim=True)
+parser.add_argument("password", type=str, default="", trim=True)
+parser.add_argument("http_username", type=str, default="", trim=True)
+parser.add_argument("http_password", type=str, default="", trim=True)
+parser.add_argument("api_version", type=str, default="", trim=True)
+parser.add_argument("project", type=str, default="", trim=True)
+
 
 class Product(Resource):
     @access_required(role_dict["product"])
