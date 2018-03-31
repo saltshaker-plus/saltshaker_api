@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
 from common.log import Logger
-from common.db import DB
 from common.sso import access_required
 from common.const import role_dict
 from common.fileserver import gitlab_project
