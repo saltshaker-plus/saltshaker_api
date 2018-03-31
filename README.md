@@ -34,6 +34,5 @@
     python /root/work/github/saltshaker_api/app.py
 ````
 
-
-##Saltshaker 交流学习QQ群:622806083
-##![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/qq.png)
+### Saltshaker 交流学习QQ群:622806083
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/qq.png)
