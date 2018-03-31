@@ -12,6 +12,7 @@ from user.groups import GroupsList, Groups
 from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteGroups
+from resources.file import BranchList, FilesList, FileContent
 from common.cli import initialize
 from common.sso import create_token, verify_password
 import os
@@ -69,6 +70,11 @@ api.add_resource(Event, "/saltshaker/api/v1.0/event/<string:job_id>")
 api.add_resource(ExecuteShell, "/saltshaker/api/v1.0/execute/shell")
 api.add_resource(ExecuteGroups, "/saltshaker/api/v1.0/execute/groups")
 #api.add_resource(ExecuteModule, "/saltshaker/api/v1.0/execute/module")
+
+# gitlab
+api.add_resource(BranchList, "/saltshaker/api/v1.0/gitlab/branch")
+api.add_resource(FilesList, "/saltshaker/api/v1.0/gitlab/file")
+api.add_resource(FileContent, "/saltshaker/api/v1.0/gitlab/content")
 
 # audit log
 api.add_resource(LogList, "/saltshaker/api/v1.0/log")
