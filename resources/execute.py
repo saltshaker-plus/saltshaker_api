@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
-from flask_restful import Resource, reqparse, request
-from flask import g
+from flask_restful import Resource, reqparse
 from common.log import Logger
 from common.audit_log import audit_log
 from common.utility import salt_api_for_product
