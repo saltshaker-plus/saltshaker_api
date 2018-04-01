@@ -18,6 +18,7 @@ from common.sso import create_token, verify_password
 import os
 import click
 import configparser
+from flask_cors import CORS
 
 
 config = configparser.ConfigParser()
@@ -27,6 +28,7 @@ expires_in = int(config.get("Token", "EXPIRES_IN"))
 
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True, resources={r"*": {"origins": "*"}})
 api = Api(app)
 
 # login
