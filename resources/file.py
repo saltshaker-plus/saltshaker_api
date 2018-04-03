@@ -32,14 +32,17 @@ class BranchList(Resource):
 # 获取目录结构
 class FilesList(Resource):
     @access_required(role_dict["common_user"])
-    def post(self):
+    def get(self):
         args = parser.parse_args()
         project = gitlab_project(args["product_id"])
         if isinstance(project, dict):
             return project, 500
         else:
             file_list = []
-            items = project.repository_tree(path=args["path"], ref_name=args["branch"])
+            try:
+                items = project.repository_tree(path=args["path"], ref_name=args["branch"])
+            except Exception as e:
+                return {"status": False, "message": str(e)}, 404
             for i in items:
                 file_list.append({"name": i["name"], "type": i["type"]})
             return {"files": {"file": file_list}}, 200
@@ -48,7 +51,7 @@ class FilesList(Resource):
 # 获取文件内容
 class FileContent(Resource):
     @access_required(role_dict["common_user"])
-    def post(self):
+    def get(self):
         args = parser.parse_args()
         project = gitlab_project(args["product_id"])
         if isinstance(project, dict):
@@ -57,5 +60,5 @@ class FileContent(Resource):
             try:
                 content = project.files.get(file_path=args["path"], ref=args["branch"])
             except Exception as e:
-                return {"status": False, "message": str(e)}, 500
+                return {"status": False, "message": str(e)}, 404
             return {"content": content.decode().decode("utf-8")}, 200
