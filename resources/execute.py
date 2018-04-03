@@ -6,6 +6,7 @@ from common.utility import salt_api_for_product
 from common.sso import access_required
 from common.db import DB
 from common.const import role_dict
+from flask import g
 import re
 import json
 import time
@@ -89,6 +90,7 @@ class ExecuteShell(Resource):
                         }, 200
 
 
+# 执行页面显示的组
 class ExecuteGroups(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
