@@ -1,5 +1,6 @@
 ### Saltshaker_plus Restful API
 
+#### **前端项目 https://github.com/yueyongyue/saltshaker_frontend**
 #### **要求 python > 3.0**
 #### **要求 Mysql >= 5.7**
 
@@ -32,6 +33,23 @@
 ````
 4. 启动Flask App
     python /root/work/github/saltshaker_api/app.py
+````
+
+#### **GitLab 使用说明**
+````
+    Saltstack SLS 文件采用GitLab进行存储及管理,使用前务必已经存在GitLab(其他存储方式陆续支持)
+    
+    官方GitLab配置 请查看此链接 https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration
+    
+    配置master,添加如下
+    
+    fileserver_backend:
+      - roots
+      - git               # git 和 roots 表示既支持本地又支持git 先后顺序决定了当sls文件冲突时,使用哪个sls文件(谁在前面用谁的)
+    gitfs_remotes:
+      - http://test.com.cn:9000/root/salt_sls.git #GitLab 项目地址
+    gitfs_base: master    # git 分支默认master
+
 ````
 
 ### Saltshaker 交流学习QQ群:622806083
