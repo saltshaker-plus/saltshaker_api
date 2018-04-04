@@ -6,7 +6,7 @@ from common.audit_log import audit_log
 from common.utility import salt_api_for_product
 from common.sso import access_required
 from common.const import role_dict
-import os
+from common.db import DB
 
 logger = Logger()
 
@@ -54,15 +54,25 @@ class JobManager(Resource):
     @access_required(role_dict["common_user"])
     def delete(self):
         args = parser.parse_args()
+        db = DB()
+        status, result = db.select_by_id("product", args["product_id"])
+        db.close_mysql()
+        if status is True:
+            if result:
+                product = eval(result[0][0])
+            else:
+                return {"status": False, "message": "%s does not exist" % args["product_id"]}
+        else:
+            return {"status": False, "message": result}
         salt_api = salt_api_for_product(args["product_id"])
         user = g.user_info["username"]
         if isinstance(salt_api, dict):
             return salt_api, 500
         else:
             if args["action"] == "kill" and args["jid"]:
-                kill = "salt '*' saltutil.kill_job" + " " + args["jid"]
+                kill = "salt %s saltutil.kill_job %s" % (product.get("salt_master_id"), args["jid"])
                 try:
-                    result = os.popen(kill).read()
+                    result = salt_api.shell_remote_execution(product.get("salt_master_id"), kill)
                     audit_log(user, args["jid"], args["product_id"], "job id", "kill")
                     return {"status": True, "message": result}, 200
                 except Exception as e:
