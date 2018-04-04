@@ -50,6 +50,10 @@ gitfs_remotes:
 gitfs_base: master    # git 分支默认master
 
 ````
+#### **Roots 本地文件**
+````
+支持Roots模式的fileserver, 由于支持多产品多个独立master的管理方式, 采用Roots模式的服务将使用Rsync进行数据的同步及管理
+````
 
 ### Saltshaker 交流学习QQ群:622806083
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/qq.png)
