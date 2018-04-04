@@ -12,7 +12,7 @@ from user.groups import GroupsList, Groups
 from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteGroups
-from resources.file import BranchList, FilesList, FileContent
+from resources.gitfs import BranchList, FilesList, FileContent
 from common.cli import initialize
 from common.sso import create_token, verify_password
 import os

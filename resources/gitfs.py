@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
+from fileserver.git_fs import gitlab_project
+from common.const import role_dict
 from common.log import Logger
 from common.sso import access_required
-from common.const import role_dict
-from common.fileserver import gitlab_project
 
 logger = Logger()
 
