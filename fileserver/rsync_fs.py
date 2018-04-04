@@ -19,9 +19,8 @@ hosts_deny = config.get("Rsync", "HOSTS_DENY")
 
 
 def create_rsync_config():
-    file_name = "/etc/rsyncd_%s.config" % str(rsync_port)
-    conf = '''
-uid             = nobody
+    file_name = "/etc/rsyncd_%s.conf" % str(rsync_port)
+    conf = '''uid             = nobody
 gid             = nobody
 use chroot      = no
 max connections = 200
@@ -46,8 +45,9 @@ port = %s
     with open(file_name, "x") as file:
         file.write(conf)
         for i in product_list:
-            rsync_path_product = rsync_path + "/" + i.get("id")
-            modules = '''
+            if i.get("file_server") == "rsync":
+                rsync_path_product = rsync_path + "/" + i.get("id")
+                modules = '''
 [%s]
 path = %s
 hosts allow = %s
@@ -57,14 +57,14 @@ list      = false
 uid = root
 gid = root
 ''' % (i.get("id"), rsync_path_product, hosts_allow, hosts_deny)
-            file.write(modules)
-            # 创建Rsycn对应的目录
-            if not os.path.exists(rsync_path_product):
-                os.makedirs(rsync_path_product)
-            # 启动Rsync服务
-            if not port_check(rsync_host, int(rsync_port)):
-                rsync = os.popen("which rsync").readline().strip("\n")
-                os.popen("%s --daemon --config=%s" % (rsync, file_name))
+                file.write(modules)
+                # 创建Rsycn对应的目录
+                if not os.path.exists(rsync_path_product):
+                    os.makedirs(rsync_path_product)
+                # 启动Rsync服务
+                if not port_check(rsync_host, int(rsync_port)):
+                    rsync = os.popen("which rsync").readline().strip("\n")
+                    os.popen("%s --daemon --config=%s" % (rsync, file_name))
 
 
 def port_check(ip, port):
