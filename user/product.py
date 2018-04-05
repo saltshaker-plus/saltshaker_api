@@ -81,9 +81,11 @@ class Product(Resource):
         # 判断是否存在
         select_status, select_result = db.select_by_id("product", product_id)
         if select_status is not True:
+            db.close_mysql()
             logger.error("Modify product error: %s" % select_result)
             return {"status": False, "message": select_result}, 500
         if not select_result:
+            db.close_mysql()
             return {"status": False, "message": "%s does not exist" % product_id}, 404
         # 判断名字是否重复
         status, result = db.select("product", "where data -> '$.name'='%s'" % args["name"])
@@ -91,6 +93,7 @@ class Product(Resource):
             if len(result) != 0:
                 info = eval(result[0][0])
                 if product_id != info.get("id"):
+                    db.close_mysql()
                     return {"status": False, "message": "The product name already exists"}, 200
         status, result = db.update_by_id("product", json.dumps(product, ensure_ascii=False), product_id)
         db.close_mysql()
@@ -144,8 +147,10 @@ class ProductList(Resource):
                     rsync_config()
                 return {"status": True, "message": ""}, 201
             else:
+                db.close_mysql()
                 return {"status": False, "message": "The product name already exists"}, 200
         else:
+            db.close_mysql()
             logger.error("Select product name error: %s" % result)
             return {"status": False, "message": result}, 500
 

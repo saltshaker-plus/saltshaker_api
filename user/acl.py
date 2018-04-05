@@ -65,9 +65,11 @@ class ACL(Resource):
         # 判断是否存在
         select_status, select_result = db.select_by_id("acl", acl_id)
         if select_status is not True:
+            db.close_mysql()
             logger.error("Modify acl error: %s" % select_result)
             return {"status": False, "message": select_result}, 500
         if not select_result:
+            db.close_mysql()
             return {"status": False, "message": "%s does not exist" % acl_id}, 404
         # 判断名字否已经存在
         status, result = db.select("acl", "where data -> '$.name'='%s'" % args["name"])
@@ -75,6 +77,7 @@ class ACL(Resource):
             if len(result) != 0:
                 info = eval(result[0][0])
                 if acl_id != info.get("id"):
+                    db.close_mysql()
                     return {"status": False, "message": "The acl name already exists"}, 200
         status, result = db.update_by_id("acl", json.dumps(acl, ensure_ascii=False), acl_id)
         db.close_mysql()
@@ -123,7 +126,9 @@ class ACLList(Resource):
                 audit_log(user, args["id"], "", "acl", "add")
                 return {"status": True, "message": ""}, 201
             else:
+                db.close_mysql()
                 return {"status": False, "message": "The acl name already exists"}, 200
         else:
+            db.close_mysql()
             logger.error("Select acl name error: %s" % result)
             return {"status": False, "message": result}, 500

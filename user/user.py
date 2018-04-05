@@ -67,9 +67,11 @@ class User(Resource):
         # 判断是否存在
         select_status, select_result = db.select_by_id("user", user_id)
         if select_status is not True:
+            db.close_mysql()
             logger.error("Modify user error: %s" % select_result)
             return {"status": False, "message": select_result}, 500
         if not select_result:
+            db.close_mysql()
             return {"status": False, "message": "%s does not exist" % user_id}, 404
         # 判断名字否已经存在
         status, result = db.select("user", "where data -> '$.username'='%s'" % args["username"])
@@ -77,6 +79,7 @@ class User(Resource):
             if len(result) != 0:
                 info = eval(result[0][0])
                 if user_id != info.get("id"):
+                    db.close_mysql()
                     return {"status": False, "message": "The user name already exists"}, 200
         # 获取之前的加密密码
         status, result = db.select_by_id("user", user_id)
@@ -86,10 +89,13 @@ class User(Resource):
                     user_info = eval(result[0][0])
                     args["password"] = user_info.get("password")
                 except Exception as e:
+                    db.close_mysql()
                     return {"status": False, "message": str(e)}, 500
             else:
+                db.close_mysql()
                 return {"status": False, "message": "%s does not exist" % user_id}, 404
         else:
+            db.close_mysql()
             return {"status": False, "message": result}, 500
         # 更新用户信息
         users = args
@@ -151,8 +157,10 @@ class UserList(Resource):
                 audit_log(user, args["id"], "", "user", "add")
                 return {"status": True, "message": ""}, 201
             else:
+                db.close_mysql()
                 return {"status": False, "message": "The user name already exists"}, 200
         else:
+            db.close_mysql()
             logger.error("Select user error: %s" % result)
             return {"status": False, "message": result}, 500
 
@@ -188,11 +196,15 @@ def update_user_privilege(table, privilege):
                             info[table].remove(privilege)
                             db.update_by_id("user", json.dumps(info, ensure_ascii=False), info["id"])
                 except Exception as e:
+                    db.close_mysql()
                     logger.error("Update user privilege error: %s" % str(e))
                     return {"status": False, "message": str(e)}
+            db.close_mysql()
             return {"status": True, "message": ""}
         else:
+            db.close_mysql()
             return {"status": False, "message": "User does not exist"}
     else:
+        db.close_mysql()
         logger.error("Update user privilege error: %s" % result)
         return {"status": False, "message": result}
