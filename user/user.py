@@ -64,7 +64,14 @@ class User(Resource):
         args = parser.parse_args()
         args["id"] = user_id
         db = DB()
-        # 判断用户名是否已经存在
+        # 判断是否存在
+        select_status, select_result = db.select_by_id("user", user_id)
+        if select_status is not True:
+            logger.error("Modify user error: %s" % select_result)
+            return {"status": False, "message": select_result}, 500
+        if not select_result:
+            return {"status": False, "message": "%s does not exist" % user_id}, 404
+        # 判断名字否已经存在
         status, result = db.select("user", "where data -> '$.username'='%s'" % args["username"])
         if status is True:
             if len(result) != 0:

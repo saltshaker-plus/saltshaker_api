@@ -78,14 +78,14 @@ class Product(Resource):
         args["id"] = product_id
         product = args
         db = DB()
-        # 判断产品是否存在
+        # 判断是否存在
         select_status, select_result = db.select_by_id("product", product_id)
         if select_status is not True:
             logger.error("Modify product error: %s" % select_result)
             return {"status": False, "message": select_result}, 500
         if not select_result:
             return {"status": False, "message": "%s does not exist" % product_id}, 404
-        # 判断产品名是否重复
+        # 判断名字是否重复
         status, result = db.select("product", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
             if len(result) != 0:

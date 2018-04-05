@@ -62,6 +62,14 @@ class ACL(Resource):
         args["id"] = acl_id
         acl = args
         db = DB()
+        # 判断是否存在
+        select_status, select_result = db.select_by_id("acl", acl_id)
+        if select_status is not True:
+            logger.error("Modify acl error: %s" % select_result)
+            return {"status": False, "message": select_result}, 500
+        if not select_result:
+            return {"status": False, "message": "%s does not exist" % acl_id}, 404
+        # 判断名字否已经存在
         status, result = db.select("acl", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
             if len(result) != 0:

@@ -61,6 +61,14 @@ class Groups(Resource):
         args["id"] = groups_id
         groups = args
         db = DB()
+        # 判断是否存在
+        select_status, select_result = db.select_by_id("groups", groups_id)
+        if select_status is not True:
+            logger.error("Modify groups error: %s" % select_result)
+            return {"status": False, "message": select_result}, 500
+        if not select_result:
+            return {"status": False, "message": "%s does not exist" % groups_id}, 404
+        # 判断名字否已经存在
         status, result = db.select("groups", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
             if len(result) != 0:
