@@ -55,7 +55,7 @@ class User(Resource):
         if result is 0:
             return {"status": False, "message": "%s does not exist" % user_id}, 404
         audit_log(user, user_id, "", "user", "delete")
-        return {"status": True, "message": ""}, 204
+        return {"status": True, "message": ""}, 200
 
     # 修改指定用户
     @access_required(role_dict["user"])

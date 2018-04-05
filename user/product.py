@@ -9,7 +9,7 @@ from common.sso import access_required
 import json
 from user.user import update_user_privilege
 from common.const import role_dict
-from fileserver.rsync_fs import create_rsync_config
+from fileserver.rsync_fs import rsync_config
 
 logger = Logger()
 
@@ -67,8 +67,9 @@ class Product(Resource):
         info = update_user_privilege("product", product_id)
         if info["status"] is False:
             return {"status": False, "message": info["message"]}, 500
-        create_rsync_config()
-        return {"status": True, "message": ""}, 204
+        # 更新Rsync配置
+        rsync_config()
+        return {"status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
     def put(self, product_id):
@@ -77,6 +78,14 @@ class Product(Resource):
         args["id"] = product_id
         product = args
         db = DB()
+        # 判断产品是否存在
+        select_status, select_result = db.select_by_id("product", product_id)
+        if select_status is not True:
+            logger.error("Modify product error: %s" % select_result)
+            return {"status": False, "message": select_result}, 500
+        if not select_result:
+            return {"status": False, "message": "%s does not exist" % product_id}, 404
+        # 判断产品名是否重复
         status, result = db.select("product", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
             if len(result) != 0:
@@ -89,7 +98,8 @@ class Product(Resource):
             logger.error("Modify product error: %s" % result)
             return {"status": False, "message": result}, 500
         audit_log(user, args["id"], product_id, "product", "edit")
-        create_rsync_config()
+        # 更新Rsync配置
+        rsync_config()
         return {"status": True, "message": ""}, 200
 
 
@@ -129,7 +139,9 @@ class ProductList(Resource):
                     logger.error("Add product error: %s" % insert_result)
                     return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "product", "add")
-                create_rsync_config()
+                # 更新Rsync配置
+                if args["file_server"] == "rsync":
+                    rsync_config()
                 return {"status": True, "message": ""}, 201
             else:
                 return {"status": False, "message": "The product name already exists"}, 200

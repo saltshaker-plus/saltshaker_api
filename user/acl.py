@@ -53,7 +53,7 @@ class ACL(Resource):
         info = update_user_privilege("acl", acl_id)
         if info["status"] is False:
             return {"status": False, "message": info["message"]}, 500
-        return {"status": True, "message": ""}, 204
+        return {"status": True, "message": ""}, 200
 
     @access_required(role_dict["acl"])
     def put(self, acl_id):

@@ -50,7 +50,7 @@ class Role(Resource):
         info = update_user_privilege("role", role_id)
         if info["status"] is False:
             return {"status": False, "message": info["message"]}, 500
-        return {"status": True, "message": ""}, 204
+        return {"status": True, "message": ""}, 200
 
     @access_required(role_dict["superuser"])
     def put(self, role_id):
