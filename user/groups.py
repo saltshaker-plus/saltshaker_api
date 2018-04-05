@@ -52,7 +52,7 @@ class Groups(Resource):
         info = update_user_privilege("groups", groups_id)
         if info["status"] is False:
             return {"status": False, "message": info["message"]}, 500
-        return {"status": True, "message": ""}, 204
+        return {"status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
     def put(self, groups_id):
