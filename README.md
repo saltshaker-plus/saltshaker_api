@@ -1,5 +1,8 @@
 ### Saltshaker_plus Restful API
 
+#### **API文档见Wiki https://github.com/yueyongyue/saltshaker_api/wiki**
+
+
 #### **前端项目 https://github.com/yueyongyue/saltshaker_frontend**
 #### **要求 python > 3.0**
 #### **要求 Mysql >= 5.7**
