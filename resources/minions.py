@@ -6,6 +6,7 @@ from common.audit_log import audit_log
 from common.utility import salt_api_for_product
 from common.sso import access_required
 from common.const import role_dict
+from user.host import Hosts
 
 logger = Logger()
 
@@ -55,19 +56,25 @@ class MinionsKeys(Resource):
                         result = salt_api.accept_key(minion)
                         result_list.append({minion: result})
                         audit_log(user, minion, args["product_id"], "minion", "accept")
-                    return {"status": result_list, "message": ""}, 200
+                    # 添加host
+                    Hosts.add_host(args["minion_id"], args["product_id"], user)
+                    return {"status": True, "message": result_list}, 200
                 if args["action"] == "reject":
                     for minion in args["minion_id"]:
                         result = salt_api.reject_key(minion)
                         result_list.append({minion: result})
                         audit_log(user, minion, args["product_id"], "minion", "reject")
-                    return {"status": result_list, "message": ""}, 200
+                    # 拒绝host
+                    Hosts.reject_host(args["minion_id"], args["product_id"], user)
+                    return {"status": True, "message": result_list}, 200
                 if args["action"] == "delete":
                     for minion in args["minion_id"]:
                         result = salt_api.delete_key(minion)
                         result_list.append({minion: result})
                         audit_log(user, minion, args["product_id"], "minion", "delete")
-                    return {"status": result_list, "message": ""}, 200
+                    # 删除host
+                    Hosts.delete_host(args["minion_id"], args["product_id"], user)
+                    return {"status": True, "message": result_list}, 200
             else:
                 return {"status": False,
                         "message": "Missing required parameter in the JSON body or "
