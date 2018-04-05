@@ -9,6 +9,7 @@ from user.role import RoleList, Role
 from user.user import UserList, User
 from user.acl import ACLList, ACL
 from user.groups import GroupsList, Groups
+from user.host import HostList, Host
 from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteGroups
@@ -29,7 +30,7 @@ expires_in = int(config.get("Token", "EXPIRES_IN"))
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources={r"*": {"origins": "*"}})
-api = Api(app)
+api = Api(app, catch_all_404s=True)
 
 # login
 #api.add_resource(Login, "/login")
@@ -50,9 +51,13 @@ api.add_resource(ACL, "/saltshaker/api/v1.0/acl/<string:acl_id>")
 api.add_resource(UserList, "/saltshaker/api/v1.0/user")
 api.add_resource(User, "/saltshaker/api/v1.0/user/<string:user_id>")
 
-# group
+# groups
 api.add_resource(GroupsList, "/saltshaker/api/v1.0/groups")
 api.add_resource(Groups, "/saltshaker/api/v1.0/groups/<string:groups_id>")
+
+# host
+api.add_resource(HostList, "/saltshaker/api/v1.0/host")
+api.add_resource(Host, "/saltshaker/api/v1.0/host/<string:host_id>")
 
 # minions
 api.add_resource(MinionsStatus, "/saltshaker/api/v1.0/minions/status")
