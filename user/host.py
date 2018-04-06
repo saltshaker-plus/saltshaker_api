@@ -6,6 +6,7 @@ from common.audit_log import audit_log
 from common.db import DB
 from common.utility import uuid_prefix
 from common.sso import access_required
+from common.utility import salt_api_for_product
 import json
 from common.const import role_dict
 
@@ -129,6 +130,20 @@ class HostList(Resource):
             db.close_mysql()
             logger.error("Select host name error: %s" % result)
             return {"status": False, "message": result}, 500
+
+
+class DifferenceHost(Resource):
+    @access_required(role_dict["common_user"])
+    def get(self):
+        args = parser.parse_args()
+        salt_api = salt_api_for_product(args["product_id"])
+        if isinstance(salt_api, dict):
+            return salt_api, 500
+        else:
+            result = salt_api.list_all_key()
+            result_dict = eval(result)
+            result_dict.get("minions").extend(result_dict.get("minions_rejected"))
+            all_minion = result_dict.get("minions")
 
 
 class Hosts(object):
