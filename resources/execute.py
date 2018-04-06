@@ -86,7 +86,9 @@ class ExecuteShell(Resource):
                         'minion_count': minion_count,
                         'cmd_succeed': cmd_succeed,
                         'cmd_failure': cmd_failure,
-                        'failure_minion': failure_minion
+                        'failure_minion': failure_minion,
+                        "status": True,
+                        "message": ""
                         }, 200
 
 
@@ -115,7 +117,7 @@ class ExecuteGroups(Resource):
                     return {"status": False, "message": "Group does not exist"}, 404
             else:
                 return {"status": False, "message": result}, 500
-            return {"groups": {"groups": groups_list}}, 200
+            return {"groups": {"groups": groups_list}, "status": True, "message": ""}, 200
         else:
-            return {"groups": {"groups": groups_list}}, 200
+            return {"groups": {"groups": groups_list}, "status": True, "message": ""}, 200
 

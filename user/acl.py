@@ -36,7 +36,7 @@ class ACL(Resource):
                 return {"status": False, "message": "%s does not exist" % acl_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"acl": acl}, 200
+        return {"acl": acl, "status": True, "message": ""}, 200
 
     @access_required(role_dict["acl"])
     def delete(self, acl_id):
@@ -106,7 +106,7 @@ class ACLList(Resource):
                 return {"status": False, "message": "Acl does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"acls": {"acl": acl_list}}, 200
+        return {"acls": {"acl": acl_list}, "status": True, "message": ""}, 200
 
     @access_required(role_dict["acl"])
     def post(self):

@@ -27,7 +27,7 @@ class LogList(Resource):
                 return {"status": False, "message": "Log does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"audit_logs": {"audit_log": log_list}}, 200
+        return {"audit_logs": {"audit_log": log_list}, "status": True, "message": ""}, 200
 
 
 

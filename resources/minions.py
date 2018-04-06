@@ -27,6 +27,7 @@ class MinionsStatus(Resource):
             return salt_api, 500
         else:
             result = salt_api.runner_status("status")
+            result.update({"status": True, "message": ""})
             return result, 200
 
 
@@ -39,6 +40,7 @@ class MinionsKeys(Resource):
             return salt_api, 500
         else:
             result = salt_api.list_all_key()
+            result.update({"status": True, "message": ""})
             return result, 200
 
     @access_required(role_dict["common_user"])
@@ -93,11 +95,13 @@ class MinionsGrains(Resource):
                 if args["item"]:
                     result = salt_api.grain(args["minion"], args["item"])
                     if result:
+                        result.update({"status": True, "message": ""})
                         return result
                     return {"status": False, "message": "The specified minion does not exist"}, 404
                 else:
                     result = salt_api.grains(args["minion"])
                     if result:
+                        result.update({"status": True, "message": ""})
                         return result
                     return {"status": False, "message": "The specified minion does not exist"}, 404
             else:

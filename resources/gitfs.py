@@ -26,7 +26,7 @@ class BranchList(Resource):
             branch = project.branches.list()
             for b in branch:
                 branch_list.append(b.name)
-            return {"branchs": {"branch": branch_list}}, 200
+            return {"branchs": {"branch": branch_list}, "status": True, "message": ""}, 200
 
 
 # 获取目录结构
@@ -45,7 +45,7 @@ class FilesList(Resource):
                 return {"status": False, "message": str(e)}, 404
             for i in items:
                 file_list.append({"name": i["name"], "type": i["type"]})
-            return {"files": {"file": file_list}}, 200
+            return {"files": {"file": file_list}, "status": True, "message": ""}, 200
 
 
 # 获取文件内容
@@ -61,4 +61,4 @@ class FileContent(Resource):
                 content = project.files.get(file_path=args["path"], ref=args["branch"])
             except Exception as e:
                 return {"status": False, "message": str(e)}, 404
-            return {"content": content.decode().decode("utf-8")}, 200
+            return {"content": content.decode().decode("utf-8"), "status": True, "message": ""}, 200

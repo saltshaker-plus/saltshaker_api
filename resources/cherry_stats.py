@@ -20,4 +20,5 @@ class CherryStats(Resource):
             return salt_api, 500
         else:
             result = salt_api.stats()
+            result.update({"status": True, "message": ""})
             return result, 200

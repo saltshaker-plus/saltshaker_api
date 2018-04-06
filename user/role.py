@@ -33,7 +33,7 @@ class Role(Resource):
                 return {"status": False, "message": "%s does not exist" % role_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"role": role}, 200
+        return {"role": role, "status": True, "message": ""}, 200
 
     @access_required(role_dict["superuser"])
     def delete(self, role_id):
@@ -103,7 +103,7 @@ class RoleList(Resource):
                 return {"status": False, "message": "Role does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"roles": {"role": role_list}}, 200
+        return {"roles": {"role": role_list}, "status": True, "message": ""}, 200
 
     @access_required(role_dict["superuser"])
     def post(self):
