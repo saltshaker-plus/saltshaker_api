@@ -9,7 +9,7 @@ from user.role import RoleList, Role
 from user.user import UserList, User
 from user.acl import ACLList, ACL
 from user.groups import GroupsList, Groups
-from user.host import HostList, Host
+from user.host import HostList, Host, DifferenceHost
 from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteGroups
@@ -57,6 +57,7 @@ api.add_resource(Groups, "/saltshaker/api/v1.0/groups/<string:groups_id>")
 
 # host
 api.add_resource(HostList, "/saltshaker/api/v1.0/host")
+api.add_resource(DifferenceHost, "/saltshaker/api/v1.0/host_diff")
 api.add_resource(Host, "/saltshaker/api/v1.0/host/<string:host_id>")
 
 # minions

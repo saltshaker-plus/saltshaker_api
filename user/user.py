@@ -114,7 +114,6 @@ class UserList(Resource):
     def get(self):
         db = DB()
         status, result = db.select("user", "")
-        db.close_mysql()
         user_list = []
         if status is True:
             if result:
@@ -129,6 +128,25 @@ class UserList(Resource):
                 return {"status": False, "message": "User does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
+        for item in user_list:
+            for attr in item.keys():
+                if attr not in ["id", "username"]:
+                    if item[attr]:
+                        tmp = []
+                        status, result = db.select_by_list(attr, "id", item[attr])
+                        if status is True:
+                            for i in result:
+                                try:
+                                    info = eval(i[0])
+                                    tmp.append({"id": info["id"], "name": info["name"]})
+                                except Exception as e:
+                                    db.close_mysql()
+                                    return {"status": False, "message": str(e)}, 500
+                            item[attr] = tmp
+                        else:
+                            db.close_mysql()
+                            return {"status": False, "message": result}, 500
+        db.close_mysql()
         return {"users": {"user": user_list}}, 200
 
     # 添加用户
