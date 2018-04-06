@@ -118,6 +118,21 @@ class DB(object):
             self.conn.rollback()
             return False, str(e)
 
+    def select_by_list(self, table, field, array):
+        sql_list = []
+        for i in array:
+            sql_list.append("data -> '$.%s'='%s'" % (field, i))
+        sql = " or ".join(sql_list)
+        sql = "SELECT * FROM %s WHERE %s" % (table, sql)
+        logger.info(sql)
+        try:
+            self.cursor.execute(sql)
+            result = self.cursor.fetchall()
+            return True, result
+        except Exception as e:
+            logger.error("Select by list error: %s" % e)
+            return False, str(e)
+
     def close_mysql(self):
         self.cursor.close()
         self.conn.close()
