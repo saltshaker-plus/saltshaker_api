@@ -29,7 +29,6 @@ class ExecuteShell(Resource):
         user_info = g.user_info
         if isinstance(salt_api, dict):
             return salt_api, 500
-
         acl_list = user_info["acl"]
         # 验证 acl
         status = verify_acl(acl_list, command)
@@ -70,7 +69,7 @@ class ExecuteShell(Resource):
                     "message": ""
                     }, 200
         else:
-            return status, 200
+            return status, 500
 
 
 # 执行页面显示的组
