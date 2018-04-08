@@ -113,11 +113,11 @@ class ExecuteGroups(Resource):
                             groups_list.append(eval(i[0]))
                         except Exception as e:
                             return {"status": False, "message": str(e)}, 200
+                    return {"groups": {"groups": groups_list}, "status": True, "message": ""}, 200
                 else:
                     return {"status": False, "message": "Group does not exist"}, 200
             else:
                 return {"status": False, "message": result}, 200
-            return {"groups": {"groups": groups_list}, "status": True, "message": ""}, 200
         else:
             return {"groups": {"groups": groups_list}, "status": True, "message": ""}, 200
 
