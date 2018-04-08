@@ -80,7 +80,7 @@ class MinionsKeys(Resource):
             else:
                 return {"status": False,
                         "message": "Missing required parameter in the JSON body or "
-                                   "the post body or the query string"}, 400
+                                   "the post body or the query string"}, 200
 
 
 class MinionsGrains(Resource):
@@ -105,5 +105,5 @@ class MinionsGrains(Resource):
                         return result
                     return {"status": False, "message": "The specified minion does not exist"}, 200
             else:
-                return {"status": False, "message": "The specified minion arguments error"}, 400
+                return {"status": False, "message": "The specified minion arguments error"}, 200
 
