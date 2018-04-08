@@ -5,7 +5,8 @@
 
 #### **前端项目 https://github.com/yueyongyue/saltshaker_frontend**
 #### **要求 python > 3.0**
-#### **要求 Mysql >= 5.7**
+#### **要求 Mysql >= 5.7.8**
+#### **MariaDB > 10.0.1 对于Json的处理方式不同，SQL语句不同，不建议使用**
 
 ````
 1. 安装依赖
