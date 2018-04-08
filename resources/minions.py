@@ -24,7 +24,7 @@ class MinionsStatus(Resource):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
         if isinstance(salt_api, dict):
-            return salt_api, 200
+            return salt_api, 500
         else:
             result = salt_api.runner_status("status")
             result.update({"status": True, "message": ""})
@@ -37,7 +37,7 @@ class MinionsKeys(Resource):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
         if isinstance(salt_api, dict):
-            return salt_api, 200
+            return salt_api, 500
         else:
             result = salt_api.list_all_key()
             result.update({"status": True, "message": ""})
@@ -80,7 +80,7 @@ class MinionsKeys(Resource):
             else:
                 return {"status": False,
                         "message": "Missing required parameter in the JSON body or "
-                                   "the post body or the query string"}, 200
+                                   "the post body or the query string"}, 400
 
 
 class MinionsGrains(Resource):
@@ -89,7 +89,7 @@ class MinionsGrains(Resource):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
         if isinstance(salt_api, dict):
-            return salt_api, 200
+            return salt_api, 500
         else:
             if args["minion"]:
                 if args["item"]:
@@ -97,13 +97,13 @@ class MinionsGrains(Resource):
                     if result:
                         result.update({"status": True, "message": ""})
                         return result
-                    return {"status": False, "message": "The specified minion does not exist"}, 200
+                    return {"status": False, "message": "The specified minion does not exist"}, 404
                 else:
                     result = salt_api.grains(args["minion"])
                     if result:
                         result.update({"status": True, "message": ""})
                         return result
-                    return {"status": False, "message": "The specified minion does not exist"}, 200
+                    return {"status": False, "message": "The specified minion does not exist"}, 404
             else:
-                return {"status": False, "message": "The specified minion arguments error"}, 200
+                return {"status": False, "message": "The specified minion arguments error"}, 400
 

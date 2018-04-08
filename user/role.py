@@ -28,11 +28,11 @@ class Role(Resource):
                 try:
                     role = eval(result[0][0])
                 except Exception as e:
-                    return {"status": False, "message": str(e)}, 200
+                    return {"status": False, "message": str(e)}, 500
             else:
-                return {"status": False, "message": "%s does not exist" % role_id}, 200
+                return {"status": False, "message": "%s does not exist" % role_id}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"role": role, "status": True, "message": ""}, 200
 
     @access_required(role_dict["superuser"])
@@ -43,13 +43,13 @@ class Role(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Delete role error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         if result is 0:
-            return {"status": False, "message": "%s does not exist" % role_id}, 200
+            return {"status": False, "message": "%s does not exist" % role_id}, 404
         audit_log(user, role_id, "", "role", "delete")
         info = update_user_privilege("role", role_id)
         if info["status"] is False:
-            return {"status": False, "message": info["message"]}, 200
+            return {"status": False, "message": info["message"]}, 500
         return {"status": True, "message": ""}, 200
 
     @access_required(role_dict["superuser"])
@@ -64,10 +64,10 @@ class Role(Resource):
         if select_status is not True:
             db.close_mysql()
             logger.error("Modify role error: %s" % select_result)
-            return {"status": False, "message": select_result}, 200
+            return {"status": False, "message": select_result}, 500
         if not select_result:
             db.close_mysql()
-            return {"status": False, "message": "%s does not exist" % role_id}, 200
+            return {"status": False, "message": "%s does not exist" % role_id}, 404
         # 判断名字是否重复
         status, result = db.select("role", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
@@ -80,7 +80,7 @@ class Role(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Modify role error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         audit_log(user, role_id, "", "role", "edit")
         return {"status": True, "message": ""}, 200
 
@@ -98,11 +98,11 @@ class RoleList(Resource):
                     try:
                         role_list.append(eval(i[0]))
                     except Exception as e:
-                        return {"status": False, "message": str(e)}, 200
+                        return {"status": False, "message": str(e)}, 500
             else:
-                return {"status": False, "message": "Role does not exist"}, 200
+                return {"status": False, "message": "Role does not exist"}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"roles": {"role": role_list}, "status": True, "message": ""}, 200
 
     @access_required(role_dict["superuser"])
@@ -119,7 +119,7 @@ class RoleList(Resource):
                 db.close_mysql()
                 if insert_status is not True:
                     logger.error("Add role error: %s" % insert_result)
-                    return {"status": False, "message": insert_result}, 200
+                    return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "role", "add")
                 return {"status": True, "message": ""}, 201
             else:
@@ -128,4 +128,4 @@ class RoleList(Resource):
         else:
             db.close_mysql()
             logger.error("Select role name error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500

@@ -28,7 +28,7 @@ class ExecuteShell(Resource):
         salt_api = salt_api_for_product(args["product_id"])
         user_info = g.user_info
         if isinstance(salt_api, dict):
-            return salt_api, 200
+            return salt_api, 500
 
         acl_list = user_info["acl"]
         # 验证 acl
@@ -93,12 +93,12 @@ class ExecuteGroups(Resource):
                         try:
                             groups_list.append(eval(i[0]))
                         except Exception as e:
-                            return {"status": False, "message": str(e)}, 200
+                            return {"status": False, "message": str(e)}, 500
                     return {"groups": {"groups": groups_list}, "status": True, "message": ""}, 200
                 else:
-                    return {"status": False, "message": "Group does not exist"}, 200
+                    return {"status": False, "message": "Group does not exist"}, 404
             else:
-                return {"status": False, "message": result}, 200
+                return {"status": False, "message": result}, 500
         else:
             return {"groups": {"groups": groups_list}, "status": True, "message": ""}, 200
 

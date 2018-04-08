@@ -22,7 +22,7 @@ class Job(Resource):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
         if isinstance(salt_api, dict):
-            return salt_api, 200
+            return salt_api, 500
         else:
             result = salt_api.jobs_info(job_id)
             return result, 200
@@ -34,7 +34,7 @@ class JobList(Resource):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
         if isinstance(salt_api, dict):
-            return salt_api, 200
+            return salt_api, 500
         else:
             result = salt_api.jobs_list()
             return result, 200
@@ -46,7 +46,7 @@ class JobManager(Resource):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
         if isinstance(salt_api, dict):
-            return salt_api, 200
+            return salt_api, 500
         else:
             result = salt_api.runner("jobs.active")
             return result, 200
@@ -67,7 +67,7 @@ class JobManager(Resource):
         salt_api = salt_api_for_product(args["product_id"])
         user = g.user_info["username"]
         if isinstance(salt_api, dict):
-            return salt_api, 200
+            return salt_api, 500
         else:
             if args["action"] == "kill" and args["jid"]:
                 kill = "salt %s saltutil.kill_job %s" % (product.get("salt_master_id"), args["jid"])
@@ -76,6 +76,6 @@ class JobManager(Resource):
                     audit_log(user, args["jid"], args["product_id"], "job id", "kill")
                     return {"status": True, "message": result}, 200
                 except Exception as e:
-                    return {"status": False, "message": str(e)}, 200
+                    return {"status": False, "message": str(e)}, 500
             else:
                 return {"status": False, "message": "The specified job id does not exist or arguments error"}, 400

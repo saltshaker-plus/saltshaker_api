@@ -31,11 +31,11 @@ class Host(Resource):
                 try:
                     host = eval(result[0][0])
                 except Exception as e:
-                    return {"status": False, "message": str(e)}, 200
+                    return {"status": False, "message": str(e)}, 500
             else:
-                return {"status": False, "message": "%s does not exist" % host_id}, 200
+                return {"status": False, "message": "%s does not exist" % host_id}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"host": host, "status": True, "message": ""}, 200
 
     @access_required(role_dict["common_user"])
@@ -46,9 +46,9 @@ class Host(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Delete host error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         if result is 0:
-            return {"status": False, "message": "%s does not exist" % host_id}, 200
+            return {"status": False, "message": "%s does not exist" % host_id}, 404
         audit_log(user, host_id, "", "host", "delete")
         return {"status": True, "message": ""}, 200
 
@@ -64,7 +64,7 @@ class Host(Resource):
         if select_status is False:
             db.close_mysql()
             logger.error("Modify host error: %s" % select_result)
-            return {"status": False, "message": select_result}, 200
+            return {"status": False, "message": select_result}, 500
         if select_result:
             for i in select_result:
                 try:
@@ -74,12 +74,12 @@ class Host(Resource):
                 except Exception as e:
                     db.close_mysql()
                     logger.error("Modify %s host error: %s" % (host_id, e))
-                    return {"status": False, "message": str(e)}, 200
+                    return {"status": False, "message": str(e)}, 500
         status, result = db.update_by_id("host", json.dumps(host, ensure_ascii=False), host_id)
         db.close_mysql()
         if status is not True:
             logger.error("Modify host error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         audit_log(user, args["id"], args["product_id"], "host", "edit")
         return {"status": True, "message": ""}, 200
 
@@ -98,11 +98,11 @@ class HostList(Resource):
                     try:
                         host_list.append(eval(i[0]))
                     except Exception as e:
-                        return {"status": False, "message": str(e)}, 200
+                        return {"status": False, "message": str(e)}, 500
             else:
-                return {"status": False, "message": "Host does not exist"}, 200
+                return {"status": False, "message": "Host does not exist"}, 404
         else:
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
         return {"hosts": {"host": host_list}, "status": True, "message": ""}, 200
 
     @access_required(role_dict["common_user"])
@@ -120,7 +120,7 @@ class HostList(Resource):
                 db.close_mysql()
                 if insert_status is not True:
                     logger.error("Add host error: %s" % insert_result)
-                    return {"status": False, "message": insert_result}, 200
+                    return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], args["product_id"], "host", "add")
                 return {"status": True, "message": ""}, 201
             else:
@@ -129,7 +129,7 @@ class HostList(Resource):
         else:
             db.close_mysql()
             logger.error("Select host name error: %s" % result)
-            return {"status": False, "message": result}, 200
+            return {"status": False, "message": result}, 500
 
 
 class DifferenceHost(Resource):
@@ -138,7 +138,7 @@ class DifferenceHost(Resource):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
         if isinstance(salt_api, dict):
-            return salt_api, 200
+            return salt_api, 500
         else:
             result = salt_api.list_all_key()
             result_dict = eval(result)
