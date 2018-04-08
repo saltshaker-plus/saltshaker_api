@@ -32,9 +32,9 @@ class EventList(Resource):
                     try:
                         event_list.append(eval(i[0]))
                     except Exception as e:
-                        return {"status": False, "message": str(e)}, 500
+                        return {"status": False, "message": str(e)}, 200
             else:
-                return {"status": False, "message": "Even does not exist"}, 404
+                return {"status": False, "message": "Even does not exist"}, 200
         else:
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         return {"events": {"event": event_list}}, 200

@@ -24,9 +24,9 @@ class LogList(Resource):
                 for i in result:
                     log_list.append(eval(i[0]))
             else:
-                return {"status": False, "message": "Log does not exist"}, 404
+                return {"status": False, "message": "Log does not exist"}, 200
         else:
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         return {"audit_logs": {"audit_log": log_list}, "status": True, "message": ""}, 200
 
 

@@ -35,11 +35,11 @@ class User(Resource):
                     user = eval(result[0][0])
                     user.pop("password")
                 except Exception as e:
-                    return {"status": False, "message": str(e)}, 500
+                    return {"status": False, "message": str(e)}, 200
             else:
-                return {"status": False, "message": "%s does not exist" % user_id}, 404
+                return {"status": False, "message": "%s does not exist" % user_id}, 200
         else:
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         return {"user": user, "status": True, "message": ""}, 200
 
     # 删除指定用户
@@ -51,9 +51,9 @@ class User(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Delete user error: %s" % result)
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         if result is 0:
-            return {"status": False, "message": "%s does not exist" % user_id}, 404
+            return {"status": False, "message": "%s does not exist" % user_id}, 200
         audit_log(user, user_id, "", "user", "delete")
         return {"status": True, "message": ""}, 200
 
@@ -69,10 +69,10 @@ class User(Resource):
         if select_status is not True:
             db.close_mysql()
             logger.error("Modify user error: %s" % select_result)
-            return {"status": False, "message": select_result}, 500
+            return {"status": False, "message": select_result}, 200
         if not select_result:
             db.close_mysql()
-            return {"status": False, "message": "%s does not exist" % user_id}, 404
+            return {"status": False, "message": "%s does not exist" % user_id}, 200
         # 判断名字否已经存在
         status, result = db.select("user", "where data -> '$.username'='%s'" % args["username"])
         if status is True:
@@ -90,20 +90,20 @@ class User(Resource):
                     args["password"] = user_info.get("password")
                 except Exception as e:
                     db.close_mysql()
-                    return {"status": False, "message": str(e)}, 500
+                    return {"status": False, "message": str(e)}, 200
             else:
                 db.close_mysql()
-                return {"status": False, "message": "%s does not exist" % user_id}, 404
+                return {"status": False, "message": "%s does not exist" % user_id}, 200
         else:
             db.close_mysql()
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         # 更新用户信息
         users = args
         status, result = db.update_by_id("user", json.dumps(users, ensure_ascii=False), user_id)
         db.close_mysql()
         if status is not True:
             logger.error("Modify user error: %s" % result)
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         audit_log(user, user_id, "", "user", "edit")
         return {"status": True, "message": ""}, 200
 
@@ -123,11 +123,11 @@ class UserList(Resource):
                         info.pop("password")
                         user_list.append(info)
                     except Exception as e:
-                        return {"status": False, "message": str(e)}, 500
+                        return {"status": False, "message": str(e)}, 200
             else:
-                return {"status": False, "message": "User does not exist"}, 404
+                return {"status": False, "message": "User does not exist"}, 200
         else:
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         for item in user_list:
             for attr in item.keys():
                 if attr not in ["id", "username"]:
@@ -141,11 +141,11 @@ class UserList(Resource):
                                     tmp.append({"id": info["id"], "name": info["name"]})
                                 except Exception as e:
                                     db.close_mysql()
-                                    return {"status": False, "message": str(e)}, 500
+                                    return {"status": False, "message": str(e)}, 200
                             item[attr] = tmp
                         else:
                             db.close_mysql()
-                            return {"status": False, "message": result}, 500
+                            return {"status": False, "message": result}, 200
         db.close_mysql()
         return {"users": {"user": user_list}, "status": True, "message": ""}, 200
 
@@ -171,7 +171,7 @@ class UserList(Resource):
                 db.close_mysql()
                 if insert_status is not True:
                     logger.error("Add user error: %s" % insert_result)
-                    return {"status": False, "message": insert_result}, 500
+                    return {"status": False, "message": insert_result}, 200
                 audit_log(user, args["id"], "", "user", "add")
                 return {"status": True, "message": ""}, 201
             else:
@@ -180,7 +180,7 @@ class UserList(Resource):
         else:
             db.close_mysql()
             logger.error("Select user error: %s" % result)
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
 
 
 # 获取普通用户的id

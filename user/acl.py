@@ -31,11 +31,11 @@ class ACL(Resource):
                 try:
                     acl = eval(result[0][0])
                 except Exception as e:
-                    return {"status": False, "message": str(e)}, 500
+                    return {"status": False, "message": str(e)}, 200
             else:
-                return {"status": False, "message": "%s does not exist" % acl_id}, 404
+                return {"status": False, "message": "%s does not exist" % acl_id}, 200
         else:
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         return {"acl": acl, "status": True, "message": ""}, 200
 
     @access_required(role_dict["acl"])
@@ -46,13 +46,13 @@ class ACL(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Delete acl error: %s" % result)
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         if result is 0:
-            return {"status": False, "message": "%s does not exist" % acl_id}, 404
+            return {"status": False, "message": "%s does not exist" % acl_id}, 200
         audit_log(user, acl_id, "", "acl", "delete")
         info = update_user_privilege("acl", acl_id)
         if info["status"] is False:
-            return {"status": False, "message": info["message"]}, 500
+            return {"status": False, "message": info["message"]}, 200
         return {"status": True, "message": ""}, 200
 
     @access_required(role_dict["acl"])
@@ -67,10 +67,10 @@ class ACL(Resource):
         if select_status is not True:
             db.close_mysql()
             logger.error("Modify acl error: %s" % select_result)
-            return {"status": False, "message": select_result}, 500
+            return {"status": False, "message": select_result}, 200
         if not select_result:
             db.close_mysql()
-            return {"status": False, "message": "%s does not exist" % acl_id}, 404
+            return {"status": False, "message": "%s does not exist" % acl_id}, 200
         # 判断名字否已经存在
         status, result = db.select("acl", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
@@ -83,7 +83,7 @@ class ACL(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Modify acl error: %s" % result)
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         audit_log(user, acl_id, "", "acl", "edit")
         return {"status": True, "message": ""}, 200
 
@@ -101,11 +101,11 @@ class ACLList(Resource):
                     try:
                         acl_list.append(eval(i[0]))
                     except Exception as e:
-                        return {"status": False, "message": str(e)}, 500
+                        return {"status": False, "message": str(e)}, 200
             else:
-                return {"status": False, "message": "Acl does not exist"}, 404
+                return {"status": False, "message": "Acl does not exist"}, 200
         else:
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         return {"acls": {"acl": acl_list}, "status": True, "message": ""}, 200
 
     @access_required(role_dict["acl"])
@@ -122,7 +122,7 @@ class ACLList(Resource):
                 db.close_mysql()
                 if insert_status is not True:
                     logger.error("Add acl error: %s" % insert_result)
-                    return {"status": False, "message": insert_result}, 500
+                    return {"status": False, "message": insert_result}, 200
                 audit_log(user, args["id"], "", "acl", "add")
                 return {"status": True, "message": ""}, 201
             else:
@@ -131,4 +131,4 @@ class ACLList(Resource):
         else:
             db.close_mysql()
             logger.error("Select acl name error: %s" % result)
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200

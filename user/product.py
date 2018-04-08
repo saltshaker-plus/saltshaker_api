@@ -45,11 +45,11 @@ class Product(Resource):
                 try:
                     product = eval(result[0][0])
                 except Exception as e:
-                    return {"status": False, "message": str(e)}, 500
+                    return {"status": False, "message": str(e)}, 200
             else:
-                return {"status": False, "message": "%s does not exist" % product_id}, 404
+                return {"status": False, "message": "%s does not exist" % product_id}, 200
         else:
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         return {"product": product, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
@@ -60,13 +60,13 @@ class Product(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Delete product error: %s" % result)
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         if result is 0:
-            return {"status": False, "message": "%s does not exist" % product_id}, 404
+            return {"status": False, "message": "%s does not exist" % product_id}, 200
         audit_log(user, product_id, product_id, "product", "delete")
         info = update_user_privilege("product", product_id)
         if info["status"] is False:
-            return {"status": False, "message": info["message"]}, 500
+            return {"status": False, "message": info["message"]}, 200
         # 更新Rsync配置
         rsync_config()
         return {"status": True, "message": ""}, 200
@@ -83,10 +83,10 @@ class Product(Resource):
         if select_status is not True:
             db.close_mysql()
             logger.error("Modify product error: %s" % select_result)
-            return {"status": False, "message": select_result}, 500
+            return {"status": False, "message": select_result}, 200
         if not select_result:
             db.close_mysql()
-            return {"status": False, "message": "%s does not exist" % product_id}, 404
+            return {"status": False, "message": "%s does not exist" % product_id}, 200
         # 判断名字是否重复
         status, result = db.select("product", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
@@ -99,7 +99,7 @@ class Product(Resource):
         db.close_mysql()
         if status is not True:
             logger.error("Modify product error: %s" % result)
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         audit_log(user, args["id"], product_id, "product", "edit")
         # 更新Rsync配置
         rsync_config()
@@ -119,11 +119,11 @@ class ProductList(Resource):
                     try:
                         product_list.append(eval(i[0]))
                     except Exception as e:
-                        return {"status": False, "message": str(e)}, 500
+                        return {"status": False, "message": str(e)}, 200
             else:
-                return {"status": False, "message": "Product does not exist"}, 404
+                return {"status": False, "message": "Product does not exist"}, 200
         else:
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
         return {"products": {"product": product_list}, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
@@ -140,7 +140,7 @@ class ProductList(Resource):
                 db.close_mysql()
                 if insert_status is not True:
                     logger.error("Add product error: %s" % insert_result)
-                    return {"status": False, "message": insert_result}, 500
+                    return {"status": False, "message": insert_result}, 200
                 audit_log(user, args["id"], "", "product", "add")
                 # 更新Rsync配置
                 if args["file_server"] == "rsync":
@@ -152,7 +152,7 @@ class ProductList(Resource):
         else:
             db.close_mysql()
             logger.error("Select product name error: %s" % result)
-            return {"status": False, "message": result}, 500
+            return {"status": False, "message": result}, 200
 
 
 

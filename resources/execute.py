@@ -28,7 +28,7 @@ class ExecuteShell(Resource):
         salt_api = salt_api_for_product(args["product_id"])
         user_info = g.user_info
         if isinstance(salt_api, dict):
-            return salt_api, 500
+            return salt_api, 200
         else:
             acl_list = user_info["acl"]
             if acl_list:
@@ -51,9 +51,9 @@ class ExecuteShell(Resource):
                                                 "message": "Deny Warning : You don't have permission run [ %s ]"
                                                            % command}, 200
                             except Exception as e:
-                                return {"status": False, "message": str(e)}, 500
+                                return {"status": False, "message": str(e)}, 200
                     else:
-                        return {"status": False, "message": "acl does not exist"}, 404
+                        return {"status": False, "message": "acl does not exist"}, 200
 
                 # acl deny 验证完成后执行命令
                 host = ",".join(minion_id)
@@ -112,11 +112,11 @@ class ExecuteGroups(Resource):
                         try:
                             groups_list.append(eval(i[0]))
                         except Exception as e:
-                            return {"status": False, "message": str(e)}, 500
+                            return {"status": False, "message": str(e)}, 200
                 else:
-                    return {"status": False, "message": "Group does not exist"}, 404
+                    return {"status": False, "message": "Group does not exist"}, 200
             else:
-                return {"status": False, "message": result}, 500
+                return {"status": False, "message": result}, 200
             return {"groups": {"groups": groups_list}, "status": True, "message": ""}, 200
         else:
             return {"groups": {"groups": groups_list}, "status": True, "message": ""}, 200
