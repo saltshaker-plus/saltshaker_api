@@ -16,7 +16,8 @@ logger = Logger()
 parser = reqparse.RequestParser()
 parser.add_argument("product_id", type=str, required=True, trim=True)
 parser.add_argument("minion_id", type=str, required=True, trim=True, action="append")
-parser.add_argument("command", type=str, required=True, trim=True)
+parser.add_argument("command", type=str, default="", trim=True)
+parser.add_argument("sls", type=str, default="", trim=True)
 
 
 class ExecuteShell(Resource):
@@ -24,6 +25,10 @@ class ExecuteShell(Resource):
     def post(self):
         args = parser.parse_args()
         command = args["command"]
+        if not command:
+            return {"status": False,
+                    "message": "Missing required parameter in the JSON body or "
+                    "the post body or the query string"}, 400
         minion_id = args["minion_id"]
         salt_api = salt_api_for_product(args["product_id"])
         user_info = g.user_info
@@ -70,6 +75,27 @@ class ExecuteShell(Resource):
                     }, 200
         else:
             return status, 500
+
+
+class ExecuteSLS(Resource):
+    @access_required(role_dict["common_user"])
+    def post(self):
+        args = parser.parse_args()
+        sls = args["sls"]
+        if not sls:
+            return {"status": False,
+                    "message": "Missing required parameter in the JSON body or "
+                    "the post body or the query string"}, 400
+        minion_id = args["minion_id"]
+        salt_api = salt_api_for_product(args["product_id"])
+        user_info = g.user_info
+        audit_log(user_info["username"], minion_id, args["product_id"], "minion", "sls")
+        if isinstance(salt_api, dict):
+            return salt_api, 500
+        host = ",".join(minion_id)
+        result = salt_api.target_deploy(host, sls)
+        result.update({"status": True, "message": ""})
+        return result, 200
 
 
 # 执行页面显示的组
