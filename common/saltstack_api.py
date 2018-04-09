@@ -187,12 +187,11 @@ class SaltAPI(object):
 
     def target_deploy(self, tgt, arg):
         # Based on the list forms deployment
-        params = {'client': 'local_async', 'tgt': tgt, 'fun': 'state.sls', 'arg': arg, 'expr_form': 'list'}
+        params = {'client': 'local', 'tgt': tgt, 'fun': 'state.sls', 'arg': arg, 'expr_form': 'list'}
         obj = urllib.parse.urlencode(params).encode('utf-8')
         content = self.post_request(obj)
         if isinstance(content, dict):
-            jid = content['return'][0]['jid']
-            return jid
+            return content
         else:
             return {"status": False, "message": "salt api error : " + content}
 
@@ -263,9 +262,3 @@ class SaltAPI(object):
         req = requests.get(url, stream=True, headers=headers)
         return req
 
-
-if __name__ == '__main__':
-    sapi = SaltAPI(url='http://127.0.0.1:8000', user='saltapi', passwd='saltapi')
-    a = "echo,echo,"
-    jids = sapi.shell_remote_execution(a, "uptime")
-    print(jids)
