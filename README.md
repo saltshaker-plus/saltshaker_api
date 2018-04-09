@@ -41,6 +41,7 @@
 
 #### **GitLab 使用说明**
 官方配置gitfs说明 请查看此[链接](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)
+需要 pygit2 或者 GitPython 包用于支持git, 如果都存在优先选择pygit2
 ````
 Saltstack SLS 文件采用 GitLab 进行存储及管理,使用前务必已经存在 GitLab (其他存储方式陆续支持)
 
