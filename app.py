@@ -20,6 +20,9 @@ import os
 import click
 import configparser
 from flask_cors import CORS
+from celery import Celery
+from tasks.tasks_conf import CELERY_BROKER_URL
+from tasks.sse_worker import see_worker
 
 
 config = configparser.ConfigParser()
@@ -32,8 +35,19 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True, resources={r"*": {"origins": "*"}})
 api = Api(app, catch_all_404s=True)
 
+
+app.config['CELERY_BROKER_URL'] = CELERY_BROKER_URL
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
+
+
+@celery.task
+def event_to_mysql():
+    see_worker()
+
 # login
 #api.add_resource(Login, "/login")
+
 
 # product
 api.add_resource(ProductList, "/saltshaker/api/v1.0/product")
@@ -78,7 +92,7 @@ api.add_resource(Event, "/saltshaker/api/v1.0/event/<string:job_id>")
 api.add_resource(ExecuteShell, "/saltshaker/api/v1.0/execute/shell")
 api.add_resource(ExecuteSLS, "/saltshaker/api/v1.0/execute/sls")
 api.add_resource(ExecuteGroups, "/saltshaker/api/v1.0/execute/groups")
-#api.add_resource(ExecuteModule, "/saltshaker/api/v1.0/execute/module")
+# api.add_resource(ExecuteModule, "/saltshaker/api/v1.0/execute/module")
 
 # gitlab
 api.add_resource(BranchList, "/saltshaker/api/v1.0/gitlab/branch")
@@ -130,6 +144,14 @@ def login():
         <p><input type=text name=password>
         <p><input type=submit value=Login>
     </form>
+    """
+
+
+@app.route('/sse', methods=['GET'])
+def sse():
+    event_to_mysql.delay()
+    return """
+    <h1>event to mysql</h1>
     """
 
 
