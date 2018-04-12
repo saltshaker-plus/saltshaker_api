@@ -200,8 +200,11 @@ class SaltAPI(object):
         url = self.__url + '/jobs/'
         headers = {'X-Auth-Token': self.__token_id}
         req = urllib.request.Request(url, headers=headers)
-        opener = urllib.request.urlopen(req)
-        content = json.loads(opener.read())
+        try:
+            opener = urllib.request.urlopen(req)
+            content = json.loads(opener.read())
+        except Exception as e:
+            return str(e)
         if isinstance(content, dict):
             jid = content['return'][0]
             return jid
@@ -213,8 +216,11 @@ class SaltAPI(object):
         url = self.__url + '/jobs/' + arg
         headers = {'X-Auth-Token': self.__token_id}
         req = urllib.request.Request(url, headers=headers)
-        opener = urllib.request.urlopen(req)
-        content = json.loads(opener.read())
+        try:
+            opener = urllib.request.urlopen(req)
+            content = json.loads(opener.read())
+        except Exception as e:
+            return str(e)
         if isinstance(content, dict):
             jid = content['return'][0]
             return jid
@@ -226,8 +232,11 @@ class SaltAPI(object):
         url = self.__url + '/stats'
         headers = {'X-Auth-Token': self.__token_id}
         req = urllib.request.Request(url, headers=headers)
-        opener = urllib.request.urlopen(req)
-        content = json.loads(opener.read())
+        try:
+            opener = urllib.request.urlopen(req)
+            content = json.loads(opener.read())
+        except Exception as e:
+            return str(e)
         if isinstance(content, dict):
             return content
         else:
