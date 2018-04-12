@@ -14,8 +14,23 @@ parser.add_argument("product_id", type=str, required=True, trim=True)
 
 class Event(Resource):
     @access_required(role_dict["common_user"])
-    def get(self):
-        return True, 200
+    def get(self, job_id):
+        db = DB()
+        args = parser.parse_args()
+        status, result = db.select("event", "where data -> '$.data.product_id'='%s' and data -> '$.data.jid'='%s'"
+                                   % (args["product_id"], job_id))
+        db.close_mysql()
+        if status is True:
+            if result:
+                try:
+                    event = eval(result[0][0])
+                except Exception as e:
+                    return {"status": False, "message": str(e)}, 500
+            else:
+                return {"status": False, "message": "%s does not exist" % job_id}, 404
+        else:
+            return {"status": False, "message": result}, 500
+        return {"event": event, "status": True, "message": ""}, 200
 
 
 class EventList(Resource):
@@ -23,7 +38,7 @@ class EventList(Resource):
     def get(self):
         db = DB()
         args = parser.parse_args()
-        status, result = db.select("event", "where data -> '$.product_id'='%s'" % args["product_id"])
+        status, result = db.select("event", "where data -> '$.data.product_id'='%s'" % args["product_id"])
         db.close_mysql()
         event_list = []
         if status is True:
@@ -37,4 +52,4 @@ class EventList(Resource):
                 return {"status": False, "message": "Even does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"events": {"event": event_list}}, 200
+        return {"events": {"event": event_list}, "status": True, "message": ""}, 200
