@@ -31,7 +31,8 @@ parser.add_argument("password", type=str, default="", trim=True)
 parser.add_argument("http_username", type=str, default="", trim=True)
 parser.add_argument("http_password", type=str, default="", trim=True)
 parser.add_argument("api_version", type=str, default="", trim=True)
-parser.add_argument("project", type=str, default="", trim=True)
+parser.add_argument("state_project", type=str, default="", trim=True)
+parser.add_argument("pillar_project", type=str, default="", trim=True)
 
 
 class Product(Resource):

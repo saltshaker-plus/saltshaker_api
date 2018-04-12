@@ -4,7 +4,7 @@ from common.db import DB
 
 
 # GitLab >= 9.0 api_version 请填 4 否则请填 3
-def gitlab_project(product_id):
+def gitlab_project(product_id, project_type):
     db = DB()
     status, result = db.select_by_id("product", product_id)
     db.close_mysql()
@@ -28,7 +28,7 @@ def gitlab_project(product_id):
                            api_version=None if product.get("api_version") is "" else product.get("api_version")
                            )
 
-        project = gl.projects.get(product.get("project"))
+        project = gl.projects.get(product.get(project_type))
         return project
     except Exception as e:
         return {"status": False, "message": str(e)}

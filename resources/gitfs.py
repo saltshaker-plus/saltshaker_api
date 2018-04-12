@@ -11,6 +11,7 @@ parser = reqparse.RequestParser()
 parser.add_argument("product_id", type=str, required=True, trim=True)
 parser.add_argument("branch", type=str, default="master", trim=True)
 parser.add_argument("path", type=str, default="", trim=True)
+parser.add_argument("project_type", type=str, required=True, trim=True)
 
 
 # 获取所有分支
@@ -18,7 +19,7 @@ class BranchList(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
-        project = gitlab_project(args["product_id"])
+        project = gitlab_project(args["product_id"], args["project_type"])
         if isinstance(project, dict):
             return project, 500
         else:
@@ -34,7 +35,7 @@ class FilesList(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
-        project = gitlab_project(args["product_id"])
+        project = gitlab_project(args["product_id"], args["project_type"])
         if isinstance(project, dict):
             return project, 500
         else:
@@ -53,7 +54,7 @@ class FileContent(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
-        project = gitlab_project(args["product_id"])
+        project = gitlab_project(args["product_id"], args["project_type"])
         if isinstance(project, dict):
             return project, 500
         else:
