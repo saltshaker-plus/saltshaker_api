@@ -20,5 +20,8 @@ class CherryStats(Resource):
             return salt_api, 500
         else:
             result = salt_api.stats()
-            result.update({"status": True, "message": ""})
-            return result, 200
+            if isinstance(result, dict):
+                result.update({"status": True, "message": ""})
+                return result, 200
+            else:
+                return {"status": False, "message": result}
