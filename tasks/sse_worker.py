@@ -17,9 +17,9 @@ def see_worker():
             event_response = salt_api.events()
             client = sseclient.SSEClient(event_response)
             for event in client.events():
-                print(event)
+                print(event.data)
                 # if job_pattern.search(event.data):
-                event_dict = eval(event.data.replace('true', '"true"').replace('false', '"false"'))
+                event_dict = eval(event.data.replace('true', '"true"').replace('false', '"false"').replace('null', '""'))
                 event_dict['data']['product_id'] = product["id"]
                 db = DB()
                 db.insert("event", json.dumps(event_dict, ensure_ascii=False))
