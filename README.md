@@ -46,6 +46,7 @@
 Saltstack state 及 pillar SLS 文件采用 GitLab 进行存储及管理,使用前务必已经存在 GitLab (其他存储方式陆续支持)
 
 配置master,添加如下
+loop_interval: 1      # 默认时间为60s, 使用后端文件服务,修改gitlab文件时将不能及时更新, 可根据需求缩短时间, 
 
 fileserver_backend:
   - roots
@@ -64,6 +65,32 @@ ext_pillar:           # 配置pillar使用gitfs, 需要配置top.sls
   - git:
     - http://test.com.cn:9000/root/salt_pillar.git
 
+````
+#### **后端文件服务器文件更新**
+````
+1. master 配置文件修改如下内容 (不建议)
+    loop_interval: 1      # 默认时间为60s, 使用后端文件服务,修改gitlab文件时将不能及时更新, 可根据需求缩短时间
+````
+````
+2. saltshaker_plus 页面通过hook提供刷新功能, 使用reactor监听event, 当event的tag中出现gitfs/update的时候更新fiilerserver
+    a. 在master上开启saltstack reactor
+       reactor:
+        - 'salt/netapi/hook/gitfs/*':
+        - /srv/reactor/gitfs.sls
+    b. 编写/srv/reactor/gitfs.sls
+        {% if 'gitfs/update' in tag %}
+        gitfs_update: 
+          runner.fileserver.update
+        {% endif %}
+ 
+````
+````
+3. 也可以使用gitlab自带的Webhook功能, 不在赘述
+   API接口: POST方法 /saltshaker/api/v1.0/hook/gitfs/update
+   验证方法： 
+       a. Bearer Token
+       b. Cookie Token
+   Token生成见wiki Token生成API
 ````
 #### **Roots 本地文件**
 ````
