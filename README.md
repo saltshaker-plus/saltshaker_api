@@ -43,19 +43,17 @@
 官方配置gitfs说明 请查看此[链接](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)
 需要 pygit2 或者 GitPython 包用于支持git, 如果都存在优先选择pygit2
 ````
-Saltstack state 及 pillar SLS 文件采用 GitLab 进行存储及管理,使用前务必已经存在 GitLab (其他存储方式陆续支持)
+Saltstack state及pillar SLS文件采用GitLab进行存储及管理,使用前务必已经存在GitLab(其他存储方式陆续支持)
 
-配置master,添加如下
-loop_interval: 1      # 默认时间为60s, 使用后端文件服务,修改gitlab文件时将不能及时更新, 可根据需求缩短时间, 
 
 fileserver_backend:
   - roots
-  - git               # git 和 roots 表示既支持本地又支持git 先后顺序决定了当sls文件冲突时,使用哪个sls文件(谁在前面用谁的)
+  - git               # git和roots表示既支持本地又支持git 先后顺序决定了当sls文件冲突时,使用哪个sls文件(谁在前面用谁的)
   
 gitfs_remotes:
-  - http://test.com.cn:9000/root/salt_sls.git # GitLab 项目地址 格式https://<user>:<password>@<url>
+  - http://test.com.cn:9000/root/salt_sls.git # GitLab项目地址 格式https://<user>:<password>@<url>
   
-gitfs_base: master    # git 分支默认master
+gitfs_base: master    # git分支默认master
 
 pillar_roots:         
   base:
