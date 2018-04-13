@@ -271,12 +271,20 @@ class SaltAPI(object):
         req = requests.get(url, stream=True, headers=headers)
         return req
 
+    def hook(self, tag=""):
+        # Fire an event in Salt with a custom event tag and data
+        url = self.__url + '/hook/' + tag
+        headers = {'X-Auth-Token': self.__token_id}
+        # data = json.dumps({"gitfs": "update"})
+        # data = bytes(data, 'utf8')
+        req = urllib.request.Request(url, headers=headers, method="POST")
+        try:
+            opener = urllib.request.urlopen(req)
+            content = json.loads(opener.read())
+        except Exception as e:
+            return str(e)
+        if isinstance(content, dict):
+            return content
+        else:
+            return {"status": False, "message": "salt api error : " + content}
 
-if __name__ == '__main__':
-    sapi = SaltAPI(url='http://10.55.30.22:8000', user='saltapi', passwd='saltapi')
-    a = "10.55.30.22,10.55.30.23"
-    #jids = sapi.shell_remote_execution(a, "uptime")
-    jids = sapi.target_deploy(a, "git_test")
-    #jids = sapi.accept_key("echo1")
-    # jids = sapi.list_all_key()
-    print(jids)
