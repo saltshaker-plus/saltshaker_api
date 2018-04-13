@@ -271,3 +271,12 @@ class SaltAPI(object):
         req = requests.get(url, stream=True, headers=headers)
         return req
 
+
+if __name__ == '__main__':
+    sapi = SaltAPI(url='http://10.55.30.22:8000', user='saltapi', passwd='saltapi')
+    a = "10.55.30.22,10.55.30.23"
+    #jids = sapi.shell_remote_execution(a, "uptime")
+    jids = sapi.target_deploy(a, "git_test")
+    #jids = sapi.accept_key("echo1")
+    # jids = sapi.list_all_key()
+    print(jids)
