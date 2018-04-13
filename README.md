@@ -73,12 +73,14 @@ ext_pillar:           # 配置pillar使用gitfs, 需要配置top.sls
 2. saltshaker_plus 页面通过hook提供刷新功能, 使用reactor监听event, 当event的tag中出现gitfs/update的时候更新fiilerserver
     a. 在master上开启saltstack reactor
        reactor:
-        - 'salt/netapi/hook/gitfs/*':
-        - /srv/reactor/gitfs.sls
+         - 'salt/netapi/hook/gitfs/*':
+           - /srv/reactor/gitfs.sls
     b. 编写/srv/reactor/gitfs.sls
         {% if 'gitfs/update' in tag %}
         gitfs_update: 
           runner.fileserver.update
+        pillar_update:
+          runner.git_pillar.update
         {% endif %}
  
 ````
