@@ -59,6 +59,21 @@ def access_required(tag):
                         return func(*args, **kwargs)
                     else:
                         return {"status": False, "message": "Unauthorized access"}, 401
+            # 通过 X-Gitlab-Token 进行认证
+            elif 'X-Gitlab-Token' in request.headers:
+                gitlab_token = request.headers['X-Gitlab-Token']
+                try:
+                    user_info = eval(RedisTool.get(gitlab_token))
+                    # 验证是否有权限访问
+                    if not verify_role(user_info, tag):
+                        return {"status": False, "message": "access forbidden"}, 403
+                    g.user_info = user_info
+                except Exception as e:
+                    logger.error("Verify token error: %s" % e)
+                    return {"status": False, "message": "Unauthorized access"}, 401
+                if RedisTool.get(gitlab_token):
+                    RedisTool.expire(gitlab_token, expires_in)
+                    return func(*args, **kwargs)
             else:
                 return {"status": False, "message": "Unauthorized access"}, 401
         return verify_token
