@@ -85,9 +85,7 @@ ext_pillar:           # 配置pillar使用gitfs, 需要配置top.sls
 ````
 3. 也可以使用gitlab自带的Webhook功能, 不在赘述
    API接口: POST方法 /saltshaker/api/v1.0/hook/gitfs/update
-   验证方法： 
-       a. Bearer Token
-       b. Cookie Token
+   验证方法： X-Gitlab-Token
    Token生成见wiki Token生成API
 ````
 #### **Roots 本地文件**
