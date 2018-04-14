@@ -15,6 +15,7 @@ logger = Logger()
 parser = reqparse.RequestParser()
 parser.add_argument("name", type=str, required=True, trim=True)
 parser.add_argument("description", type=str, required=True, trim=True)
+parser.add_argument("tag", type=int, required=True, trim=True)
 
 
 class Role(Resource):
