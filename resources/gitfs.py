@@ -19,7 +19,7 @@ class BranchList(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
-        project = gitlab_project(args["product_id"], args["project_type"])
+        project, _ = gitlab_project(args["product_id"], args["project_type"])
         if isinstance(project, dict):
             return project, 500
         else:
@@ -35,18 +35,29 @@ class FilesList(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
-        project = gitlab_project(args["product_id"], args["project_type"])
+        project, product_name = gitlab_project(args["product_id"], args["project_type"])
         if isinstance(project, dict):
             return project, 500
         else:
             file_list = []
             try:
                 items = project.repository_tree(path=args["path"], ref_name=args["branch"])
+                print(items)
             except Exception as e:
                 return {"status": False, "message": str(e)}, 404
             for i in items:
-                file_list.append({"name": i["name"], "type": i["type"]})
-            return {"files": {"file": file_list}, "status": True, "message": ""}, 200
+                if i["type"] == "tree":
+                    file_list.append({"title": i["name"], "type": i["type"], "expand": False, "children": [{'title':"test"}]})
+                else:
+                    file_list.append({"title": i["name"], "type": i["type"], "expand": True, "path": "/" + i["name"]})
+            return {"files": {
+                "file": [
+                    {
+                     "title": product_name,
+                     "expand": True,
+                     "children": file_list
+                     }
+                ]}, "status": True, "message": ""}, 200
 
 
 # 获取文件内容
@@ -54,7 +65,7 @@ class FileContent(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
-        project = gitlab_project(args["product_id"], args["project_type"])
+        project, _ = gitlab_project(args["product_id"], args["project_type"])
         if isinstance(project, dict):
             return project, 500
         else:
