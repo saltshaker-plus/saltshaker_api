@@ -16,7 +16,8 @@ class LogList(Resource):
     def get(self):
         args = parser.parse_args()
         db = DB()
-        status, result = db.select("audit_log", "where data -> '$.product_id'='%s'" % args["product_id"])
+        status, result = db.select("audit_log", "where data -> '$.product_id'='%s' order by data -> '$.time' desc"
+                                   % args["product_id"])
         db.close_mysql()
         log_list = []
         if status is True:
