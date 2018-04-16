@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from flask import Flask, request, make_response
-from flask_restful import Api
+import flask_restful
 from resources.minions import MinionsKeys, MinionsStatus, MinionsGrains
 from resources.job import Job, JobList, JobManager
 from resources.event import Event, EventList
@@ -24,6 +24,7 @@ from flask_cors import CORS
 from celery import Celery
 from tasks.tasks_conf import CELERY_BROKER_URL
 from tasks.sse_worker import see_worker
+from common.utility import custom_abort
 
 
 config = configparser.ConfigParser()
@@ -33,13 +34,17 @@ expires_in = int(config.get("Token", "EXPIRES_IN"))
 
 
 app = Flask(__name__)
+# 跨域访问
 CORS(app, supports_credentials=True, resources={r"*": {"origins": "*"}})
-api = Api(app, catch_all_404s=True)
+api = flask_restful.Api(app, catch_all_404s=True)
 
-
+# celery config
 app.config['CELERY_BROKER_URL'] = CELERY_BROKER_URL
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
+
+# 重新定义flask restful 400错误
+flask_restful.abort = custom_abort
 
 
 @celery.task

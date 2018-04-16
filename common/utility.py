@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from flask import abort, jsonify
 from common.db import DB
 from common.saltstack_api import SaltAPI
 import uuid
@@ -29,4 +30,14 @@ def salt_api_for_product(product_id):
     return salt_api
 
 
+# 重新定义flask restful 400错误
+def custom_abort(http_status_code, *args, **kwargs):
+    if http_status_code == 400:
+        if kwargs:
+            for key in kwargs["message"]:
+                parameter = key
+        else:
+            parameter = "unknown"
+        abort(jsonify({"status": False, "message": "The %s parameter does not exist" % parameter}))
+    return abort(http_status_code)
 
