@@ -27,8 +27,7 @@ class ExecuteShell(Resource):
         command = args["command"]
         if not command:
             return {"status": False,
-                    "message": "Missing required parameter in the JSON body or "
-                    "the post body or the query string"}, 400
+                    "message": "The specified command parameter does not exist"}, 400
         minion_id = args["minion_id"]
         salt_api = salt_api_for_product(args["product_id"])
         user_info = g.user_info
@@ -84,8 +83,7 @@ class ExecuteSLS(Resource):
         sls = args["sls"]
         if not sls:
             return {"status": False,
-                    "message": "Missing required parameter in the JSON body or "
-                    "the post body or the query string"}, 400
+                    "message": "The specified sls parameter does not exist"}, 400
         minion_id = args["minion_id"]
         salt_api = salt_api_for_product(args["product_id"])
         user_info = g.user_info

@@ -38,6 +38,6 @@ def custom_abort(http_status_code, *args, **kwargs):
                 parameter = key
         else:
             parameter = "unknown"
-        abort(jsonify({"status": False, "message": "The %s parameter does not exist" % parameter}))
+        abort(jsonify({"status": False, "message": "The specified %s parameter does not exist" % parameter}))
     return abort(http_status_code)
 

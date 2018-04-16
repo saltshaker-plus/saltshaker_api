@@ -78,4 +78,4 @@ class JobManager(Resource):
                 except Exception as e:
                     return {"status": False, "message": str(e)}, 500
             else:
-                return {"status": False, "message": "The specified job id does not exist or arguments error"}, 400
+                return {"status": False, "message": "The specified jid parameter does not exist"}, 400
