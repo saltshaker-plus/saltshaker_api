@@ -104,8 +104,6 @@ class ACLList(Resource):
                         acl_list.append(eval(i[0]))
                     except Exception as e:
                         return {"status": False, "message": str(e)}, 500
-            else:
-                return {"status": False, "message": "Acl does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
         return {"data": acl_list, "status": True, "message": ""}, 200

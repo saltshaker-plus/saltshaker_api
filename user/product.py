@@ -121,8 +121,6 @@ class ProductList(Resource):
                         product_list.append(eval(i[0]))
                     except Exception as e:
                         return {"status": False, "message": str(e)}, 500
-            else:
-                return {"status": False, "message": "Product does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
         return {"data": product_list, "status": True, "message": ""}, 200

@@ -102,8 +102,6 @@ class GroupsList(Resource):
                         groups_list.append(eval(i[0]))
                     except Exception as e:
                         return {"status": False, "message": str(e)}, 500
-            else:
-                return {"groups": {"group": groups_list}, "status": True, "message": ""}, 200
         else:
             return {"status": False, "message": result}, 500
         return {"data": groups_list, "status": True, "message": ""}, 200

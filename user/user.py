@@ -40,7 +40,7 @@ class User(Resource):
                 return {"status": False, "message": "%s does not exist" % user_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"user": user, "status": True, "message": ""}, 200
+        return {"data": user, "status": True, "message": ""}, 200
 
     # 删除指定用户
     @access_required(role_dict["user"])
@@ -124,8 +124,6 @@ class UserList(Resource):
                         user_list.append(info)
                     except Exception as e:
                         return {"status": False, "message": str(e)}, 500
-            else:
-                return {"status": False, "message": "User does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
         for item in user_list:
@@ -147,7 +145,7 @@ class UserList(Resource):
                             db.close_mysql()
                             return {"status": False, "message": result}, 500
         db.close_mysql()
-        return {"users": {"user": user_list}, "status": True, "message": ""}, 200
+        return {"data": user_list, "status": True, "message": ""}, 200
 
     # 添加用户
     @access_required(role_dict["user"])

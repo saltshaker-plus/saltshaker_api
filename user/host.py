@@ -99,8 +99,6 @@ class HostList(Resource):
                         host_list.append(eval(i[0]))
                     except Exception as e:
                         return {"status": False, "message": str(e)}, 500
-            else:
-                return {"status": False, "message": "Host does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
         return {"data": host_list, "status": True, "message": ""}, 200
@@ -112,7 +110,6 @@ class HostList(Resource):
         user = g.user_info["username"]
         host = args
         db = DB()
-        print(args)
         status, result = db.select("host", "where data -> '$.minion_id'='%s'" % args["minion_id"])
         if status is True:
             if len(result) == 0:
