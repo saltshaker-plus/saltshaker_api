@@ -35,7 +35,7 @@ class Groups(Resource):
                 return {"status": False, "message": "%s does not exist" % groups_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"group": groups, "status": True, "message": ""}, 200
+        return {"data": groups, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
     def delete(self, groups_id):
@@ -106,7 +106,7 @@ class GroupsList(Resource):
                 return {"groups": {"group": groups_list}, "status": True, "message": ""}, 200
         else:
             return {"status": False, "message": result}, 500
-        return {"groups": {"group": groups_list}, "status": True, "message": ""}, 200
+        return {"data": groups_list, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
     def post(self):

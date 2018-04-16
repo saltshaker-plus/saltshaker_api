@@ -36,7 +36,7 @@ class Host(Resource):
                 return {"status": False, "message": "%s does not exist" % host_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"host": host, "status": True, "message": ""}, 200
+        return {"data": host, "status": True, "message": ""}, 200
 
     @access_required(role_dict["common_user"])
     def delete(self, host_id):
@@ -103,7 +103,7 @@ class HostList(Resource):
                 return {"status": False, "message": "Host does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"hosts": {"host": host_list}, "status": True, "message": ""}, 200
+        return {"data": host_list, "status": True, "message": ""}, 200
 
     @access_required(role_dict["common_user"])
     def post(self):
