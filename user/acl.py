@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from flask_restful import Resource, reqparse
+from flask_restful import Resource, reqparse, request
 from flask import g
 from common.log import Logger
 from common.audit_log import audit_log
@@ -14,6 +14,7 @@ from common.const import role_dict
 logger = Logger()
 
 parser = reqparse.RequestParser()
+parser.add_argument("product_id", type=str, required=True, trim=True)
 parser.add_argument("name", type=str, required=True, trim=True)
 parser.add_argument("allow", type=str, default=[], action="append")
 parser.add_argument("deny", type=str, default=[], action="append")
@@ -21,7 +22,7 @@ parser.add_argument("description", type=str, default="", trim=True)
 
 
 class ACL(Resource):
-    @access_required(role_dict["acl"])
+    @access_required(role_dict["product"])
     def get(self, acl_id):
         db = DB()
         status, result = db.select_by_id("acl", acl_id)
@@ -38,7 +39,7 @@ class ACL(Resource):
             return {"status": False, "message": result}, 500
         return {"acl": acl, "status": True, "message": ""}, 200
 
-    @access_required(role_dict["acl"])
+    @access_required(role_dict["product"])
     def delete(self, acl_id):
         user = g.user_info["username"]
         db = DB()
@@ -55,7 +56,7 @@ class ACL(Resource):
             return {"status": False, "message": info["message"]}, 500
         return {"status": True, "message": ""}, 200
 
-    @access_required(role_dict["acl"])
+    @access_required(role_dict["product"])
     def put(self, acl_id):
         user = g.user_info["username"]
         args = parser.parse_args()
@@ -89,10 +90,11 @@ class ACL(Resource):
 
 
 class ACLList(Resource):
-    @access_required(role_dict["acl"])
+    @access_required(role_dict["product"])
     def get(self):
+        product_id = request.args.get("product_id")
         db = DB()
-        status, result = db.select("acl", "")
+        status, result = db.select("acl", "where data -> '$.product_id'='%s'" % product_id)
         db.close_mysql()
         acl_list = []
         if status is True:
@@ -108,7 +110,7 @@ class ACLList(Resource):
             return {"status": False, "message": result}, 500
         return {"acls": {"acl": acl_list}, "status": True, "message": ""}, 200
 
-    @access_required(role_dict["acl"])
+    @access_required(role_dict["product"])
     def post(self):
         args = parser.parse_args()
         args["id"] = uuid_prefix("a")
