@@ -51,7 +51,7 @@ class Product(Resource):
                 return {"status": False, "message": "%s does not exist" % product_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"product": product, "status": True, "message": ""}, 200
+        return {"data": product, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
     def delete(self, product_id):
@@ -125,7 +125,7 @@ class ProductList(Resource):
                 return {"status": False, "message": "Product does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"products": {"product": product_list}, "status": True, "message": ""}, 200
+        return {"data": product_list, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
     def post(self):
