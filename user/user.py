@@ -224,3 +224,29 @@ def update_user_privilege(table, privilege):
         db.close_mysql()
         logger.error("Update user privilege error: %s" % result)
         return {"status": False, "message": result}
+
+
+# 默认创建完产品线后该产品线属于创建者
+def update_user_product(user_id, product_id):
+    db = DB()
+    status, result = db.select_by_id("user", user_id)
+    if status is True:
+        if result:
+            for i in result:
+                try:
+                    info = eval(i[0])
+                    info["product"].append(product_id)
+                    db.update_by_id("user", json.dumps(info, ensure_ascii=False), user_id)
+                except Exception as e:
+                    db.close_mysql()
+                    logger.error("Update user product error: %s" % str(e))
+                    return {"status": False, "message": str(e)}
+            db.close_mysql()
+            return {"status": True, "message": ""}
+        else:
+            db.close_mysql()
+            return {"status": False, "message": "User does not exist"}
+    else:
+        db.close_mysql()
+        logger.error("Update user product error: %s" % result)
+        return {"status": False, "message": result}

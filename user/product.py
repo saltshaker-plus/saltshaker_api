@@ -7,7 +7,7 @@ from common.db import DB
 from common.utility import uuid_prefix
 from common.sso import access_required
 import json
-from user.user import update_user_privilege
+from user.user import update_user_privilege, update_user_product
 from common.const import role_dict
 from fileserver.rsync_fs import rsync_config
 
@@ -130,6 +130,7 @@ class ProductList(Resource):
         args = parser.parse_args()
         args["id"] = uuid_prefix("p")
         user = g.user_info["username"]
+        user_id = g.user_info["id"]
         product = args
         db = DB()
         status, result = db.select("product", "where data -> '$.name'='%s'" % args["name"])
@@ -144,6 +145,10 @@ class ProductList(Resource):
                 # 更新Rsync配置
                 if args["file_server"] == "rsync":
                     rsync_config()
+                # 给用户添加产品线
+                info = update_user_product(user_id, args["id"])
+                if info["status"] is False:
+                    return {"status": False, "message": info["message"]}, 500
                 return {"status": True, "message": ""}, 201
             else:
                 db.close_mysql()
