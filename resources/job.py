@@ -32,12 +32,30 @@ class JobList(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
-        salt_api = salt_api_for_product(args["product_id"])
-        if isinstance(salt_api, dict):
-            return salt_api, 500
+        job_list = []
+        # salt_api = salt_api_for_product(args["product_id"])
+        # if isinstance(salt_api, dict):
+        #     return salt_api, 500
+        # else:
+        #     result = salt_api.jobs_list()
+        #     if isinstance(result, dict):
+        #         for jid, info in result.items():
+        #             # 不能直接把info放到append中
+        #             info.update({"Jid": jid})
+        #             job_list.append(info)
+        db = DB()
+        status, result = db.select("event", "where data -> '$.data.product_id'='%s'" % args["product_id"])
+        db.close_mysql()
+        if status is True:
+            if result:
+                for i in result:
+                    try:
+                        job_list.append(eval(i[0])['data'])
+                    except Exception as e:
+                        return {"status": False, "message": str(e)}, 500
         else:
-            result = salt_api.jobs_list()
-            return result, 200
+            return {"status": False, "message": result}, 500
+        return {"data": job_list, "status": True, "message": ""}, 200
 
 
 class JobManager(Resource):
