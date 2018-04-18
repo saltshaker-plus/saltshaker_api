@@ -44,7 +44,9 @@ class JobList(Resource):
         #             info.update({"Jid": jid})
         #             job_list.append(info)
         db = DB()
-        status, result = db.select("event", "where data -> '$.data.product_id'='%s'" % args["product_id"])
+        status, result = db.select("event", "where data -> '$.data.product_id'='%s' "
+                                            "and data -> '$.data.jid'!='""' "
+                                            "order by data -> '$.data._stamp' desc" % args["product_id"])
         db.close_mysql()
         if status is True:
             if result:
