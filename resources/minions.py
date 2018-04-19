@@ -36,12 +36,23 @@ class MinionsKeys(Resource):
     def get(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
+        minion_key = []
         if isinstance(salt_api, dict):
             return salt_api, 500
         else:
             result = salt_api.list_all_key()
-            result.update({"status": True, "message": ""})
-            return result, 200
+            if result:
+                if result.get("status") is False:
+                    return result, 500
+                for minions_rejected in result.get("minions_rejected"):
+                    minion_key.append({"minions_status": "Rejected", "minions_id": minions_rejected})
+                for minions_denied in result.get("minions_denied"):
+                    minion_key.append({"minions_status": "Denied", "minions_id": minions_denied})
+                for minions in result.get("minions"):
+                    minion_key.append({"minions_status": "Accepted", "minions_id": minions})
+                for minions_pre in result.get("minions_pre"):
+                    minion_key.append({"minions_status": "Pre", "minions_id": minions_pre})
+            return {"data": minion_key, "status": True, "message": ""}, 200
 
     @access_required(role_dict["common_user"])
     def post(self):
