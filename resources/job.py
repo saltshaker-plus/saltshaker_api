@@ -14,7 +14,7 @@ parser = reqparse.RequestParser()
 parser.add_argument("product_id", type=str, required=True, trim=True)
 parser.add_argument("action", type=str, trim=True)
 parser.add_argument("jid", type=str, trim=True)
-parser.add_argument("minion_id", type=str, trim=True, action="append")
+parser.add_argument("minion", type=dict, trim=True, action="append")
 
 
 class Job(Resource):
@@ -98,15 +98,22 @@ class JobManager(Resource):
         if isinstance(salt_api, dict):
             return salt_api, 500
         else:
-            if args["action"] == "kill" and args["jid"] and args["minion_id"]:
-                for minion in args["minion_id"]:
-                    kill = "salt %s saltutil.kill_job %s" % (minion, args["jid"])
-                    try:
-                        result = salt_api.shell_remote_execution(product.get("salt_master_id"), kill)
-                        audit_log(user, args["jid"], args["product_id"], "job id", "kill")
-                        logger.info("kill %s %s return: %s" % (minion, args["jid"], result))
-                    except Exception as e:
-                        logger.info("kill %s %s error: %s" % (minion, args["jid"], e))
+            if args["action"] == "kill" and args["jid"] and args["minion"]:
+                for minion in args["minion"]:
+                    for minion_id, ppid in minion.items():
+                        # 获取pgid 并杀掉
+                        kill_ppid_pid = r'''ps -eo pid,pgid,ppid,comm |grep %s |grep salt-minion |
+                                            awk '{print "kill -- -"$2}'|sh''' % ppid
+                        try:
+                            # kill_job = "salt %s saltutil.kill_job %s" % (minion_id, args["jid"])
+                            # result = salt_api.shell_remote_execution(product.get("salt_master_id"), kill_job)
+                            # audit_log(user, args["jid"], args["product_id"], "job id", "kill")
+                            # logger.info("kill %s %s return: %s" % (minion, args["jid"], result))
+                            # 通过kill -- -pgid 删除salt 相关的父进程及子进程
+                            pid_result = salt_api.shell_remote_execution(minion_id, kill_ppid_pid)
+                            logger.info("kill %s %s return: %s" % (minion, kill_ppid_pid, pid_result))
+                        except Exception as e:
+                            logger.info("kill %s %s error: %s" % (minion, args["jid"], e))
                 return {"status": True, "message": ""}, 200
             else:
                 return {"status": False, "message": "The specified jid or action or minion_id "
