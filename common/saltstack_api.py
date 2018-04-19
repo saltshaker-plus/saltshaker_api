@@ -47,7 +47,7 @@ class SaltAPI(object):
             minions = content['return'][0]['data']['return']
             return minions
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def delete_key(self, node_name):
         params = {'client': 'wheel', 'fun': 'key.delete', 'match': node_name}
@@ -67,7 +67,7 @@ class SaltAPI(object):
             ret = content['return'][0]['data']['success']
             return ret
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def reject_key(self, node_name):
         params = {'client': 'wheel', 'fun': 'key.reject', 'match': node_name}
@@ -77,7 +77,7 @@ class SaltAPI(object):
             ret = content['return'][0]['data']['success']
             return ret
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def remote_noarg_execution(self, tgt, fun):
         # Execute commands without parameters
@@ -88,7 +88,7 @@ class SaltAPI(object):
             ret = content['return'][0][tgt]
             return ret
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def remote_noarg_execution_notgt(self, tgt, fun):
         # Execute commands without parameters
@@ -99,7 +99,7 @@ class SaltAPI(object):
             ret = content['return'][0]
             return ret
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def remote_execution(self, tgt, fun, arg):
         # Command execution with parameters
@@ -110,7 +110,7 @@ class SaltAPI(object):
             ret = content['return'][0][tgt]
             return ret
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def remote_execution_notgt(self, tgt, fun, arg):
         # Command execution with parameters
@@ -121,7 +121,7 @@ class SaltAPI(object):
             ret = content['return'][0]
             return ret
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def shell_remote_execution(self, tgt, arg):
         # Shell command execution with parameters
@@ -132,7 +132,7 @@ class SaltAPI(object):
             ret = content['return'][0]
             return ret
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def grain(self, tgt, arg):
         # Grains.item
@@ -143,7 +143,7 @@ class SaltAPI(object):
             ret = content['return'][0]
             return ret
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def grains(self, tgt):
         # Grains.items
@@ -154,7 +154,7 @@ class SaltAPI(object):
             ret = content['return'][0]
             return ret
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def target_remote_execution(self, tgt, fun, arg):
         # Use targeting for remote execution
@@ -165,7 +165,7 @@ class SaltAPI(object):
             jid = content['return'][0]['jid']
             return jid
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def deploy(self, tgt, arg):
         # Module deployment
@@ -193,7 +193,7 @@ class SaltAPI(object):
         if isinstance(content, dict):
             return content
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def jobs_list(self):
         # Get Cache Jobs Default 24h '''
@@ -209,7 +209,7 @@ class SaltAPI(object):
             jid = content['return'][0]
             return jid
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def jobs_info(self, arg):
         # Get Job detail info '''
@@ -225,7 +225,7 @@ class SaltAPI(object):
             jid = content['return'][0]
             return jid
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def stats(self):
         # Expose statistics on the running CherryPy server
@@ -240,7 +240,7 @@ class SaltAPI(object):
         if isinstance(content, dict):
             return content
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def runner_status(self, arg):
         # Return minion status
@@ -251,7 +251,7 @@ class SaltAPI(object):
             jid = content['return'][0]
             return jid
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def runner(self, arg):
         # Return minion status
@@ -262,7 +262,7 @@ class SaltAPI(object):
             jid = content['return'][0]
             return jid
         else:
-            return {"status": False, "message": "salt api error : " + content}
+            return {"status": False, "message": "Salt API Error : " + content}
 
     def events(self):
         # SSE get job info '''
@@ -286,5 +286,4 @@ class SaltAPI(object):
         if isinstance(content, dict):
             return content
         else:
-            return {"status": False, "message": "salt api error : " + content}
-
+            return {"status": False, "message": "Salt API Error : " + content}
