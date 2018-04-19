@@ -82,7 +82,7 @@ api.add_resource(Host, "/saltshaker/api/v1.0/host/<string:host_id>")
 
 # minions
 api.add_resource(MinionsStatus, "/saltshaker/api/v1.0/minions/status")
-api.add_resource(MinionsKeys, "/saltshaker/api/v1.0/minions/keys")
+api.add_resource(MinionsKeys, "/saltshaker/api/v1.0/minions/key")
 api.add_resource(MinionsGrains, "/saltshaker/api/v1.0/minions/grains")
 
 # job
