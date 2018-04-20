@@ -23,12 +23,19 @@ class MinionsStatus(Resource):
     def get(self):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
+        minion_status = []
         if isinstance(salt_api, dict):
             return salt_api, 500
         else:
             result = salt_api.runner_status("status")
-            result.update({"status": True, "message": ""})
-            return result, 200
+            if result:
+                if result.get("status") is False:
+                    return result, 500
+                for minion in result.get("up"):
+                    minion_status.append({"status": "up", "minions_id": minion})
+                for minion in result.get("down"):
+                    minion_status.append({"status": "down", "minions_id": minion})
+            return {"data": minion_status, "status": True, "message": ""}, 200
 
 
 class MinionsKeys(Resource):
