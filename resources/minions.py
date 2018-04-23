@@ -58,7 +58,7 @@ class MinionsKeys(Resource):
                 for minions in result.get("minions"):
                     minion_key.append({"minions_status": "Accepted", "minions_id": minions})
                 for minions_pre in result.get("minions_pre"):
-                    minion_key.append({"minions_status": "Pre", "minions_id": minions_pre})
+                    minion_key.append({"minions_status": "Unaccepted", "minions_id": minions_pre})
             return {"data": minion_key, "status": True, "message": ""}, 200
 
     @access_required(role_dict["common_user"])

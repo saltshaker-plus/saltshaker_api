@@ -136,6 +136,10 @@ class ProductList(Resource):
         status, result = db.select("product", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
             if len(result) == 0:
+                # 给用户添加产品线
+                info = update_user_product(user_id, args["id"])
+                if info["status"] is False:
+                    return {"status": False, "message": info["message"]}, 500
                 insert_status, insert_result = db.insert("product", json.dumps(product, ensure_ascii=False))
                 db.close_mysql()
                 if insert_status is not True:
@@ -145,10 +149,6 @@ class ProductList(Resource):
                 # 更新Rsync配置
                 if args["file_server"] == "rsync":
                     rsync_config()
-                # 给用户添加产品线
-                info = update_user_product(user_id, args["id"])
-                if info["status"] is False:
-                    return {"status": False, "message": info["message"]}, 500
                 return {"status": True, "message": ""}, 201
             else:
                 db.close_mysql()

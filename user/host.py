@@ -13,7 +13,7 @@ from common.const import role_dict
 logger = Logger()
 
 parser = reqparse.RequestParser()
-parser.add_argument("group_id", type=str, default=[], action="append")
+parser.add_argument("groups", type=str, default=[], action="append")
 parser.add_argument("product_id", type=str, required=True, trim=True)
 parser.add_argument("minion_id", type=str, required=True, trim=True)
 # 不必填写的字段一定要指定默认值为""，否则无法转换成字典
@@ -25,7 +25,6 @@ class Host(Resource):
     def get(self, host_id):
         db = DB()
         status, result = db.select_by_id("host", host_id)
-        db.close_mysql()
         if status is True:
             if result:
                 try:
@@ -36,6 +35,21 @@ class Host(Resource):
                 return {"status": False, "message": "%s does not exist" % host_id}, 404
         else:
             return {"status": False, "message": result}, 500
+        status, result = db.select_by_list("groups", "id", host["groups"])
+        tmp = []
+        if status is True:
+            for i in result:
+                try:
+                    info = eval(i[0])
+                    tmp.append({"id": info["id"], "name": info["name"]})
+                except Exception as e:
+                    db.close_mysql()
+                    return {"status": False, "message": str(e)}, 500
+            host["groups"] = tmp
+        else:
+            db.close_mysql()
+            return {"status": False, "message": result}, 500
+        db.close_mysql()
         return {"data": host, "status": True, "message": ""}, 200
 
     @access_required(role_dict["common_user"])
@@ -69,7 +83,7 @@ class Host(Resource):
             for i in select_result:
                 try:
                     host = eval(i[0])
-                    host["group_id"] = args["group_id"]
+                    host["groups"] = args["groups"]
                     host["tag"] = args["tag"]
                 except Exception as e:
                     db.close_mysql()
@@ -90,7 +104,6 @@ class HostList(Resource):
         product_id = request.args.get("product_id")
         db = DB()
         status, result = db.select("host", "where data -> '$.product_id'='%s'" % product_id)
-        db.close_mysql()
         host_list = []
         if status is True:
             if result:
@@ -101,6 +114,23 @@ class HostList(Resource):
                         return {"status": False, "message": str(e)}, 500
         else:
             return {"status": False, "message": result}, 500
+        for host in host_list:
+            if host["groups"]:
+                status, result = db.select_by_list("groups", "id", host["groups"])
+                tmp = []
+                if status is True:
+                    for i in result:
+                        try:
+                            info = eval(i[0])
+                            tmp.append({"id": info["id"], "name": info["name"]})
+                        except Exception as e:
+                            db.close_mysql()
+                            return {"status": False, "message": str(e)}, 500
+                    host["groups"] = tmp
+                else:
+                    db.close_mysql()
+                    return {"status": False, "message": result}, 500
+        db.close_mysql()
         return {"data": host_list, "status": True, "message": ""}, 200
 
     @access_required(role_dict["common_user"])
@@ -158,7 +188,7 @@ class Hosts(object):
                     "id": id,
                     "minion_id": minion_id,
                     "product_id": product_id,
-                    "group_id": [],
+                    "groups": [],
                     "tag": ""
                 }
                 insert_status, insert_result = db.insert("host", json.dumps(host, ensure_ascii=False))
