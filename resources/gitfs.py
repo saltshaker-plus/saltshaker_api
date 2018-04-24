@@ -27,7 +27,7 @@ class BranchList(Resource):
             branch = project.branches.list()
             for b in branch:
                 branch_list.append(b.name)
-            return {"branchs": {"branch": branch_list}, "status": True, "message": ""}, 200
+            return {"data": branch_list, "status": True, "message": ""}, 200
 
 
 # 获取目录结构
@@ -42,7 +42,6 @@ class FilesList(Resource):
             file_list = []
             try:
                 items = project.repository_tree(path=args["path"], ref_name=args["branch"])
-                print(items)
             except Exception as e:
                 return {"status": False, "message": str(e)}, 404
             for i in items:
@@ -50,14 +49,12 @@ class FilesList(Resource):
                     file_list.append({"title": i["name"], "type": i["type"], "expand": False, "children": [{'title':"test"}]})
                 else:
                     file_list.append({"title": i["name"], "type": i["type"], "expand": True, "path": "/" + i["name"]})
-            return {"files": {
-                "file": [
+            return {"data": [
                     {
                      "title": product_name,
                      "expand": True,
                      "children": file_list
-                     }
-                ]}, "status": True, "message": ""}, 200
+                    }], "status": True, "message": ""}, 200
 
 
 # 获取文件内容
@@ -73,4 +70,4 @@ class FileContent(Resource):
                 content = project.files.get(file_path=args["path"], ref=args["branch"])
             except Exception as e:
                 return {"status": False, "message": str(e)}, 404
-            return {"content": content.decode().decode("utf-8"), "status": True, "message": ""}, 200
+            return {"data": content.decode().decode("utf-8"), "status": True, "message": ""}, 200
