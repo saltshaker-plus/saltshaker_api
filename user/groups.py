@@ -17,6 +17,7 @@ parser.add_argument("name", type=str, required=True, trim=True)
 parser.add_argument("product_id", type=str, required=True, trim=True)
 # 不必填写的字段一定要指定默认值为""，否则无法转换成字典
 parser.add_argument("description", type=str, default="", trim=True)
+parser.add_argument("minion", type=str, default=[], action="append")
 
 
 class Groups(Resource):
@@ -61,6 +62,14 @@ class Groups(Resource):
         args["id"] = groups_id
         groups = args
         db = DB()
+        # 判断产品线是否存在
+        status, result = db.select_by_id("product", args["product_id"])
+        if status is True:
+            if not result:
+                db.close_mysql()
+                return {"status": False, "message": "%s does not exist" % args["product_id"]}, 404
+        else:
+            return {"status": False, "message": result}, 500
         # 判断是否存在
         select_status, select_result = db.select_by_id("groups", groups_id)
         if select_status is not True:
@@ -113,6 +122,13 @@ class GroupsList(Resource):
         user = g.user_info["username"]
         groups = args
         db = DB()
+        status, result = db.select_by_id("product", args["product_id"])
+        if status is True:
+            if not result:
+                db.close_mysql()
+                return {"status": False, "message": "%s does not exist" % args["product_id"]}, 404
+        else:
+            return {"status": False, "message": result}, 500
         status, result = db.select("groups", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
             if len(result) == 0:
