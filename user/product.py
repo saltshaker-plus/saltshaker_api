@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
 from flask import g
-from common.log import Logger
+from common.log import loggers
 from common.audit_log import audit_log
 from common.db import DB
 from common.utility import uuid_prefix
@@ -11,7 +11,7 @@ from user.user import update_user_privilege, update_user_product
 from common.const import role_dict
 from fileserver.rsync_fs import rsync_config
 
-logger = Logger()
+logger = loggers()
 
 parser = reqparse.RequestParser()
 parser.add_argument("name", type=str, required=True, trim=True)

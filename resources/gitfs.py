@@ -2,10 +2,10 @@
 from flask_restful import Resource, reqparse
 from fileserver.git_fs import gitlab_project
 from common.const import role_dict
-from common.log import Logger
+from common.log import loggers
 from common.sso import access_required
 
-logger = Logger()
+logger = loggers()
 
 parser = reqparse.RequestParser()
 parser.add_argument("product_id", type=str, required=True, trim=True)
@@ -24,9 +24,13 @@ class BranchList(Resource):
             return project, 500
         else:
             branch_list = []
-            branch = project.branches.list()
-            for b in branch:
-                branch_list.append(b.name)
+            try:
+                branch = project.branches.list()
+                for b in branch:
+                    branch_list.append(b.name)
+            except Exception as e:
+                logger.error("Get branch error: %s" % e)
+                return {"status": False, "message": str(e)}, 500
             return {"data": branch_list, "status": True, "message": ""}, 200
 
 
@@ -43,6 +47,7 @@ class FilesList(Resource):
             try:
                 items = project.repository_tree(path=args["path"], ref_name=args["branch"])
             except Exception as e:
+                logger.error("Get file list error: %s" % e)
                 return {"status": False, "message": str(e)}, 404
             for i in items:
                 if i["type"] == "tree":
@@ -69,5 +74,6 @@ class FileContent(Resource):
             try:
                 content = project.files.get(file_path=args["path"], ref=args["branch"])
             except Exception as e:
+                logger.error("Get file content: %s" % e)
                 return {"status": False, "message": str(e)}, 404
             return {"data": content.decode().decode("utf-8"), "status": True, "message": ""}, 200

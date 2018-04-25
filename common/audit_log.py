@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from common.db import DB, Logger
+from common.db import DB, loggers
 import time
 import json
 
@@ -16,6 +16,6 @@ def audit_log(user, id, product_id, action_object, action_type):
     }
     status, result = db.insert("audit_log", json.dumps(log, ensure_ascii=False))
     db.close_mysql()
-    logger = Logger()
+    logger = loggers()
     if status is not True:
         logger.error("Add audit log error: %s" % result)

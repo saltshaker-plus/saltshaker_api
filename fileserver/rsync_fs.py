@@ -2,10 +2,10 @@
 import configparser
 import os
 import socket
-from common.log import Logger
+from common.log import loggers
 from common.db import DB
 
-logger = Logger()
+logger = loggers()
 
 config = configparser.ConfigParser()
 conf_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))

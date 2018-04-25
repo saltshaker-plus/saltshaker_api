@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
-from common.log import Logger
+from common.log import loggers
 from common.sso import access_required
 from common.db import DB
 from common.const import role_dict
 
 
-logger = Logger()
+logger = loggers()
 
 parser = reqparse.RequestParser()
 parser.add_argument("product_id", type=str, required=True, trim=True)
