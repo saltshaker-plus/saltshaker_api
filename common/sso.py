@@ -122,8 +122,8 @@ def verify_password(username, password):
         if len(result) > 0:
             try:
                 password_hash = eval(result[0][0]).get("password")
-                custom_app_context.verify(password, password_hash)
-                return True
+                status = custom_app_context.verify(password, password_hash)
+                return status
             except Exception as e:
                 logger.error("Verify password error: %s" % e)
                 return False
