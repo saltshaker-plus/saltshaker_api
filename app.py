@@ -7,6 +7,7 @@ from resources.event import Event, EventList
 from user.product import ProductList, Product
 from user.role import RoleList, Role
 from user.user import UserList, User
+from user.login import Login
 from user.acl import ACLList, ACL
 from user.groups import GroupsList, Groups
 from user.host import HostList, Host, DifferenceHost
@@ -51,9 +52,9 @@ flask_restful.abort = custom_abort
 def event_to_mysql():
     see_worker()
 
-# login
-#api.add_resource(Login, "/login")
 
+# login
+api.add_resource(Login, "/saltshaker/api/v1.0/login")
 
 # product
 api.add_resource(ProductList, "/saltshaker/api/v1.0/product")
@@ -126,7 +127,7 @@ def init(username, password):
 
 
 @app.route('/login', methods=['GET', 'POST'])
-def login():
+def logins():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
