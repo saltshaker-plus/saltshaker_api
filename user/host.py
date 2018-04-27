@@ -35,20 +35,22 @@ class Host(Resource):
                 return {"status": False, "message": "%s does not exist" % host_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        status, result = db.select_by_list("groups", "id", host["groups"])
-        tmp = []
+        status, result = db.select("groups", "where data -> '$.product_id'='%s'" % host["product_id"])
+        groups_list = []
         if status is True:
             for i in result:
                 try:
-                    info = eval(i[0])
-                    tmp.append({"id": info["id"], "name": info["name"]})
+                    groups_list.append(eval(i[0]))
                 except Exception as e:
                     db.close_mysql()
                     return {"status": False, "message": str(e)}, 500
-            host["groups"] = tmp
         else:
             db.close_mysql()
             return {"status": False, "message": result}, 500
+        for group in groups_list:
+            for minion in group["minion"]:
+                if host["minion_id"] == minion:
+                    host["groups"].append(group["name"])
         db.close_mysql()
         return {"data": host, "status": True, "message": ""}, 200
 
@@ -111,25 +113,29 @@ class HostList(Resource):
                     try:
                         host_list.append(eval(i[0]))
                     except Exception as e:
+                        db.close_mysql()
                         return {"status": False, "message": str(e)}, 500
         else:
             return {"status": False, "message": result}, 500
-        for host in host_list:
-            if host["groups"]:
-                status, result = db.select_by_list("groups", "id", host["groups"])
-                tmp = []
-                if status is True:
-                    for i in result:
-                        try:
-                            info = eval(i[0])
-                            tmp.append({"id": info["id"], "name": info["name"]})
-                        except Exception as e:
-                            db.close_mysql()
-                            return {"status": False, "message": str(e)}, 500
-                    host["groups"] = tmp
-                else:
+
+        status, result = db.select("groups", "where data -> '$.product_id'='%s'" % product_id)
+        groups_list = []
+        if status is True:
+            for i in result:
+                try:
+                    groups_list.append(eval(i[0]))
+                except Exception as e:
                     db.close_mysql()
-                    return {"status": False, "message": result}, 500
+                    return {"status": False, "message": str(e)}, 500
+        else:
+            db.close_mysql()
+            return {"status": False, "message": result}, 500
+        for host in host_list:
+            for group in groups_list:
+                for minion in group["minion"]:
+                    if host["minion_id"] == minion:
+                        host["groups"].append(group["name"])
+
         db.close_mysql()
         return {"data": host_list, "status": True, "message": ""}, 200
 
