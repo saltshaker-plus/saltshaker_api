@@ -44,6 +44,7 @@ class ExecuteShell(Resource):
             db = DB()
             cmd_history = {
                 "user_id": user_info["id"],
+                "product_id": args["product_id"],
                 "command": command,
                 "minion_id": minion_id,
                 "result": result,
@@ -53,25 +54,26 @@ class ExecuteShell(Resource):
             db.close_mysql()
             audit_log(user_info["username"], minion_id, args["product_id"], "minion", "shell")
 
-            minion_count = 'Total: ' + str(len(minion_id))
-            cmd_succeed = 'Succeed: ' + str(len(result))
-            cmd_failure = 'Failure: ' + str(len(minion_id) - len(result))
-            command = 'Command: ' + command
+            minion_count = str(len(minion_id))
+            cmd_succeed = str(len(result))
+            cmd_failure = str(len(minion_id) - len(result))
             succeed_minion = []
             for i in result:
                 succeed_minion.append(i)
-            failure_minion = 'Failure_Minion: ' + ','.join(
+            failure_minion = ','.join(
                 list(set(minion_id).difference(set(succeed_minion))))
-            return {'result': result,
-                    'command': command,
-                    'line': "#" * 50,
-                    'minion_count': minion_count,
-                    'cmd_succeed': cmd_succeed,
-                    'cmd_failure': cmd_failure,
-                    'failure_minion': failure_minion,
-                    "status": True,
-                    "message": ""
-                    }, 200
+            if result.get("status") is False:
+                status = False
+                message = result.get("message")
+            else:
+                status = True
+                message = ""
+            return {"data": {"result": result,
+                             "command": command,
+                             "total": minion_count,
+                             "succeed": cmd_succeed,
+                             "failure": cmd_failure,
+                             "failure_minion": failure_minion}, "status": status, "message": message}, 200
         else:
             return status, 500
 
