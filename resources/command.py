@@ -29,7 +29,6 @@ class ShellList(Resource):
                     db.close_mysql()
                     return {"status": False, "message": str(e)}, 500
         db.close_mysql()
-        print(user_list)
         if status is True:
             if result:
                 for i in result:
