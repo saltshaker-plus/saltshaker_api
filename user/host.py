@@ -13,11 +13,9 @@ from common.const import role_dict
 logger = loggers()
 
 parser = reqparse.RequestParser()
-parser.add_argument("groups", type=str, default=[], action="append")
 parser.add_argument("product_id", type=str, required=True, trim=True)
 parser.add_argument("minion_id", type=str, required=True, trim=True)
-# 不必填写的字段一定要指定默认值为""，否则无法转换成字典
-parser.add_argument("tag", type=str, default="", required=True)
+parser.add_argument("tag", type=dict, default=[], action="append")
 
 
 class Host(Resource):
@@ -73,7 +71,6 @@ class Host(Resource):
         user = g.user_info["username"]
         args = parser.parse_args()
         args["id"] = host_id
-        host = args
         db = DB()
         # 判断是否存在
         select_status, select_result = db.select_by_id("host", host_id)
@@ -85,17 +82,16 @@ class Host(Resource):
             for i in select_result:
                 try:
                     host = eval(i[0])
-                    host["groups"] = args["groups"]
                     host["tag"] = args["tag"]
+                    status, result = db.update_by_id("host", json.dumps(host, ensure_ascii=False), host_id)
+                    db.close_mysql()
+                    if status is not True:
+                        logger.error("Modify host error: %s" % result)
+                        return {"status": False, "message": result}, 500
                 except Exception as e:
                     db.close_mysql()
                     logger.error("Modify %s host error: %s" % (host_id, e))
                     return {"status": False, "message": str(e)}, 500
-        status, result = db.update_by_id("host", json.dumps(host, ensure_ascii=False), host_id)
-        db.close_mysql()
-        if status is not True:
-            logger.error("Modify host error: %s" % result)
-            return {"status": False, "message": result}, 500
         audit_log(user, args["id"], args["product_id"], "host", "edit")
         return {"status": True, "message": ""}, 200
 
