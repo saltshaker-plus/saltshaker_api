@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from flask_restful import Resource, reqparse
+from flask_restful import Resource, reqparse, request
 from common.log import loggers
 from common.audit_log import audit_log
 from common.utility import salt_api_for_product
@@ -102,13 +102,14 @@ class ExecuteSLS(Resource):
 class ExecuteGroups(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
+        product_id = request.args.get("product_id")
         db = DB()
         user_info = g.user_info
         sql_list = []
         groups_list = []
         if user_info["groups"]:
             for group in user_info["groups"]:
-                sql_list.append("data -> '$.id'='%s'" % group)
+                sql_list.append("data -> '$.id'='%s' and data -> '$.product_id'='%s'" % (group, product_id))
             sql = " or ".join(sql_list)
             status, result = db.select("groups", "where %s" % sql)
             db.close_mysql()
@@ -119,13 +120,13 @@ class ExecuteGroups(Resource):
                             groups_list.append(eval(i[0]))
                         except Exception as e:
                             return {"status": False, "message": str(e)}, 500
-                    return {"groups": {"groups": groups_list}, "status": True, "message": ""}, 200
+                    return {"data": groups_list, "status": True, "message": ""}, 200
                 else:
                     return {"status": False, "message": "Group does not exist"}, 404
             else:
                 return {"status": False, "message": result}, 500
         else:
-            return {"groups": {"groups": groups_list}, "status": True, "message": ""}, 200
+            return {"data": groups_list, "status": True, "message": ""}, 200
 
 
 def verify_acl(acl_list, command):
