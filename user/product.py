@@ -112,6 +112,30 @@ class ProductList(Resource):
     def get(self):
         db = DB()
         user_info = g.user_info
+        role_sql = []
+        if user_info["role"]:
+            for role in user_info["role"]:
+                role_sql.append("data -> '$.id'='%s'" % role)
+            sql = " or ".join(role_sql)
+            role_status, role_result = db.select("role", "where %s" % sql)
+            if role_status and role_result:
+                for i in role_result:
+                    role = eval(i[0])
+                    if role["tag"] == 0:
+                        status, result = db.select("product", "")
+                        db.close_mysql()
+                        product_list = []
+                        if status is True:
+                            if result:
+                                for i in result:
+                                    try:
+                                        product_list.append(eval(i[0]))
+                                    except Exception as e:
+                                        return {"status": False, "message": str(e)}, 500
+                        else:
+                            return {"status": False, "message": result}, 500
+                        return {"data": product_list, "status": True, "message": ""}, 200
+
         sql_list = []
         product_list = []
         if user_info["product"]:
