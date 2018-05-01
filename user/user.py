@@ -15,7 +15,7 @@ logger = loggers()
 
 parser = reqparse.RequestParser()
 parser.add_argument("username", type=str, required=True, trim=True)
-parser.add_argument("password", type=str, required=True, trim=True)
+parser.add_argument("password", type=str, trim=True)
 parser.add_argument("product", type=str, default=[], action="append")
 parser.add_argument("groups", type=str, default=[], action="append")
 parser.add_argument("role", type=str, default=[], action="append")

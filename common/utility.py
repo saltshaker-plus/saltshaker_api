@@ -19,7 +19,7 @@ def salt_api_for_product(product_id):
         if result:
             product = eval(result[0][0])
         else:
-            return {"status": False, "message": "%s does not exist" % product_id}
+            return {"status": False, "message": "product %s does not exist" % product_id}
     else:
         return {"status": False, "message": result}
     salt_api = SaltAPI(

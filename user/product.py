@@ -111,18 +111,27 @@ class ProductList(Resource):
     @access_required(role_dict["product"])
     def get(self):
         db = DB()
-        status, result = db.select("product", "")
-        db.close_mysql()
+        user_info = g.user_info
+        sql_list = []
         product_list = []
-        if status is True:
-            if result:
-                for i in result:
-                    try:
-                        product_list.append(eval(i[0]))
-                    except Exception as e:
-                        return {"status": False, "message": str(e)}, 500
-        else:
-            return {"status": False, "message": result}, 500
+        if user_info["product"]:
+            for product in user_info["product"]:
+                sql_list.append("data -> '$.id'='%s'" % product)
+            sql = " or ".join(sql_list)
+            status, result = db.select("product", "where %s" % sql)
+            db.close_mysql()
+            if status is True:
+                if result:
+                    for i in result:
+                        try:
+                            product_list.append(eval(i[0]))
+                        except Exception as e:
+                            return {"status": False, "message": str(e)}, 500
+                    return {"data": product_list, "status": True, "message": ""}, 200
+                else:
+                    return {"status": False, "message": "Group does not exist"}, 404
+            else:
+                return {"status": False, "message": result}, 500
         return {"data": product_list, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
