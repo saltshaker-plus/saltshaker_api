@@ -19,24 +19,19 @@ class ShellList(Resource):
         status, result = db.select("cmd_history", "where data -> '$.product_id'='%s' order by data -> '$.time' desc"
                                    % args["product_id"])
         history_list = []
-        user_list = []
         user_status, user_result = db.select("user", "")
         if user_status is True and user_result:
-            for i in user_result:
-                try:
-                    user_list.append(eval(i[0]))
-                except Exception as e:
-                    db.close_mysql()
-                    return {"status": False, "message": str(e)}, 500
+            user_list = user_result
+        else:
+            return {"status": False, "message": user_result}, 500
         db.close_mysql()
         if status is True:
             if result:
-                for i in result:
-                    history_dict = eval(i[0].replace('true', '"true"').replace('false', '"false"').replace('null', '""'))
+                for history in result:
                     for user in user_list:
-                        if history_dict["user_id"] == user["id"]:
-                            history_dict["username"] = user["username"]
-                    history_list.append(history_dict)
+                        if history["user_id"] == user["id"]:
+                            history["username"] = user["username"]
+                    history_list.append(history)
         else:
             return {"status": False, "message": result}, 500
         return {"data": history_list, "status": True, "message": ""}, 200

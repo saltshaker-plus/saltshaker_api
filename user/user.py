@@ -31,16 +31,11 @@ class User(Resource):
         db.close_mysql()
         if status is True:
             if result:
-                try:
-                    user = eval(result[0][0])
-                    user.pop("password")
-                except Exception as e:
-                    return {"status": False, "message": str(e)}, 500
+                return {"data": result, "status": True, "message": ""}, 200
             else:
                 return {"status": False, "message": "%s does not exist" % user_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"data": user, "status": True, "message": ""}, 200
 
     # 删除指定用户
     @access_required(role_dict["user"])
@@ -76,21 +71,15 @@ class User(Resource):
         # 判断名字否已经存在
         status, result = db.select("user", "where data -> '$.username'='%s'" % args["username"])
         if status is True:
-            if len(result) != 0:
-                info = eval(result[0][0])
-                if user_id != info.get("id"):
+            if result:
+                if user_id != result[0].get("id"):
                     db.close_mysql()
                     return {"status": False, "message": "The user name already exists"}, 200
         # 获取之前的加密密码
         status, result = db.select_by_id("user", user_id)
         if status is True:
             if result:
-                try:
-                    user_info = eval(result[0][0])
-                    args["password"] = user_info.get("password")
-                except Exception as e:
-                    db.close_mysql()
-                    return {"status": False, "message": str(e)}, 500
+                args["password"] = result.get("password")
             else:
                 db.close_mysql()
                 return {"status": False, "message": "%s does not exist" % user_id}, 404
@@ -117,13 +106,11 @@ class UserList(Resource):
         user_list = []
         if status is True:
             if result:
-                for i in result:
-                    try:
-                        info = eval(i[0])
-                        info.pop("password")
-                        user_list.append(info)
-                    except Exception as e:
-                        return {"status": False, "message": str(e)}, 500
+                for user in result:
+                    user.pop("password")
+                    user_list.append(user)
+            else:
+                return {"data": user_list, "status": True, "message": ""}, 200
         else:
             return {"status": False, "message": result}, 500
         for item in user_list:
@@ -133,13 +120,8 @@ class UserList(Resource):
                         tmp = []
                         status, result = db.select_by_list(attr, "id", item[attr])
                         if status is True:
-                            for i in result:
-                                try:
-                                    info = eval(i[0])
-                                    tmp.append({"id": info["id"], "name": info["name"]})
-                                except Exception as e:
-                                    db.close_mysql()
-                                    return {"status": False, "message": str(e)}, 500
+                            for info in result:
+                                tmp.append({"id": info["id"], "name": info["name"]})
                             item[attr] = tmp
                         else:
                             db.close_mysql()
@@ -188,11 +170,7 @@ def get_common_user():
     db.close_mysql()
     if status is True:
         if result:
-            try:
-                role = eval(result[0][0])
-                return role["id"]
-            except Exception as e:
-                return {"status": False, "message": str(e)}
+            return result[0]['id']
         else:
             return {"status": False, "message": "Common user does not exist"}
     return {"status": False, "message": result}
@@ -204,17 +182,11 @@ def update_user_privilege(table, privilege):
     status, result = db.select("user", "")
     if status is True:
         if result:
-            for i in result:
-                try:
-                    info = eval(i[0])
-                    if table in info:
-                        if privilege in info[table]:
-                            info[table].remove(privilege)
-                            db.update_by_id("user", json.dumps(info, ensure_ascii=False), info["id"])
-                except Exception as e:
-                    db.close_mysql()
-                    logger.error("Update user privilege error: %s" % str(e))
-                    return {"status": False, "message": str(e)}
+            for info in result:
+                if table in info:
+                    if privilege in info[table]:
+                        info[table].remove(privilege)
+                        db.update_by_id("user", json.dumps(info, ensure_ascii=False), info["id"])
             db.close_mysql()
             return {"status": True, "message": ""}
         else:
@@ -232,15 +204,9 @@ def update_user_product(user_id, product_id):
     status, result = db.select_by_id("user", user_id)
     if status is True:
         if result:
-            for i in result:
-                try:
-                    info = eval(i[0])
-                    info["product"].append(product_id)
-                    db.update_by_id("user", json.dumps(info, ensure_ascii=False), user_id)
-                except Exception as e:
-                    db.close_mysql()
-                    logger.error("Update user product error: %s" % str(e))
-                    return {"status": False, "message": str(e)}
+            for info in result:
+                info["product"].append(product_id)
+                db.update_by_id("user", json.dumps(info, ensure_ascii=False), user_id)
             db.close_mysql()
             return {"status": True, "message": ""}
         else:

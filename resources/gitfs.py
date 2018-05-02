@@ -51,14 +51,17 @@ class FilesList(Resource):
                 return {"status": False, "message": str(e)}, 404
             for i in items:
                 if i["type"] == "tree":
-                    file_list.append({"title": i["name"], "type": i["type"], "expand": False, "children": [{'title':"test"}]})
+                    file_list.append({"title": i["name"],
+                                      "type": i["type"],
+                                      "expand": False,
+                                      "children": [{'title':"test"}]
+                                      })
                 else:
                     file_list.append({"title": i["name"], "type": i["type"], "expand": True, "path": "/" + i["name"]})
-            return {"data": [
-                    {
-                     "title": product_name,
-                     "expand": True,
-                     "children": file_list
+            return {"data": [{
+                    "title": product_name,
+                    "expand": True,
+                    "children": file_list
                     }], "status": True, "message": ""}, 200
 
 

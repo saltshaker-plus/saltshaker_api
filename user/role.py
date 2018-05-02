@@ -26,15 +26,11 @@ class Role(Resource):
         db.close_mysql()
         if status is True:
             if result:
-                try:
-                    role = eval(result[0][0])
-                except Exception as e:
-                    return {"status": False, "message": str(e)}, 500
+                return {"data": result, "status": True, "message": ""}, 200
             else:
                 return {"status": False, "message": "%s does not exist" % role_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"data": role, "status": True, "message": ""}, 200
 
     @access_required(role_dict["superuser"])
     def delete(self, role_id):
@@ -72,9 +68,8 @@ class Role(Resource):
         # 判断名字是否重复
         status, result = db.select("role", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
-            if len(result) != 0:
-                info = eval(result[0][0])
-                if role_id != info.get("id"):
+            if result:
+                if role_id != result[0].get("id"):
                     db.close_mysql()
                     return {"status": False, "message": "The role name already exists"}, 200
         status, result = db.update_by_id("role", json.dumps(role, ensure_ascii=False), role_id)
@@ -92,17 +87,10 @@ class RoleList(Resource):
         db = DB()
         status, result = db.select("role", "")
         db.close_mysql()
-        role_list = []
         if status is True:
-            if result:
-                for i in result:
-                    try:
-                        role_list.append(eval(i[0]))
-                    except Exception as e:
-                        return {"status": False, "message": str(e)}, 500
+            return {"data": result, "status": True, "message": ""}, 200
         else:
             return {"status": False, "message": result}, 500
-        return {"data": role_list, "status": True, "message": ""}, 200
 
     @access_required(role_dict["superuser"])
     def post(self):

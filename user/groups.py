@@ -28,15 +28,11 @@ class Groups(Resource):
         db.close_mysql()
         if status is True:
             if result:
-                try:
-                    groups = eval(result[0][0])
-                except Exception as e:
-                    return {"status": False, "message": str(e)}, 500
+                return {"data": result, "status": True, "message": ""}, 200
             else:
                 return {"status": False, "message": "%s does not exist" % groups_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"data": groups, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
     def delete(self, groups_id):
@@ -82,9 +78,8 @@ class Groups(Resource):
         # 判断名字否已经存在
         status, result = db.select("groups", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
-            if len(result) != 0:
-                info = eval(result[0][0])
-                if groups_id != info.get("id"):
+            if result:
+                if groups_id != result[0].get("id"):
                     db.close_mysql()
                     return {"status": False, "message": "The groups name already exists"}, 200
         status, result = db.update_by_id("groups", json.dumps(groups, ensure_ascii=False), groups_id)
@@ -103,17 +98,10 @@ class GroupsList(Resource):
         db = DB()
         status, result = db.select("groups", "where data -> '$.product_id'='%s'" % product_id)
         db.close_mysql()
-        groups_list = []
         if status is True:
-            if result:
-                for i in result:
-                    try:
-                        groups_list.append(eval(i[0]))
-                    except Exception as e:
-                        return {"status": False, "message": str(e)}, 500
+            return {"data": result, "status": True, "message": ""}, 200
         else:
             return {"status": False, "message": result}, 500
-        return {"data": groups_list, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
     def post(self):

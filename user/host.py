@@ -25,23 +25,14 @@ class Host(Resource):
         status, result = db.select_by_id("host", host_id)
         if status is True:
             if result:
-                try:
-                    host = eval(result[0][0])
-                except Exception as e:
-                    return {"status": False, "message": str(e)}, 500
+                host = result
             else:
                 return {"status": False, "message": "%s does not exist" % host_id}, 404
         else:
             return {"status": False, "message": result}, 500
         status, result = db.select("groups", "where data -> '$.product_id'='%s'" % host["product_id"])
-        groups_list = []
         if status is True:
-            for i in result:
-                try:
-                    groups_list.append(eval(i[0]))
-                except Exception as e:
-                    db.close_mysql()
-                    return {"status": False, "message": str(e)}, 500
+            groups_list = result
         else:
             db.close_mysql()
             return {"status": False, "message": result}, 500
@@ -81,7 +72,7 @@ class Host(Resource):
         if select_result:
             for i in select_result:
                 try:
-                    host = eval(i[0])
+                    host = select_result
                     host["tag"] = args["tag"]
                     status, result = db.update_by_id("host", json.dumps(host, ensure_ascii=False), host_id)
                     db.close_mysql()
@@ -102,27 +93,15 @@ class HostList(Resource):
         product_id = request.args.get("product_id")
         db = DB()
         status, result = db.select("host", "where data -> '$.product_id'='%s'" % product_id)
-        host_list = []
         if status is True:
-            if result:
-                for i in result:
-                    try:
-                        host_list.append(eval(i[0]))
-                    except Exception as e:
-                        db.close_mysql()
-                        return {"status": False, "message": str(e)}, 500
+            host_list = result
         else:
+            db.close_mysql()
             return {"status": False, "message": result}, 500
 
         status, result = db.select("groups", "where data -> '$.product_id'='%s'" % product_id)
-        groups_list = []
         if status is True:
-            for i in result:
-                try:
-                    groups_list.append(eval(i[0]))
-                except Exception as e:
-                    db.close_mysql()
-                    return {"status": False, "message": str(e)}, 500
+            groups_list = result
         else:
             db.close_mysql()
             return {"status": False, "message": result}, 500
@@ -170,9 +149,9 @@ class DifferenceHost(Resource):
             return salt_api, 500
         else:
             result = salt_api.list_all_key()
-            result_dict = eval(result)
-            result_dict.get("minions").extend(result_dict.get("minions_rejected"))
-            all_minion = result_dict.get("minions")
+            # result_dict = eval(result)
+            # result_dict.get("minions").extend(result_dict.get("minions_rejected"))
+            # all_minion = result_dict.get("minions")
 
 
 class Hosts(object):
@@ -208,9 +187,8 @@ class Hosts(object):
             if select_status is False:
                 logger.error("Delete % host error: %s" % (minion_id, select_result))
             if select_result:
-                for i in select_result:
+                for host in select_result:
                     try:
-                        host = eval(i[0])
                         status, result = db.delete_by_id("host", host["id"])
                         if status is False:
                             logger.error("Delete % host error: %s" % (minion_id, result))
@@ -230,9 +208,8 @@ class Hosts(object):
             if select_status is False:
                 logger.error("Reject % host error: %s" % (minion_id, select_result))
             if select_result:
-                for i in select_result:
+                for host in select_result:
                     try:
-                        host = eval(i[0])
                         host["tag"] = "reject"
                         status, result = db.update_by_id("host", json.dumps(host, ensure_ascii=False), host["id"])
                         if status is False:

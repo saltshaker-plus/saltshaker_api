@@ -8,6 +8,7 @@ from common.db import DB
 import os
 from flask import request, g
 from common.log import loggers
+import ast
 
 logger = loggers()
 
@@ -30,7 +31,8 @@ def access_required(tag):
             token = request.cookies.get(cookie_key)
             if token:
                 try:
-                    user_info = eval(RedisTool.get(token))
+                    user_info = ast.literal_eval(RedisTool.get(token).replace('true', 'True').
+                                                 replace('false', 'False').replace('null', '""'))
                     # 验证是否有权限访问
                     if not verify_role(user_info, tag):
                         return {"status": False, "message": "access forbidden"}, 403
@@ -45,7 +47,8 @@ def access_required(tag):
             elif 'Authorization' in request.headers:
                 try:
                     scheme, cred = request.headers['Authorization'].split(None, 1)
-                    user_info = eval(RedisTool.get(cred))
+                    user_info = ast.literal_eval(RedisTool.get(cred).replace('true', 'True').
+                                                 replace('false', 'False').replace('null', '""'))
                     # 验证是否有权限访问
                     if not verify_role(user_info, tag):
                         return {"status": False, "message": "access forbidden"}, 403
@@ -63,7 +66,8 @@ def access_required(tag):
             elif 'X-Gitlab-Token' in request.headers:
                 gitlab_token = request.headers['X-Gitlab-Token']
                 try:
-                    user_info = eval(RedisTool.get(gitlab_token))
+                    user_info = ast.literal_eval(RedisTool.get(gitlab_token).replace('true', 'True').
+                                                 replace('false', 'False').replace('null', '""'))
                     # 验证是否有权限访问
                     if not verify_role(user_info, tag):
                         return {"status": False, "message": "access forbidden"}, 403
@@ -87,8 +91,7 @@ def verify_role(user_info, tag):
         db.close_mysql()
         if status is True and result:
             try:
-                role = eval(result[0][0])
-                if role["tag"] == role_dict["superuser"] or role["tag"] == tag:
+                if result["tag"] == role_dict["superuser"] or result["tag"] == tag:
                     return True
                 else:
                     return False
@@ -104,10 +107,9 @@ def create_token(username):
     status, result = db.select("user", "where data -> '$.username'='%s'" % username)
     db.close_mysql()
     if status:
-        if len(result) > 0:
+        if result:
             try:
-                info = eval(result[0][0])
-                RedisTool.setex(token, expires_in, info)
+                RedisTool.setex(token, expires_in, result[0])
             except Exception as e:
                 logger.error("Verify password error: %s" % e)
     return cookie_key, token
@@ -119,9 +121,9 @@ def verify_password(username, password):
     status, result = db.select("user", "where data -> '$.username'='%s'" % username)
     db.close_mysql()
     if status:
-        if len(result) > 0:
+        if result:
             try:
-                password_hash = eval(result[0][0]).get("password")
+                password_hash = result[0].get("password")
                 status = custom_app_context.verify(password, password_hash)
                 return status
             except Exception as e:

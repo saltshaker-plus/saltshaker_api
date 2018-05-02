@@ -17,7 +17,7 @@ def salt_api_for_product(product_id):
     db.close_mysql()
     if status is True:
         if result:
-            product = eval(result[0][0])
+            product = result
         else:
             return {"status": False, "message": "product %s does not exist" % product_id}
     else:

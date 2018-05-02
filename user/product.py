@@ -43,15 +43,11 @@ class Product(Resource):
         db.close_mysql()
         if status is True:
             if result:
-                try:
-                    product = eval(result[0][0])
-                except Exception as e:
-                    return {"status": False, "message": str(e)}, 500
+                return {"data": result, "status": True, "message": ""}, 200
             else:
                 return {"status": False, "message": "%s does not exist" % product_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"data": product, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
     def delete(self, product_id):
@@ -91,9 +87,8 @@ class Product(Resource):
         # 判断名字是否重复
         status, result = db.select("product", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
-            if len(result) != 0:
-                info = eval(result[0][0])
-                if product_id != info.get("id"):
+            if result:
+                if product_id != result[0].get("id"):
                     db.close_mysql()
                     return {"status": False, "message": "The product name already exists"}, 200
         status, result = db.update_by_id("product", json.dumps(product, ensure_ascii=False), product_id)
@@ -119,19 +114,14 @@ class ProductList(Resource):
             sql = " or ".join(role_sql)
             role_status, role_result = db.select("role", "where %s" % sql)
             if role_status and role_result:
-                for i in role_result:
-                    role = eval(i[0])
+                for role in role_result:
                     if role["tag"] == 0:
                         status, result = db.select("product", "")
                         db.close_mysql()
                         product_list = []
                         if status is True:
                             if result:
-                                for i in result:
-                                    try:
-                                        product_list.append(eval(i[0]))
-                                    except Exception as e:
-                                        return {"status": False, "message": str(e)}, 500
+                                product_list = result
                         else:
                             return {"status": False, "message": result}, 500
                         return {"data": product_list, "status": True, "message": ""}, 200
@@ -146,11 +136,7 @@ class ProductList(Resource):
             db.close_mysql()
             if status is True:
                 if result:
-                    for i in result:
-                        try:
-                            product_list.append(eval(i[0]))
-                        except Exception as e:
-                            return {"status": False, "message": str(e)}, 500
+                    product_list = result
                     return {"data": product_list, "status": True, "message": ""}, 200
                 else:
                     return {"status": False, "message": "Group does not exist"}, 404

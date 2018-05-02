@@ -115,11 +115,7 @@ class ExecuteGroups(Resource):
             db.close_mysql()
             if status is True:
                 if result:
-                    for i in result:
-                        try:
-                            groups_list.append(eval(i[0]))
-                        except Exception as e:
-                            return {"status": False, "message": str(e)}, 500
+                    groups_list = result
                     return {"data": groups_list, "status": True, "message": ""}, 200
                 else:
                     return {"status": False, "message": "Group does not exist"}, 404
@@ -140,17 +136,12 @@ def verify_acl(acl_list, command):
         db.close_mysql()
         if status is True:
             if result:
-                for i in result:
-                    try:
-                        acl = eval(i[0])
-                        for deny in acl["deny"]:
-                            deny_pattern = re.compile(deny)
-                            if deny_pattern.search(command):
-                                return {"status": False,
-                                        "message": "Deny Warning : You don't have permission run [ %s ]"
-                                                   % command}
-                    except Exception as e:
-                        return {"status": False, "message": str(e)}
+                for acl in result:
+                    for deny in acl["deny"]:
+                        deny_pattern = re.compile(deny)
+                        if deny_pattern.search(command):
+                            return {"status": False,
+                                    "message": "Deny Warning : You don't have permission run [ %s ]" % command}
                 return {"status": True, "message": ""}
             else:
                 return {"status": False, "message": "acl does not exist"}

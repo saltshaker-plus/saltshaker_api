@@ -29,15 +29,11 @@ class ACL(Resource):
         db.close_mysql()
         if status is True:
             if result:
-                try:
-                    acl = eval(result[0][0])
-                except Exception as e:
-                    return {"status": False, "message": str(e)}, 500
+                return {"data": result, "status": True, "message": ""}, 200
             else:
                 return {"status": False, "message": "%s does not exist" % acl_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"data": acl, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
     def delete(self, acl_id):
@@ -75,9 +71,8 @@ class ACL(Resource):
         # 判断名字否已经存在
         status, result = db.select("acl", "where data -> '$.name'='%s'" % args["name"])
         if status is True:
-            if len(result) != 0:
-                info = eval(result[0][0])
-                if acl_id != info.get("id"):
+            if result:
+                if acl_id != result[0].get("id"):
                     db.close_mysql()
                     return {"status": False, "message": "The acl name already exists"}, 200
         status, result = db.update_by_id("acl", json.dumps(acl, ensure_ascii=False), acl_id)
@@ -96,17 +91,10 @@ class ACLList(Resource):
         db = DB()
         status, result = db.select("acl", "where data -> '$.product_id'='%s'" % product_id)
         db.close_mysql()
-        acl_list = []
         if status is True:
-            if result:
-                for i in result:
-                    try:
-                        acl_list.append(eval(i[0]))
-                    except Exception as e:
-                        return {"status": False, "message": str(e)}, 500
+            return {"data": result, "status": True, "message": ""}, 200
         else:
             return {"status": False, "message": result}, 500
-        return {"data": acl_list, "status": True, "message": ""}, 200
 
     @access_required(role_dict["product"])
     def post(self):

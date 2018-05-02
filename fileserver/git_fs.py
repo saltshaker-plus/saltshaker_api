@@ -10,7 +10,7 @@ def gitlab_project(product_id, project_type):
     db.close_mysql()
     if status is True:
         if result:
-            product = eval(result[0][0])
+            product = result
         else:
             return {"status": False, "message": "%s does not exist" % product_id}
     else:
@@ -35,3 +35,23 @@ def gitlab_project(product_id, project_type):
             return {"status": False, "message": "File server is not gitfs"}, ""
     except Exception as e:
         return {"status": False, "message": str(e)}
+
+
+project, product_name = gitlab_project("p-4bc4a5b83bd011e8aa0e000c298454d8", "state_project")
+file_list = []
+files = []
+
+
+def filetree(path):
+    items = project.repository_tree(path=path, ref_name="master")
+    for i in items:
+        if i["type"] == "tree":
+            file_list.append({"title": i["name"],
+                              "type": i["type"],
+                              "expand": False,
+                              "children": [{"title": i["name"], "type": i["type"], "expand": True, "path": "/" + i["name"]}]
+                              })
+            files = filetree(i["name"])
+        else:
+            file_list.append({"title": i["name"], "type": i["type"], "expand": True, "path": "/" + i["name"]})
+    return file_list

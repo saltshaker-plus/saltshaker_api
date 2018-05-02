@@ -19,14 +19,8 @@ class LogList(Resource):
         status, result = db.select("audit_log", "where data -> '$.product_id'='%s' order by data -> '$.time' desc"
                                    % args["product_id"])
         db.close_mysql()
-        log_list = []
         if status is True:
-            if result:
-                for i in result:
-                    log_list.append(eval(i[0]))
+            return {"data": result, "status": True, "message": ""}, 200
         else:
             return {"status": False, "message": result}, 500
-        return {"data": log_list, "status": True, "message": ""}, 200
-
-
 

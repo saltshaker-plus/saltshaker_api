@@ -34,16 +34,6 @@ class JobList(Resource):
     def get(self):
         args = parser.parse_args()
         job_list = []
-        # salt_api = salt_api_for_product(args["product_id"])
-        # if isinstance(salt_api, dict):
-        #     return salt_api, 500
-        # else:
-        #     result = salt_api.jobs_list()
-        #     if isinstance(result, dict):
-        #         for jid, info in result.items():
-        #             # 不能直接把info放到append中
-        #             info.update({"Jid": jid})
-        #             job_list.append(info)
         db = DB()
         status, result = db.select("event", "where data -> '$.data.product_id'='%s' "
                                             "and data -> '$.data.jid'!='""' "
@@ -51,11 +41,8 @@ class JobList(Resource):
         db.close_mysql()
         if status is True:
             if result:
-                for i in result:
-                    try:
-                        job_list.append(eval(i[0])['data'])
-                    except Exception as e:
-                        return {"status": False, "message": str(e)}, 500
+                for job in result:
+                    job_list.append(job['data'])
         else:
             return {"status": False, "message": result}, 500
         return {"data": job_list, "status": True, "message": ""}, 200
@@ -85,16 +72,6 @@ class JobManager(Resource):
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
         user = g.user_info["username"]
-        db = DB()
-        status, result = db.select_by_id("product", args["product_id"])
-        db.close_mysql()
-        if status is True:
-            if result:
-                product = eval(result[0][0])
-            else:
-                return {"status": False, "message": "%s does not exist" % args["product_id"]}
-        else:
-            return {"status": False, "message": result}
         if isinstance(salt_api, dict):
             return salt_api, 500
         else:
@@ -109,6 +86,7 @@ class JobManager(Resource):
                             # result = salt_api.shell_remote_execution(product.get("salt_master_id"), kill_job)
                             # audit_log(user, args["jid"], args["product_id"], "job id", "kill")
                             # logger.info("kill %s %s return: %s" % (minion, args["jid"], result))
+                            audit_log(user, args["jid"], args["product_id"], "job id", "kill")
                             # 通过kill -- -pgid 删除salt 相关的父进程及子进程
                             pid_result = salt_api.shell_remote_execution(minion_id, kill_ppid_pid)
                             logger.info("kill %s %s return: %s" % (minion, kill_ppid_pid, pid_result))

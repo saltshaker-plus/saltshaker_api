@@ -22,15 +22,11 @@ class Event(Resource):
         db.close_mysql()
         if status is True:
             if result:
-                try:
-                    event = eval(result[0][0])
-                except Exception as e:
-                    return {"status": False, "message": str(e)}, 500
+                return {"event": result, "status": True, "message": ""}, 200
             else:
                 return {"status": False, "message": "%s does not exist" % job_id}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"event": event, "status": True, "message": ""}, 200
 
 
 class EventList(Resource):
@@ -40,16 +36,10 @@ class EventList(Resource):
         args = parser.parse_args()
         status, result = db.select("event", "where data -> '$.data.product_id'='%s'" % args["product_id"])
         db.close_mysql()
-        event_list = []
         if status is True:
             if result:
-                for i in result:
-                    try:
-                        event_list.append(eval(i[0]))
-                    except Exception as e:
-                        return {"status": False, "message": str(e)}, 500
+                return {"events": {"event": result}, "status": True, "message": ""}, 200
             else:
                 return {"status": False, "message": "Even does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
-        return {"events": {"event": event_list}, "status": True, "message": ""}, 200
