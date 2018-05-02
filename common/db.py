@@ -3,6 +3,7 @@ import pymysql
 import configparser
 import os
 from common.log import loggers
+import ast
 
 logger = loggers()
 
@@ -49,7 +50,8 @@ class DB(object):
         logger.info(sql)
         try:
             self.cursor.execute(sql)
-            result = self.cursor.fetchall()
+            tmp = self.cursor.fetchall()
+            result = ast.literal_eval(tmp[0][0].replace('true', 'True').replace('false', 'False').replace('null', '""'))
             return True, result
         except Exception as e:
             logger.error("Select by id error: %s" % e)
@@ -58,9 +60,13 @@ class DB(object):
     def select(self, table, arg):
         sql = "SELECT * FROM %s %s" % (table, arg)
         logger.info(sql)
+        result = []
         try:
             self.cursor.execute(sql)
-            result = self.cursor.fetchall()
+            tmp = self.cursor.fetchall()
+            for i in tmp:
+                result.append(ast.literal_eval(i[0].replace('true', 'True').replace('false', 'False').
+                              replace('null', '""')))
             return True, result
         except Exception as e:
             logger.error("Select by id error: %s" % e)
@@ -125,9 +131,13 @@ class DB(object):
         sql = " or ".join(sql_list)
         sql = "SELECT * FROM %s WHERE %s" % (table, sql)
         logger.info(sql)
+        result = []
         try:
             self.cursor.execute(sql)
-            result = self.cursor.fetchall()
+            tmp = self.cursor.fetchall()
+            for i in tmp:
+                result.append(ast.literal_eval(i[0].replace('true', 'True').replace('false', 'False').
+                              replace('null', '""')))
             return True, result
         except Exception as e:
             logger.error("Select by list error: %s" % e)
