@@ -49,20 +49,41 @@ class FilesList(Resource):
             except Exception as e:
                 logger.error("Get file list error: %s" % e)
                 return {"status": False, "message": str(e)}, 404
+
+        if args["path"] == "/" or args["path"] is "":
             for i in items:
                 if i["type"] == "tree":
                     file_list.append({"title": i["name"],
                                       "type": i["type"],
-                                      "expand": False,
-                                      "children": [{'title':"test"}]
+                                      "path": i["name"],
+                                      "loading": False,
+                                      "children": []
                                       })
                 else:
-                    file_list.append({"title": i["name"], "type": i["type"], "expand": True, "path": "/" + i["name"]})
+                    file_list.append({"title": i["name"],
+                                      "type": i["type"],
+                                      "path": i["name"],
+                                      })
             return {"data": [{
                     "title": product_name,
                     "expand": True,
                     "children": file_list
                     }], "status": True, "message": ""}, 200
+        else:
+            for i in items:
+                if i["type"] == "tree":
+                    file_list.append({"title": i["name"],
+                                      "type": i["type"],
+                                      "path": args["path"] + "/" + i["name"],
+                                      "loading": False,
+                                      "children": []
+                                      })
+                else:
+                    file_list.append({"title": i["name"],
+                                      "type": i["type"],
+                                      "path": args["path"] + "/" + i["name"],
+                                      })
+            return {"data": file_list, "status": True, "message": ""}, 200
 
 
 # 获取文件内容
@@ -76,7 +97,8 @@ class FileContent(Resource):
         else:
             try:
                 content = project.files.get(file_path=args["path"], ref=args["branch"])
+                content_decode = content.decode().decode("utf-8")
             except Exception as e:
                 logger.error("Get file content: %s" % e)
                 return {"status": False, "message": str(e)}, 404
-            return {"data": content.decode().decode("utf-8"), "status": True, "message": ""}, 200
+            return {"data": content_decode, "status": True, "message": ""}, 200
