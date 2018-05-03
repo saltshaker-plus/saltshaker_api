@@ -46,6 +46,7 @@ class ExecuteShell(Resource):
                 "user_id": user_info["id"],
                 "product_id": args["product_id"],
                 "command": command,
+                "type": "shell",
                 "minion_id": minion_id,
                 "result": result,
                 "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
@@ -86,6 +87,8 @@ class ExecuteSLS(Resource):
         if not sls:
             return {"status": False,
                     "message": "The specified sls parameter does not exist"}, 400
+        # 去掉后缀
+        sls = sls.replace(".sls", "")
         minion_id = args["minion_id"]
         salt_api = salt_api_for_product(args["product_id"])
         user_info = g.user_info
@@ -94,8 +97,40 @@ class ExecuteSLS(Resource):
             return salt_api, 500
         host = ",".join(minion_id)
         result = salt_api.target_deploy(host, sls)
-        result.update({"status": True, "message": ""})
-        return result, 200
+        db = DB()
+        cmd_history = {
+            "user_id": user_info["id"],
+            "product_id": args["product_id"],
+            "command": args["sls"],
+            "type": "sls",
+            "minion_id": minion_id,
+            "result": result,
+            "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        }
+        db.insert("cmd_history", json.dumps(cmd_history, ensure_ascii=False))
+        db.close_mysql()
+        audit_log(user_info["username"], minion_id, args["product_id"], "minion", "sls")
+
+        minion_count = str(len(minion_id))
+        cmd_succeed = str(len(result))
+        cmd_failure = str(len(minion_id) - len(result))
+        succeed_minion = []
+        for i in result:
+            succeed_minion.append(i)
+        failure_minion = ','.join(
+            list(set(minion_id).difference(set(succeed_minion))))
+        if result.get("status") is False:
+            status = False
+            message = result.get("message")
+        else:
+            status = True
+            message = ""
+        return {"data": {"result": result,
+                         "command": args["sls"],
+                         "total": minion_count,
+                         "succeed": cmd_succeed,
+                         "failure": cmd_failure,
+                         "failure_minion": failure_minion}, "status": status, "message": message}, 200
 
 
 # 执行页面显示的组

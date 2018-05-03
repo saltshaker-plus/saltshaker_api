@@ -98,7 +98,8 @@ class DB(object):
 
     def insert(self, table, data):
         # 转义'
-        sql = "INSERT INTO %s(data) VALUES('%s') " % (table, data.replace("'", r"\'").replace(r"\n", r'\\n'))
+        sql = "INSERT INTO %s(data) VALUES('%s') " % (table, data.replace("'", r"\'").replace(r"\n", r'\\n').
+                                                      replace(r'\"', r''))
         logger.info(sql)
         try:
             self.cursor.execute(sql)

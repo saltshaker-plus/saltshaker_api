@@ -191,7 +191,10 @@ class SaltAPI(object):
         obj = urllib.parse.urlencode(params).encode('utf-8')
         content = self.post_request(obj)
         if isinstance(content, dict):
-            return content
+            try:
+                return content.get("return")[0]
+            except Exception as e:
+                return {"status": False, "message": str(e)}
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
@@ -287,3 +290,4 @@ class SaltAPI(object):
             return content
         else:
             return {"status": False, "message": "Salt API Error : " + content}
+
