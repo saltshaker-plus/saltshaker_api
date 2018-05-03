@@ -9,15 +9,17 @@ logger = loggers()
 
 parser = reqparse.RequestParser()
 parser.add_argument("product_id", type=str, required=True, trim=True)
+parser.add_argument("type", type=str, required=True, trim=True)
 
 
-class ShellList(Resource):
+class HistoryList(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         args = parser.parse_args()
         db = DB()
-        status, result = db.select("cmd_history", "where data -> '$.product_id'='%s' order by data -> '$.time' desc"
-                                   % args["product_id"])
+        status, result = db.select("cmd_history", "where data -> '$.product_id'='%s' and "
+                                                  "data -> '$.type'='%s' "
+                                                  "order by data -> '$.time' desc" % (args["product_id"], args["type"]))
         history_list = []
         user_status, user_result = db.select("user", "")
         if user_status is True and user_result:
