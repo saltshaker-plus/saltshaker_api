@@ -15,7 +15,7 @@ from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteSLS, ExecuteGroups
 from resources.gitfs import BranchList, FilesList, FileContent
-from resources.command import ShellList
+from resources.command import HistoryList
 from webhook.salt_hook import Hook
 from common.cli import initialize
 from common.sso import create_token, verify_password
@@ -111,7 +111,7 @@ api.add_resource(FileContent, "/saltshaker/api/v1.0/gitlab/content")
 api.add_resource(LogList, "/saltshaker/api/v1.0/log")
 
 # command log
-api.add_resource(ShellList, "/saltshaker/api/v1.0/shell/history")
+api.add_resource(HistoryList, "/saltshaker/api/v1.0/history")
 
 # CherryPy server stats
 api.add_resource(CherryStats, "/saltshaker/api/v1.0/cherry/stats")
