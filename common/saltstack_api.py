@@ -28,11 +28,13 @@ class SaltAPI(object):
             return ""
         return token_id
 
-    def post_request(self, obj, prefix='/'):
+    def post_request(self, data, prefix='/'):
         url = str(self.__url) + prefix
-        headers = {'X-Auth-Token': self.__token_id}
-        req = urllib.request.Request(url, obj, headers)
+        headers = {'X-Auth-Token': self.__token_id, 'Content-type': 'application/json'}
         try:
+            # 解析成json
+            data = bytes(json.dumps(data), 'utf8')
+            req = urllib.request.Request(url, data, headers)
             opener = urllib.request.urlopen(req, timeout=180)
             content = json.loads(opener.read())
         except Exception as e:
@@ -41,8 +43,7 @@ class SaltAPI(object):
 
     def list_all_key(self):
         params = {'client': 'wheel', 'fun': 'key.list_all'}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             minions = content['return'][0]['data']['return']
             return minions
@@ -51,8 +52,7 @@ class SaltAPI(object):
 
     def delete_key(self, node_name):
         params = {'client': 'wheel', 'fun': 'key.delete', 'match': node_name}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]['data']['success']
             return ret
@@ -61,8 +61,7 @@ class SaltAPI(object):
 
     def accept_key(self, node_name):
         params = {'client': 'wheel', 'fun': 'key.accept', 'match': node_name}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]['data']['success']
             return ret
@@ -71,8 +70,7 @@ class SaltAPI(object):
 
     def reject_key(self, node_name):
         params = {'client': 'wheel', 'fun': 'key.reject', 'match': node_name}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]['data']['success']
             return ret
@@ -82,8 +80,7 @@ class SaltAPI(object):
     def remote_noarg_execution(self, tgt, fun):
         # Execute commands without parameters
         params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'expr_form': 'list'}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0][tgt]
             return ret
@@ -93,8 +90,7 @@ class SaltAPI(object):
     def remote_noarg_execution_notgt(self, tgt, fun):
         # Execute commands without parameters
         params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'expr_form': 'list'}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]
             return ret
@@ -104,8 +100,7 @@ class SaltAPI(object):
     def remote_execution(self, tgt, fun, arg):
         # Command execution with parameters
         params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'arg': arg, 'expr_form': 'list'}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0][tgt]
             return ret
@@ -115,8 +110,7 @@ class SaltAPI(object):
     def remote_execution_notgt(self, tgt, fun, arg):
         # Command execution with parameters
         params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'arg': arg, 'expr_form': 'list'}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]
             return ret
@@ -126,8 +120,7 @@ class SaltAPI(object):
     def shell_remote_execution(self, tgt, arg):
         # Shell command execution with parameters
         params = {'client': 'local', 'tgt': tgt, 'fun': 'cmd.run', 'arg': arg, 'expr_form': 'list'}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]
             return ret
@@ -137,8 +130,7 @@ class SaltAPI(object):
     def grain(self, tgt, arg):
         # Grains.item
         params = {'client': 'local', 'tgt': tgt, 'fun': 'grains.item', 'arg': arg}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]
             return ret
@@ -148,8 +140,7 @@ class SaltAPI(object):
     def grains(self, tgt):
         # Grains.items
         params = {'client': 'local', 'tgt': tgt, 'fun': 'grains.items'}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]
             return ret
@@ -159,8 +150,7 @@ class SaltAPI(object):
     def target_remote_execution(self, tgt, fun, arg):
         # Use targeting for remote execution
         params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'arg': arg, 'expr_form': 'nodegroup'}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             jid = content['return'][0]['jid']
             return jid
@@ -170,15 +160,13 @@ class SaltAPI(object):
     def deploy(self, tgt, arg):
         # Module deployment
         params = {'client': 'local', 'tgt': tgt, 'fun': 'state.sls', 'arg': arg}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         return content
 
     def async_deploy(self, tgt, arg):
         # Asynchronously send a command to connected minions
         params = {'client': 'local_async', 'tgt': tgt, 'fun': 'state.sls', 'arg': arg}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             jid = content['return'][0]['jid']
             return jid
@@ -188,8 +176,22 @@ class SaltAPI(object):
     def target_deploy(self, tgt, arg):
         # Based on the list forms deployment
         params = {'client': 'local', 'tgt': tgt, 'fun': 'state.sls', 'arg': arg, 'expr_form': 'list'}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
+        if isinstance(content, dict):
+            try:
+                return content.get("return")[0]
+            except Exception as e:
+                return {"status": False, "message": str(e)}
+        else:
+            return {"status": False, "message": "Salt API Error : " + content}
+
+    def pillar_items(self, tgt, arg=[]):
+        # Get pillar item
+        if arg:
+            params = {'client': 'local', 'tgt': tgt, 'fun': 'pillar.item', 'arg': arg, 'expr_form': 'list'}
+        else:
+            params = {'client': 'local', 'tgt': tgt, 'fun': 'pillar.items', 'arg': arg, 'expr_form': 'list'}
+        content = self.post_request(params)
         if isinstance(content, dict):
             try:
                 return content.get("return")[0]
@@ -248,8 +250,7 @@ class SaltAPI(object):
     def runner_status(self, arg):
         # Return minion status
         params = {'client': 'runner', 'fun': 'manage.' + arg}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             jid = content['return'][0]
             return jid
@@ -259,8 +260,7 @@ class SaltAPI(object):
     def runner(self, arg):
         # Return minion status
         params = {'client': 'runner', 'fun': arg}
-        obj = urllib.parse.urlencode(params).encode('utf-8')
-        content = self.post_request(obj)
+        content = self.post_request(params)
         if isinstance(content, dict):
             jid = content['return'][0]
             return jid
@@ -290,4 +290,3 @@ class SaltAPI(object):
             return content
         else:
             return {"status": False, "message": "Salt API Error : " + content}
-

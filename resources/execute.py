@@ -38,8 +38,7 @@ class ExecuteShell(Resource):
         status = verify_acl(acl_list, command)
         # acl deny 验证完成后执行命令
         if status["status"]:
-            host = ",".join(minion_id)
-            result = salt_api.shell_remote_execution(host, command)
+            result = salt_api.shell_remote_execution(minion_id, command)
             # 记录历史命令
             db = DB()
             cmd_history = {
@@ -95,8 +94,7 @@ class ExecuteSLS(Resource):
         audit_log(user_info["username"], minion_id, args["product_id"], "minion", "sls")
         if isinstance(salt_api, dict):
             return salt_api, 500
-        host = ",".join(minion_id)
-        result = salt_api.target_deploy(host, sls)
+        result = salt_api.target_deploy(minion_id, sls)
         db = DB()
         cmd_history = {
             "user_id": user_info["id"],
