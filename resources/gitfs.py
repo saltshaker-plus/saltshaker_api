@@ -12,6 +12,8 @@ parser.add_argument("product_id", type=str, required=True, trim=True)
 parser.add_argument("branch", type=str, default="master", trim=True)
 parser.add_argument("path", type=str, default="", trim=True)
 parser.add_argument("project_type", type=str, required=True, trim=True)
+parser.add_argument("action", type=str, default="", trim=True)
+parser.add_argument("content", type=str, default="", trim=True)
 
 
 # 获取所有分支
@@ -102,3 +104,32 @@ class FileContent(Resource):
                 logger.error("Get file content: %s" % e)
                 return {"status": False, "message": str(e)}, 404
             return {"data": content_decode, "status": True, "message": ""}, 200
+
+
+# 创建修改提交文件
+class Commit(Resource):
+    @access_required(role_dict["common_user"])
+    def post(self):
+        args = parser.parse_args()
+        project, _ = gitlab_project(args["product_id"], args["project_type"])
+        # 支持的action create, delete, move, update
+        data = {
+            'branch': args["branch"],
+            'commit_message': args["action"] + " " + args["path"],
+            'actions': [
+                {
+                    'action': args["action"],
+                    'file_path': args["path"],
+                    'content': args["content"]
+                }
+            ]
+        }
+        if isinstance(project, dict):
+            return project, 500
+        else:
+            try:
+                project.commits.create(data)
+            except Exception as e:
+                logger.error("Commit file: %s" % e)
+                return {"status": False, "message": str(e)}, 500
+            return {"status": True, "message": ""}, 200

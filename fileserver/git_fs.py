@@ -1,10 +1,9 @@
 # -*- coding:utf-8 -*-
 import gitlab
 from common.db import DB
-import time
 
 
-# GitLab >= 9.0 api_version 请填 4 否则请填 3
+# GitLab >= 9.0 api_version 请填 4 否则请填 3　使用3 版本 commit api 可能不支持, GitLab >= 8.13 才支持
 def gitlab_project(product_id, project_type):
     db = DB()
     status, result = db.select_by_id("product", product_id)
