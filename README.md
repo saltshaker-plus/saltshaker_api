@@ -39,7 +39,7 @@
     python /root/work/github/saltshaker_api/app.py
 ````
 
-#### **GitLab 使用说明**
+#### **GitLab 使用说明 版本要求　GitLab >= 9.0**
 官方配置gitfs说明 请查看此[链接](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)
 需要 pygit2 或者 GitPython 包用于支持git, 如果都存在优先选择pygit2
 ````
