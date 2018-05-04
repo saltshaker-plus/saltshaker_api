@@ -16,6 +16,7 @@ from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteSLS, ExecuteGroups
 from resources.gitfs import BranchList, FilesList, FileContent
 from resources.command import HistoryList
+from resources.pillar import PillarItems
 from webhook.salt_hook import Hook
 from common.cli import initialize
 from common.sso import create_token, verify_password
@@ -119,6 +120,8 @@ api.add_resource(CherryStats, "/saltshaker/api/v1.0/cherry/stats")
 # hook
 api.add_resource(Hook, "/saltshaker/api/v1.0/hook")
 
+# pillar
+api.add_resource(PillarItems, "/saltshaker/api/v1.0/pillar")
 
 @app.cli.command()
 @click.option('--username', prompt='Enter the initial administrators username', default='admin',
