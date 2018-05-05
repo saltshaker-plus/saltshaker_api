@@ -36,7 +36,7 @@ parser.add_argument("pillar_project", type=str, default="", trim=True)
 
 
 class Product(Resource):
-    @access_required(role_dict["product"])
+    @access_required(role_dict["common_user"])
     def get(self, product_id):
         db = DB()
         status, result = db.select_by_id("product", product_id)
@@ -103,7 +103,7 @@ class Product(Resource):
 
 
 class ProductList(Resource):
-    @access_required(role_dict["product"])
+    @access_required(role_dict["common_user"])
     def get(self):
         db = DB()
         user_info = g.user_info

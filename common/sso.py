@@ -93,12 +93,11 @@ def verify_role(user_info, tag):
             try:
                 if result["tag"] == role_dict["superuser"] or result["tag"] == tag:
                     return True
-                else:
-                    return False
-            except Exception as _:
+            except KeyError as _:
                 return False
         else:
             return False
+    return False
 
 
 def create_token(username):
