@@ -69,7 +69,8 @@ class FilesList(Resource):
             return {"data": [{
                     "title": product_name,
                     "expand": True,
-                    "children": file_list
+                    "children": file_list,
+                    "type": "tree",
                     }], "status": True, "message": ""}, 200
         else:
             for i in items:
