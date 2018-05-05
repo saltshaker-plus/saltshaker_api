@@ -22,7 +22,9 @@ class Hook(Resource):
         else:
             result = salt_api.hook(args["tag"])
             if isinstance(result, dict):
-                result.update({"status": True, "message": ""})
-                return result, 200
+                if result.get("success") is True:
+                    return {"data": result, "status": True, "message": ""}, 200
+                else:
+                    return {"data": result, "status": False, "message": result}, 500
             else:
-                return {"status": False, "message": result}
+                return {"status": False, "message": result}, 500
