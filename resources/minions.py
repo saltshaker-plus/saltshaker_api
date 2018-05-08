@@ -85,7 +85,7 @@ class MinionsKeys(Resource):
                         result_list.append({minion: result})
                         audit_log(user, minion, args["product_id"], "minion", "reject")
                     # 拒绝host
-                    Hosts.reject_host(args["minion_id"], args["product_id"], user)
+                    #Hosts.reject_host(args["minion_id"], args["product_id"], user)
                     return {"status": True, "message": result_list}, 200
                 if args["action"] == "delete":
                     for minion in args["minion_id"]:

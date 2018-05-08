@@ -169,7 +169,7 @@ class Hosts(object):
                     "minion_id": minion_id,
                     "product_id": product_id,
                     "groups": [],
-                    "tag": ""
+                    "tag": [],
                 }
                 insert_status, insert_result = db.insert("host", json.dumps(host, ensure_ascii=False))
                 if insert_status is False:
@@ -181,7 +181,21 @@ class Hosts(object):
     @staticmethod
     def delete_host(minion_list, product_id, user):
         db = DB()
+        group_status, group_result = db.select("groups", "where data -> '$.product_id'='%s'" % product_id)
+        if group_status is False:
+            logger.error("Delete % host error: %s" % (minion_list, group_status))
         for minion_id in minion_list:
+            try:
+                # 组里面删除主机
+                for group in group_result:
+                    for minion in group.get("minion"):
+                        if minion == minion_id:
+                            group.get("minion").remove(minion_id)
+                    status, result = db.update_by_id("groups", json.dumps(group, ensure_ascii=False), group.get("id"))
+                    if status is not True:
+                        logger.error("Modify group error: %s" % result)
+            except Exception as e:
+                logger.error("Delete % host error: %s" % (minion_id, e))
             select_status, select_result = db.select("host", "where data -> '$.minion_id'='%s'" % minion_id)
             if select_status is False:
                 logger.error("Delete % host error: %s" % (minion_id, select_result))
@@ -195,6 +209,7 @@ class Hosts(object):
                             audit_log(user, host["id"], product_id, "host", "delete")
                     except Exception as e:
                         logger.error("Delete % host error: %s" % (minion_id, e))
+
             else:
                 logger.error("Select %s host does not exist" % minion_id)
         db.close_mysql()
@@ -209,7 +224,8 @@ class Hosts(object):
             if select_result:
                 for host in select_result:
                     try:
-                        host["tag"] = "reject"
+                        # 拒绝后添加拒绝标签
+                        host["tag"].append({"name": "reject", "color": "red"})
                         status, result = db.update_by_id("host", json.dumps(host, ensure_ascii=False), host["id"])
                         if status is False:
                             logger.error("Reject % host error: %s" % (minion_id, result))
