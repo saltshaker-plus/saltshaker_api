@@ -35,7 +35,7 @@ def access_required(tag):
                                                  replace('false', 'False').replace('null', '""'))
                     # 验证是否有权限访问
                     if not verify_role(user_info, tag):
-                        return {"status": False, "message": "access forbidden"}, 403
+                        return {"status": False, "message": "Access forbidden"}, 403
                     g.user_info = user_info
                 except Exception as e:
                     logger.error("Verify token error: %s" % e)
