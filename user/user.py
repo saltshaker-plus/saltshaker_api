@@ -204,9 +204,8 @@ def update_user_product(user_id, product_id):
     status, result = db.select_by_id("user", user_id)
     if status is True:
         if result:
-            for info in result:
-                info["product"].append(product_id)
-                db.update_by_id("user", json.dumps(info, ensure_ascii=False), user_id)
+            result["product"].append(product_id)
+            db.update_by_id("user", json.dumps(result, ensure_ascii=False), user_id)
             db.close_mysql()
             return {"status": True, "message": ""}
         else:
