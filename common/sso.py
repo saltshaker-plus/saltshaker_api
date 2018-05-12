@@ -9,6 +9,7 @@ import os
 from flask import request, g
 from common.log import loggers
 import ast
+from common.utility import rsa_decrypt
 
 logger = loggers()
 
@@ -105,29 +106,33 @@ def create_token(username):
     db = DB()
     status, result = db.select("user", "where data -> '$.username'='%s'" % username)
     db.close_mysql()
-    if status:
-        if result:
-            try:
-                RedisTool.setex(token, expires_in, result[0])
-            except Exception as e:
-                logger.error("Verify password error: %s" % e)
+    if status is True and result:
+        try:
+            RedisTool.setex(token, expires_in, result[0])
+        except Exception as e:
+            logger.error("Verify password error: %s" % e)
     return cookie_key, token
 
 
 # 基于 Passlib 的离散哈希 BasicAuth
-def verify_password(username, password):
+def verify_password(username, password_rsa):
     db = DB()
     status, result = db.select("user", "where data -> '$.username'='%s'" % username)
     db.close_mysql()
-    if status:
-        if result:
-            try:
-                password_hash = result[0].get("password")
-                status = custom_app_context.verify(password, password_hash)
-                return status
-            except Exception as e:
-                logger.error("Verify password error: %s" % e)
+    if status is True and result:
+        try:
+            # 数据库中获取离散哈希数据
+            password_hash = result[0].get("password")
+            # 基于RSA加密算法获取密码
+            password = rsa_decrypt(password_rsa)
+            if password is False:
                 return False
+            # 基于离散哈希的密码认证
+            status = custom_app_context.verify(password, password_hash)
+            return status
+        except Exception as e:
+            logger.error("Verify password error: %s" % e)
+            return False
     else:
         logger.error("Verify password error: %s" % result)
         return False

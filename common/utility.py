@@ -3,6 +3,16 @@ from flask import abort, jsonify
 from common.db import DB
 from common.saltstack_api import SaltAPI
 import uuid
+import base64
+from common.log import loggers
+from common.redis import RedisTool
+from Crypto import Random
+from Crypto.PublicKey import RSA
+from Crypto.Hash import SHA
+from Crypto.Cipher import PKCS1_v1_5 as Cipher_pkcs1_v1_5
+from Crypto.Signature import PKCS1_v1_5 as Signature_pkcs1_v1_5
+
+logger = loggers()
 
 
 def uuid_prefix(prefix):
@@ -41,3 +51,30 @@ def custom_abort(http_status_code, *args, **kwargs):
         abort(jsonify({"status": False, "message": "The specified %s parameter does not exist" % parameter}))
     return abort(http_status_code)
 
+
+# 生成秘钥对
+def generate_key_pair():
+    # 伪随机数生成器
+    random_generator = Random.new().read
+    # rsa算法生成实例
+    rsa = RSA.generate(1024, random_generator)
+    # 私钥
+    private_key = rsa.exportKey()
+    RedisTool.setex("private_key", 24 * 60 * 60, private_key)
+    # 公钥
+    public_key = rsa.publickey().exportKey()
+    RedisTool.setex("public_key", 24 * 60 * 60, public_key)
+
+
+# 解密RSA
+def rsa_decrypt(encrypt_text):
+    try:
+        random_generator = Random.new().read
+        private_key = RedisTool.get("private_key")
+        rsa_key = RSA.importKey(private_key)
+        cipher = Cipher_pkcs1_v1_5.new(rsa_key)
+        text = cipher.decrypt(base64.b64decode(encrypt_text), random_generator)
+        return text
+    except Exception as e:
+        logger.error("Decrypt rsa error: %s" % e)
+        return False
