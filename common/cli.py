@@ -26,7 +26,8 @@ def initialize(username, password):
         "audit_log",
         "event",
         "cmd_history",
-        "host"
+        "host",
+        "grains"
     ]
     for t in tables:
         status, result = db.create_table(t)

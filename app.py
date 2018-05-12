@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from flask import Flask, request, make_response
 import flask_restful
-from resources.minions import MinionsKeys, MinionsStatus, MinionsGrains
+from resources.minions import MinionsKeys, MinionsStatus, MinionsGrains, MinionsGrainsList
 from resources.job import Job, JobList, JobManager
 from resources.event import Event, EventList
 from user.product import ProductList, Product
@@ -87,7 +87,8 @@ api.add_resource(Host, "/saltshaker/api/v1.0/host/<string:host_id>")
 # minions
 api.add_resource(MinionsStatus, "/saltshaker/api/v1.0/minions/status")
 api.add_resource(MinionsKeys, "/saltshaker/api/v1.0/minions/key")
-api.add_resource(MinionsGrains, "/saltshaker/api/v1.0/minions/grains")
+api.add_resource(MinionsGrains, "/saltshaker/api/v1.0/minions/grain")
+api.add_resource(MinionsGrainsList, "/saltshaker/api/v1.0/minions/grains")
 
 # job
 api.add_resource(JobList, "/saltshaker/api/v1.0/job")
