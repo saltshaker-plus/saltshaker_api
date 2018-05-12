@@ -69,12 +69,12 @@ class ACL(Resource):
             db.close_mysql()
             return {"status": False, "message": "%s does not exist" % acl_id}, 404
         # 判断名字否已经存在
-        status, result = db.select("acl", "where data -> '$.name'='%s'" % args["name"])
-        if status is True:
-            if result:
-                if acl_id != result[0].get("id"):
-                    db.close_mysql()
-                    return {"status": False, "message": "The acl name already exists"}, 200
+        status, result = db.select("acl", "where data -> '$.name'='%s' and data -> '$.product_id'='%s'"
+                                   % (args["name"], args["product_id"]))
+        if status is True and result:
+            if acl_id != result[0].get("id"):
+                db.close_mysql()
+                return {"status": False, "message": "The acl name already exists"}, 200
         status, result = db.update_by_id("acl", json.dumps(acl, ensure_ascii=False), acl_id)
         db.close_mysql()
         if status is not True:
@@ -103,7 +103,8 @@ class ACLList(Resource):
         user = g.user_info["username"]
         acl = args
         db = DB()
-        status, result = db.select("acl", "where data -> '$.name'='%s'" % args["name"])
+        status, result = db.select("acl", "where data -> '$.name'='%s' and data -> '$.product_id'='%s'"
+                                   % (args["name"], args["product_id"]))
         if status is True:
             if len(result) == 0:
                 insert_status, insert_result = db.insert("acl", json.dumps(acl, ensure_ascii=False))

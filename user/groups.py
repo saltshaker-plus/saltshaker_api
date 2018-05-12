@@ -76,12 +76,12 @@ class Groups(Resource):
             db.close_mysql()
             return {"status": False, "message": "%s does not exist" % groups_id}, 404
         # 判断名字否已经存在
-        status, result = db.select("groups", "where data -> '$.name'='%s'" % args["name"])
-        if status is True:
-            if result:
-                if groups_id != result[0].get("id"):
-                    db.close_mysql()
-                    return {"status": False, "message": "The groups name already exists"}, 200
+        status, result = db.select("groups", "where data -> '$.name'='%s' and  data -> '$.product_id'='%s'"
+                                   % (args["name"], args["product_id"]))
+        if status is True and result:
+            if groups_id != result[0].get("id"):
+                db.close_mysql()
+                return {"status": False, "message": "The groups name already exists"}, 200
         status, result = db.update_by_id("groups", json.dumps(groups, ensure_ascii=False), groups_id)
         db.close_mysql()
         if status is not True:
@@ -117,7 +117,8 @@ class GroupsList(Resource):
                 return {"status": False, "message": "%s does not exist" % args["product_id"]}, 404
         else:
             return {"status": False, "message": result}, 500
-        status, result = db.select("groups", "where data -> '$.name'='%s'" % args["name"])
+        status, result = db.select("groups", "where data -> '$.name'='%s' and data -> '$.product_id'='%s'"
+                                   % (args["name"], args["product_id"]))
         if status is True:
             if len(result) == 0:
                 insert_status, insert_result = db.insert("groups", json.dumps(groups, ensure_ascii=False))
