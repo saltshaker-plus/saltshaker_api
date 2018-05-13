@@ -121,8 +121,8 @@ class MinionsGrains(Resource):
                     result = salt_api.grains(args["minion"])
                     if result:
                         create_grains(args["product_id"])
-                        result.update({"status": True, "message": ""})
-                        return result
+                        data = {"data": result, "status": True, "message": ""}
+                        return data
                     return {"status": False, "message": "The specified minion does not exist"}, 404
             else:
                 return {"status": False, "message": "The specified minion parameter does not exist"}, 400
