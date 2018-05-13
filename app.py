@@ -171,7 +171,7 @@ def logins():
     """
 
 
-@app.route('/sse', methods=['GET'])
+@app.route('/saltshaker/api/v1.0/sse', methods=['GET'])
 def sse():
     event_to_mysql.delay()
     return """
