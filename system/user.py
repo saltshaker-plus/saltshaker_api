@@ -9,6 +9,7 @@ from common.sso import access_required
 from common.audit_log import audit_log
 import json
 from common.const import role_dict
+from common.utility import rsa_decrypt
 
 
 logger = loggers()
@@ -20,6 +21,7 @@ parser.add_argument("product", type=str, default=[], action="append")
 parser.add_argument("groups", type=str, default=[], action="append")
 parser.add_argument("role", type=str, default=[], action="append")
 parser.add_argument("acl", type=str, default=[], action="append")
+parser.add_argument("mail", type=str, trim=True)
 
 
 class User(Resource):
@@ -76,16 +78,24 @@ class User(Resource):
                     db.close_mysql()
                     return {"status": False, "message": "The user name already exists"}, 200
         # 获取之前的加密密码
-        status, result = db.select_by_id("user", user_id)
-        if status is True:
-            if result:
-                args["password"] = result.get("password")
+        if args["password"]:
+            # 基于RSA加密算法获取密码
+            password = rsa_decrypt(args["password"])
+            if password is False:
+                return {"status": False, "message": "Decrypt is failure "}, 500
+            password_hash = custom_app_context.encrypt(password)
+            args["password"] = password_hash
+        else:
+            status, result = db.select_by_id("user", user_id)
+            if status is True:
+                if result:
+                    args["password"] = result.get("password")
+                else:
+                    db.close_mysql()
+                    return {"status": False, "message": "%s does not exist" % user_id}, 404
             else:
                 db.close_mysql()
-                return {"status": False, "message": "%s does not exist" % user_id}, 404
-        else:
-            db.close_mysql()
-            return {"status": False, "message": result}, 500
+                return {"status": False, "message": result}, 500
         # 更新用户信息
         users = args
         status, result = db.update_by_id("user", json.dumps(users, ensure_ascii=False), user_id)
@@ -115,7 +125,7 @@ class UserList(Resource):
             return {"status": False, "message": result}, 500
         for item in user_list:
             for attr in item.keys():
-                if attr not in ["id", "username"]:
+                if attr not in ["id", "username", "mail"]:
                     if item[attr]:
                         tmp = []
                         status, result = db.select_by_list(attr, "id", item[attr])
@@ -139,7 +149,41 @@ class UserList(Resource):
         status, result = db.select("user", "where data -> '$.username'='%s'" % args["username"])
         if status is True:
             if len(result) == 0:
-                password_hash = custom_app_context.encrypt(args["password"])
+                # 默认新添加的用户都是默认用户
+                role_id = get_common_user()
+                if isinstance(role_id, dict):
+                    return role_id
+                    args["role"].append(role_id)
+                insert_status, insert_result = db.insert("user", json.dumps(args, ensure_ascii=False))
+                db.close_mysql()
+                if insert_status is not True:
+                    logger.error("Add user error: %s" % insert_result)
+                    return {"status": False, "message": insert_result}, 500
+                audit_log(user, args["id"], "", "user", "add")
+                return {"status": True, "message": ""}, 201
+            else:
+                db.close_mysql()
+                return {"status": False, "message": "The user name already exists"}, 200
+        else:
+            db.close_mysql()
+            logger.error("Select user error: %s" % result)
+            return {"status": False, "message": result}, 500
+
+
+class Register(Resource):
+    # 注册用户
+    def post(self):
+        args = parser.parse_args()
+        args["id"] = uuid_prefix("u")
+        db = DB()
+        status, result = db.select("user", "where data -> '$.username'='%s'" % args["username"])
+        if status is True:
+            if len(result) == 0:
+                # 基于RSA加密算法获取密码
+                password = rsa_decrypt(args["password"])
+                if password is False:
+                    return {"status": False, "message": "Decrypt is failure "}, 500
+                password_hash = custom_app_context.encrypt(password)
                 args["password"] = password_hash
                 users = args
                 # 默认新添加的用户都是默认用户
@@ -152,7 +196,6 @@ class UserList(Resource):
                 if insert_status is not True:
                     logger.error("Add user error: %s" % insert_result)
                     return {"status": False, "message": insert_result}, 500
-                audit_log(user, args["id"], "", "user", "add")
                 return {"status": True, "message": ""}, 201
             else:
                 db.close_mysql()

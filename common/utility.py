@@ -67,14 +67,28 @@ def generate_key_pair():
 
 
 # 解密RSA
-def rsa_decrypt(encrypt_text):
+def rsa_decrypt(decrypt_text):
     try:
         random_generator = Random.new().read
         private_key = RedisTool.get("private_key")
         rsa_key = RSA.importKey(private_key)
         cipher = Cipher_pkcs1_v1_5.new(rsa_key)
-        text = cipher.decrypt(base64.b64decode(encrypt_text), random_generator)
+        text = cipher.decrypt(base64.b64decode(decrypt_text), random_generator)
         return text
     except Exception as e:
         logger.error("Decrypt rsa error: %s" % e)
+        return False
+
+
+# 加密RSA
+def rsa_encrypt(encrypt_text):
+    print(encrypt_text)
+    try:
+        public_key = RedisTool.get("public_key")
+        rsa_key = RSA.importKey(public_key)
+        cipher = Cipher_pkcs1_v1_5.new(rsa_key)
+        text = base64.b64decode(cipher.encrypt(encrypt_text))
+        return text
+    except Exception as e:
+        logger.error("Encrypt rsa error: %s" % e)
         return False
