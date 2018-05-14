@@ -6,7 +6,7 @@ from common.audit_log import audit_log
 from common.utility import salt_api_for_product
 from common.sso import access_required
 from common.const import role_dict
-from user.host import Hosts
+from system.host import Hosts
 from common.db import DB
 import json
 

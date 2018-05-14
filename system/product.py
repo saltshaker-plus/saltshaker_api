@@ -7,7 +7,7 @@ from common.db import DB
 from common.utility import uuid_prefix
 from common.sso import access_required
 import json
-from user.user import update_user_privilege, update_user_product
+from system.user import update_user_privilege, update_user_product
 from common.const import role_dict
 from fileserver.rsync_fs import rsync_config
 

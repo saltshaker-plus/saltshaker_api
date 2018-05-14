@@ -4,13 +4,13 @@ import flask_restful
 from resources.minions import MinionsKeys, MinionsStatus, MinionsGrains, MinionsGrainsList
 from resources.job import Job, JobList, JobManager
 from resources.event import Event, EventList
-from user.product import ProductList, Product
-from user.role import RoleList, Role
-from user.user import UserList, User
-from user.login import Login
-from user.acl import ACLList, ACL
-from user.groups import GroupsList, Groups
-from user.host import HostList, Host, DifferenceHost
+from system.product import ProductList, Product
+from system.role import RoleList, Role
+from system.user import UserList, User
+from system.login import Login
+from system.acl import ACLList, ACL
+from system.groups import GroupsList, Groups
+from system.host import HostList, Host, DifferenceHost
 from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteSLS, ExecuteGroups
