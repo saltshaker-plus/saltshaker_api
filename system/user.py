@@ -10,6 +10,9 @@ from common.audit_log import audit_log
 import json
 from common.const import role_dict
 from common.utility import rsa_decrypt
+import random
+import string
+from common.send_mail import send_mail
 
 
 logger = loggers()
@@ -33,6 +36,7 @@ class User(Resource):
         db.close_mysql()
         if status is True:
             if result:
+                result.pop("password")
                 return {"data": result, "status": True, "message": ""}, 200
             else:
                 return {"status": False, "message": "%s does not exist" % user_id}, 404
@@ -200,6 +204,33 @@ class Register(Resource):
             else:
                 db.close_mysql()
                 return {"status": False, "message": "The user name already exists"}, 200
+        else:
+            db.close_mysql()
+            logger.error("Select user error: %s" % result)
+            return {"status": False, "message": result}, 500
+
+
+class ResetPassword(Resource):
+    # 重置密码
+    @access_required(role_dict["user"])
+    def get(self, user_id):
+        user = g.user_info["username"]
+        db = DB()
+        status, result = db.select_by_id("user", user_id)
+        if status is True and result:
+            # 生成8位随机密码
+            password = ''.join(random.sample(string.ascii_letters + string.digits, 12))
+            send_mail(result["mail"], "Saltshaker 重置密码", "新密码：" + password)
+            # 离散hash
+            password_hash = custom_app_context.encrypt(password)
+            result["password"] = password_hash
+            insert_status, insert_result = db.update_by_id("user", json.dumps(result, ensure_ascii=False), user_id)
+            db.close_mysql()
+            if insert_status is not True:
+                logger.error("Reset %s password error: %s" % (user_id, insert_result))
+                return {"status": False, "message": insert_result}, 500
+            audit_log(user, user_id, "", "user", "reset")
+            return {"status": True, "message": ""}, 201
         else:
             db.close_mysql()
             logger.error("Select user error: %s" % result)
