@@ -6,7 +6,7 @@ from resources.job import Job, JobList, JobManager
 from resources.event import Event, EventList
 from system.product import ProductList, Product
 from system.role import RoleList, Role
-from system.user import UserList, User, Register, ResetPassword
+from system.user import UserList, User, Register, ResetPassword, ResetPasswordByOwner
 from system.login import Login
 from system.acl import ACLList, ACL
 from system.groups import GroupsList, Groups
@@ -56,6 +56,20 @@ def event_to_mysql():
     see_worker()
 
 
+@celery.task
+def send(message):
+    return message
+
+
+celery.conf.beat_schedule = {
+    'send-every-10-seconds': {
+        'task': 'app.send',
+        'schedule': 10.0,
+        'args': ('Hello World', )
+    },
+}
+
+
 # login
 api.add_resource(Login, "/saltshaker/api/v1.0/login")
 
@@ -76,6 +90,7 @@ api.add_resource(UserList, "/saltshaker/api/v1.0/user")
 api.add_resource(User, "/saltshaker/api/v1.0/user/<string:user_id>")
 api.add_resource(Register, "/saltshaker/api/v1.0/user/register")
 api.add_resource(ResetPassword, "/saltshaker/api/v1.0/user/reset/<string:user_id>")
+api.add_resource(ResetPasswordByOwner, "/saltshaker/api/v1.0/user/reset/owner/<string:user_id>")
 
 # groups
 api.add_resource(GroupsList, "/saltshaker/api/v1.0/groups")

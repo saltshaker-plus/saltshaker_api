@@ -5,7 +5,7 @@ from common.db import DB
 from flask import g
 from passlib.apps import custom_app_context
 from common.utility import uuid_prefix
-from common.sso import access_required
+from common.sso import access_required, verify_password
 from common.audit_log import audit_log
 import json
 from common.const import role_dict
@@ -25,6 +25,8 @@ parser.add_argument("groups", type=str, default=[], action="append")
 parser.add_argument("role", type=str, default=[], action="append")
 parser.add_argument("acl", type=str, default=[], action="append")
 parser.add_argument("mail", type=str, trim=True)
+parser.add_argument("old_password", type=str, trim=True)
+parser.add_argument("new_password", type=str, trim=True)
 
 
 class User(Resource):
@@ -210,15 +212,15 @@ class Register(Resource):
             return {"status": False, "message": result}, 500
 
 
+# 管理员重置其他人密码
 class ResetPassword(Resource):
-    # 重置密码
     @access_required(role_dict["user"])
     def get(self, user_id):
         user = g.user_info["username"]
         db = DB()
         status, result = db.select_by_id("user", user_id)
         if status is True and result:
-            # 生成8位随机密码
+            # 生成12位随机密码
             password = ''.join(random.sample(string.ascii_letters + string.digits, 12))
             send_mail(result["mail"], "Saltshaker 重置密码", "新密码：" + password)
             # 离散hash
@@ -231,6 +233,43 @@ class ResetPassword(Resource):
                 return {"status": False, "message": insert_result}, 500
             audit_log(user, user_id, "", "user", "reset")
             return {"status": True, "message": ""}, 201
+        else:
+            db.close_mysql()
+            logger.error("Select user error: %s" % result)
+            return {"status": False, "message": result}, 500
+
+
+# 用户自己修改密码
+class ResetPasswordByOwner(Resource):
+    @access_required(role_dict["user"])
+    def post(self, user_id):
+        args = parser.parse_args()
+        user = g.user_info["username"]
+        db = DB()
+        if not args["old_password"]:
+            return {"status": False, "message": "The specified old_password parameter does not exist"}, 200
+        if not args["new_password"]:
+            return {"status": False, "message": "The specified now_password parameter does not exist"}, 200
+        status, result = db.select_by_id("user", user_id)
+        if status is True and result:
+            if not verify_password(result["username"], args["old_password"]):
+                return {"status": False, "message": "Old password error"}, 200
+            else:
+                # 基于RSA加密算法获取密码
+                password = rsa_decrypt(args["new_password"])
+                if password is False:
+                    return {"status": False, "message": "Decrypt is failure"}, 500
+                # 加密新密码
+                password_hash = custom_app_context.encrypt(password)
+                result["password"] = password_hash
+                update_status, update_result = db.update_by_id("user", json.dumps(result, ensure_ascii=False),
+                                                               user_id)
+                db.close_mysql()
+                if update_status is not True:
+                    logger.error("Reset %s password error: %s" % (user_id, update_result))
+                    return {"status": False, "message": update_result}, 500
+                audit_log(user, user_id, "", "user", "reset by owner")
+                return {"status": True, "message": ""}, 201
         else:
             db.close_mysql()
             logger.error("Select user error: %s" % result)

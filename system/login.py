@@ -22,9 +22,13 @@ class Login(Resource):
     def post(self):
         args = parser.parse_args()
         if verify_password(args["username"], args["password"]):
-            cookie_key, token = create_token(args["username"])
+            cookie_key, token, uid = create_token(args["username"])
             logger.info("%s login success: " % args["username"])
-            return {"status": True, "message": "", "data": {cookie_key: [token.decode("utf-8"), expires_in]}}
+            return {"status": True, "message": "", "data": {"token": {"key": cookie_key,
+                                                                      "value": token.decode("utf-8"),
+                                                                      "expires": expires_in},
+                                                            "user": {"uid": uid}
+                                                            }}
         else:
             logger.info("%s login failure: " % args["username"])
             return {"status": False, "message": "用户名或者密码错误"}
