@@ -245,11 +245,11 @@ class ResetPasswordByOwner(Resource):
     def post(self, user_id):
         args = parser.parse_args()
         user = g.user_info["username"]
-        db = DB()
         if not args["old_password"]:
             return {"status": False, "message": "The specified old_password parameter does not exist"}, 200
         if not args["new_password"]:
             return {"status": False, "message": "The specified now_password parameter does not exist"}, 200
+        db = DB()
         status, result = db.select_by_id("user", user_id)
         if status is True and result:
             if not verify_password(result["username"], args["old_password"]):
@@ -270,6 +270,38 @@ class ResetPasswordByOwner(Resource):
                     return {"status": False, "message": update_result}, 500
                 audit_log(user, user_id, "", "user", "reset by owner")
                 return {"status": True, "message": ""}, 201
+        else:
+            db.close_mysql()
+            logger.error("Select user error: %s" % result)
+            return {"status": False, "message": result}, 500
+
+
+# 用自己修改用户信息
+class ChangeUserInfo(Resource):
+    @access_required(role_dict["user"])
+    def put(self, user_id):
+        args = parser.parse_args()
+        user = g.user_info["username"]
+        if not args["mail"]:
+            return {"status": False, "message": "The specified mail parameter does not exist"}, 200
+        db = DB()
+        select_status, select_result = db.select("user", "where data -> '$.username'='%s'" % args["username"])
+        if select_status is True and select_result:
+            if select_result[0]["id"] != user_id:
+                db.close_mysql()
+                return {"status": False, "message": "The user name already exists"}, 200
+        status, result = db.select_by_id("user", user_id)
+        if status is True and result:
+            result["username"] = args["username"]
+            result["mail"] = args["mail"]
+            update_status, update_result = db.update_by_id("user", json.dumps(result, ensure_ascii=False),
+                                                           user_id)
+            db.close_mysql()
+            if update_status is not True:
+                logger.error("Change %s user info error: %s" % (user_id, update_result))
+                return {"status": False, "message": update_result}, 500
+            audit_log(user, user_id, "", "user", "change user info")
+            return {"status": True, "message": ""}, 201
         else:
             db.close_mysql()
             logger.error("Select user error: %s" % result)

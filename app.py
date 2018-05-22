@@ -6,7 +6,7 @@ from resources.job import Job, JobList, JobManager
 from resources.event import Event, EventList
 from system.product import ProductList, Product
 from system.role import RoleList, Role
-from system.user import UserList, User, Register, ResetPassword, ResetPasswordByOwner
+from system.user import UserList, User, Register, ResetPassword, ResetPasswordByOwner, ChangeUserInfo
 from system.login import Login
 from system.acl import ACLList, ACL
 from system.groups import GroupsList, Groups
@@ -91,6 +91,7 @@ api.add_resource(User, "/saltshaker/api/v1.0/user/<string:user_id>")
 api.add_resource(Register, "/saltshaker/api/v1.0/user/register")
 api.add_resource(ResetPassword, "/saltshaker/api/v1.0/user/reset/<string:user_id>")
 api.add_resource(ResetPasswordByOwner, "/saltshaker/api/v1.0/user/reset/owner/<string:user_id>")
+api.add_resource(ChangeUserInfo, "/saltshaker/api/v1.0/user/change/<string:user_id>")
 
 # groups
 api.add_resource(GroupsList, "/saltshaker/api/v1.0/groups")
