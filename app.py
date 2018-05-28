@@ -14,7 +14,7 @@ from system.host import HostList, Host, DifferenceHost
 from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteSLS, ExecuteGroups
-from resources.gitfs import BranchList, FilesList, FileContent, Commit
+from resources.gitfs import BranchList, FilesList, FileContent, Commit, Upload
 from resources.command import HistoryList
 from resources.pillar import PillarItems
 from resources.rsa_encrypt import RSA
@@ -128,6 +128,7 @@ api.add_resource(BranchList, "/saltshaker/api/v1.0/gitlab/branch")
 api.add_resource(FilesList, "/saltshaker/api/v1.0/gitlab/file")
 api.add_resource(FileContent, "/saltshaker/api/v1.0/gitlab/content")
 api.add_resource(Commit, "/saltshaker/api/v1.0/gitlab/commit")
+api.add_resource(Upload, "/saltshaker/api/v1.0/gitlab/upload")
 
 # audit log
 api.add_resource(LogList, "/saltshaker/api/v1.0/log")

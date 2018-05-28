@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
-from flask_restful import Resource, reqparse
+from flask_restful import Resource, reqparse, request
 from fileserver.git_fs import gitlab_project
 from common.const import role_dict
 from common.log import loggers
 from common.sso import access_required
+import base64
 
 logger = loggers()
 
@@ -132,5 +133,54 @@ class Commit(Resource):
                 project.commits.create(data)
             except Exception as e:
                 logger.error("Commit file: %s" % e)
+                return {"status": False, "message": str(e)}, 500
+            return {"status": True, "message": ""}, 200
+
+
+# 创建修改删除文件
+class Upload(Resource):
+    @access_required(role_dict["common_user"])
+    def post(self):
+        args = parser.parse_args()
+        project, _ = gitlab_project(args["product_id"], args["project_type"])
+        file = request.files['file']
+        if args["path"]:
+            file_path = args["path"] + "/" + file.filename
+        content = file.read()
+        try:
+            content_decode = content.decode()
+            actions = [
+                {
+                    'action': 'create',
+                    'file_path': file_path,
+                    'content': content_decode
+                }
+            ]
+        except Exception as e:
+            return {"status": False, "message": str(e)}, 500
+        # try:
+        #     content_decode = content.decode()
+        #     actions = [
+        #         {
+        #             'action': args["action"],
+        #             'file_path': file_path,
+        #             'content': base64.b64encode(content_decode),
+        #             'encoding': 'base64',
+        #         }
+        #     ]
+        # except Exception as e:
+        #     print(e)
+        data = {
+            'branch': args["branch"],
+            'commit_message': args["action"] + " " + args["path"],
+            'actions': actions
+        }
+        if isinstance(project, dict):
+            return project, 500
+        else:
+            try:
+                project.commits.create(data)
+            except Exception as e:
+                logger.error("Upload file: %s" % e)
                 return {"status": False, "message": str(e)}, 500
             return {"status": True, "message": ""}, 200
