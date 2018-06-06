@@ -51,8 +51,12 @@ class DB(object):
         try:
             self.cursor.execute(sql)
             tmp = self.cursor.fetchall()
-            result = ast.literal_eval(tmp[0][0].replace('true', 'True').replace('false', 'False').replace('null', '""'))
-            return True, result
+            if tmp:
+                result = ast.literal_eval(tmp[0][0].replace('true', 'True').replace('false', 'False').
+                                          replace('null', '""'))
+                return True, result
+            else:
+                return False, "%s does not exist" % id
         except Exception as e:
             logger.error("Select by id error: %s" % e)
             return False, str(e)
