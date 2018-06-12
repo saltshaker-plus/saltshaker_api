@@ -27,7 +27,8 @@ def initialize(username, password):
         "event",
         "cmd_history",
         "host",
-        "grains"
+        "grains",
+        "period_task"
     ]
     for t in tables:
         status, result = db.create_table(t)
