@@ -80,7 +80,7 @@ def initialize(username, password):
                     click.echo("Init role error: %s" % insert_result)
                     return
                 if i == role_dict["superuser"]:
-                    role_id = result[0]["id"]
+                    role_id = role[i]["id"]
                 click.echo("Init %s role successful" % role[i]["name"])
             else:
                 click.echo("%s role already exists" % role[i]["name"])
