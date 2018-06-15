@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, jsonify
 import flask_restful
 from resources.minions import MinionsKeys, MinionsStatus, MinionsGrains, MinionsGrainsList
 from resources.job import Job, JobList, JobManager
@@ -30,6 +30,7 @@ from celery import Celery
 from tasks.tasks_conf import CELERY_BROKER_URL
 from tasks.sse_worker import see_worker
 from common.utility import custom_abort
+import json
 
 
 config = configparser.ConfigParser()
@@ -57,18 +58,23 @@ def event_to_mysql():
     see_worker()
 
 
-@celery.task
-def send(message):
-    return message
+# @celery.task
+# def send(message):
+#     return message
 
 
-celery.conf.beat_schedule = {
-    'send-every-10-seconds': {
-        'task': 'app.send',
-        'schedule': 10.0,
-        'args': ('Hello World', )
-    },
-}
+# celery.conf.beat_schedule = {
+#     'send-every-10-seconds': {
+#         'task': 'app.send',
+#         'schedule': 10.0,
+#         'args': ('Hello World', )
+#     },
+# }
+
+@app.route('/saltshaker/api/v1.0/sse', methods=['GET'])
+def sse():
+    event_to_mysql.delay()
+    return jsonify({"data": "", "status": True, "message": ""})
 
 
 # login
@@ -194,13 +200,6 @@ def logins():
     </form>
     """
 
-
-@app.route('/saltshaker/api/v1.0/sse', methods=['GET'])
-def sse():
-    event_to_mysql.delay()
-    return """
-    <h1>event to mysql</h1>
-    """
 
 
 if __name__ == '__main__':

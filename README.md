@@ -38,6 +38,10 @@
 4. 启动Flask App
     python /root/work/github/saltshaker_api/app.py
 ````
+````
+5. 启动Celery
+    celery -A app.celery worker --loglevel=info
+````
 
 #### **GitLab 使用说明 版本要求　GitLab >= 9.0**
 官方配置gitfs说明 请查看此[链接](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)
