@@ -15,6 +15,7 @@ from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteSLS, ExecuteGroups
 from resources.gitfs import BranchList, FilesList, FileContent, Commit, Upload
+from kit.tools import HostAdd
 from resources.command import HistoryList
 from resources.pillar import PillarItems
 from resources.rsa_encrypt import RSA
@@ -158,6 +159,9 @@ api.add_resource(PillarItems, "/saltshaker/api/v1.0/pillar")
 
 # rsa
 api.add_resource(RSA, "/saltshaker/api/v1.0/rsa")
+
+# kit
+api.add_resource(HostAdd, "/saltshaker/api/v1.0/host/add")
 
 
 @app.cli.command()
