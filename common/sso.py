@@ -122,6 +122,29 @@ def create_token(username):
     return cookie_key, token, uid
 
 
+def menu_list(username):
+    db = DB()
+    status, result = db.select("user", "where data -> '$.username'='%s'" % username)
+    menu = []
+    if status is True and result:
+        try:
+            roles = result[0].get("role")
+            for role in roles:
+                status, result = db.select_by_id("role", role)
+                if status is True and result:
+                    if result["tag"] == role_dict["superuser"]:
+                        # 0 放到最后以保证系统管理在最后
+                        menu = [1, 2, 101, 0]
+                    elif result["tag"] == role_dict["product"]:
+                        menu = [1, 2, 101]
+                    else:
+                        menu = [1]
+        except Exception as e:
+            logger.error("Menu list error: %s" % e)
+    db.close_mysql()
+    return menu
+
+
 # 基于 Passlib 的离散哈希 BasicAuth
 def verify_password(username, password_rsa):
     db = DB()
