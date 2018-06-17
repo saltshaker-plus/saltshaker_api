@@ -31,7 +31,7 @@ parser.add_argument("new_password", type=str, trim=True)
 
 class User(Resource):
     # 查看指定用户
-    @access_required(role_dict["user"])
+    @access_required(role_dict["common_user"])
     def get(self, user_id):
         db = DB()
         status, result = db.select_by_id("user", user_id)
@@ -241,7 +241,7 @@ class ResetPassword(Resource):
 
 # 用户自己修改密码
 class ResetPasswordByOwner(Resource):
-    @access_required(role_dict["user"])
+    @access_required(role_dict["common_user"])
     def post(self, user_id):
         args = parser.parse_args()
         user = g.user_info["username"]
@@ -278,7 +278,7 @@ class ResetPasswordByOwner(Resource):
 
 # 用自己修改用户信息
 class ChangeUserInfo(Resource):
-    @access_required(role_dict["user"])
+    @access_required(role_dict["common_user"])
     def put(self, user_id):
         args = parser.parse_args()
         user = g.user_info["username"]
