@@ -32,12 +32,18 @@ def access_required(tag):
             token = request.cookies.get(cookie_key)
             if token:
                 try:
-                    user_info = ast.literal_eval(RedisTool.get(token).replace('true', 'True').
-                                                 replace('false', 'False').replace('null', '""'))
-                    # 验证是否有权限访问
-                    if not verify_role(user_info, tag):
-                        return {"status": False, "message": "Access forbidden"}, 403
-                    g.user_info = user_info
+                    uid = RedisTool.get(token)
+                    db = DB()
+                    status, result = db.select_by_id("user", uid)
+                    if status is True and result:
+                        db.close_mysql()
+                        # 验证是否有权限访问
+                        if not verify_role(result, tag):
+                            return {"status": False, "message": "Access forbidden"}, 403
+                        g.user_info = result
+                    else:
+                        logger.error("Select uid by token error: %s" % result)
+                        return {"status": False, "message": "Unauthorized access"}, 401
                 except Exception as e:
                     logger.error("Verify token error: %s" % e)
                     return {"status": False, "message": "Unauthorized access"}, 401
@@ -109,8 +115,8 @@ def create_token(username):
     uid = ""
     if status is True and result:
         try:
-            RedisTool.setex(token, expires_in, result[0])
-            uid = result[0]["id"]
+            uid = result[0].get("id")
+            RedisTool.setex(token, expires_in, uid)
         except Exception as e:
             logger.error("Verify password error: %s" % e)
     return cookie_key, token, uid
