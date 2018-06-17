@@ -16,7 +16,7 @@ parser = reqparse.RequestParser()
 parser.add_argument("product_id", type=str, required=True, trim=True)
 
 
-class HostAdd(Resource):
+class HostSync(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         user = g.user_info["username"]

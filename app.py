@@ -15,7 +15,7 @@ from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteSLS, ExecuteGroups
 from resources.gitfs import BranchList, FilesList, FileContent, Commit, Upload
-from kit.tools import HostAdd
+from kit.tools import HostSync
 from resources.command import HistoryList
 from resources.pillar import PillarItems
 from resources.rsa_encrypt import RSA
@@ -31,7 +31,6 @@ from celery import Celery
 from tasks.tasks_conf import CELERY_BROKER_URL
 from tasks.sse_worker import see_worker
 from common.utility import custom_abort
-import json
 
 
 config = configparser.ConfigParser()
@@ -161,7 +160,7 @@ api.add_resource(PillarItems, "/saltshaker/api/v1.0/pillar")
 api.add_resource(RSA, "/saltshaker/api/v1.0/rsa")
 
 # kit
-api.add_resource(HostAdd, "/saltshaker/api/v1.0/host/add")
+api.add_resource(HostSync, "/saltshaker/api/v1.0/host/sync")
 
 
 @app.cli.command()

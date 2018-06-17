@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
 from common.log import loggers
-from common.sso import create_token, verify_password
+from common.sso import create_token, verify_password, menu_list
 import configparser
 import os
 
@@ -23,11 +23,13 @@ class Login(Resource):
         args = parser.parse_args()
         if verify_password(args["username"], args["password"]):
             cookie_key, token, uid = create_token(args["username"])
+            menu = menu_list(args["username"])
             logger.info("%s login success: " % args["username"])
             return {"status": True, "message": "", "data": {"token": {"key": cookie_key,
                                                                       "value": token.decode("utf-8"),
                                                                       "expires": expires_in},
-                                                            "user": {"uid": uid}
+                                                            "user": {"uid": uid,
+                                                                     "menu": menu}
                                                             }}
         else:
             logger.info("%s login failure: " % args["username"])
