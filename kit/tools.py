@@ -32,5 +32,7 @@ class HostSync(Resource):
                     return result, 500
                 for minion in result.get("up"):
                     minion_status.append(minion)
+                for minion in result.get("down"):
+                    minion_status.append(minion)
         Hosts.add_host(minion_status, args["product_id"], user)
         return {"status": True, "message": ""}, 200
