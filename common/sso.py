@@ -54,12 +54,18 @@ def access_required(tag):
             elif 'Authorization' in request.headers:
                 try:
                     scheme, cred = request.headers['Authorization'].split(None, 1)
-                    user_info = ast.literal_eval(RedisTool.get(cred).replace('true', 'True').
-                                                 replace('false', 'False').replace('null', '""'))
-                    # 验证是否有权限访问
-                    if not verify_role(user_info, tag):
-                        return {"status": False, "message": "access forbidden"}, 403
-                    g.user_info = user_info
+                    uid = RedisTool.get(cred)
+                    db = DB()
+                    status, result = db.select_by_id("user", uid)
+                    if status is True and result:
+                        db.close_mysql()
+                        # 验证是否有权限访问
+                        if not verify_role(result, tag):
+                            return {"status": False, "message": "Access forbidden"}, 403
+                        g.user_info = result
+                    else:
+                        logger.error("Select uid by token error: %s" % result)
+                        return {"status": False, "message": "Unauthorized access"}, 401
                 except Exception as e:
                     logger.error("Verify token error: %s" % e)
                     return {"status": False, "message": "Unauthorized access"}, 401
@@ -73,12 +79,18 @@ def access_required(tag):
             elif 'X-Gitlab-Token' in request.headers:
                 gitlab_token = request.headers['X-Gitlab-Token']
                 try:
-                    user_info = ast.literal_eval(RedisTool.get(gitlab_token).replace('true', 'True').
-                                                 replace('false', 'False').replace('null', '""'))
-                    # 验证是否有权限访问
-                    if not verify_role(user_info, tag):
-                        return {"status": False, "message": "access forbidden"}, 403
-                    g.user_info = user_info
+                    uid = RedisTool.get(gitlab_token)
+                    db = DB()
+                    status, result = db.select_by_id("user", uid)
+                    if status is True and result:
+                        db.close_mysql()
+                        # 验证是否有权限访问
+                        if not verify_role(result, tag):
+                            return {"status": False, "message": "Access forbidden"}, 403
+                        g.user_info = result
+                    else:
+                        logger.error("Select uid by token error: %s" % result)
+                        return {"status": False, "message": "Unauthorized access"}, 401
                 except Exception as e:
                     logger.error("Verify token error: %s" % e)
                     return {"status": False, "message": "Unauthorized access"}, 401
