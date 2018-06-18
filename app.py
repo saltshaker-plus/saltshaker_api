@@ -15,6 +15,7 @@ from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteSLS, ExecuteGroups
 from resources.gitfs import BranchList, FilesList, FileContent, Commit, Upload
+from resources.dashboard import GrainsStatistics
 from kit.tools import HostSync
 from resources.command import HistoryList
 from resources.pillar import PillarItems
@@ -161,6 +162,9 @@ api.add_resource(RSA, "/saltshaker/api/v1.0/rsa")
 
 # kit
 api.add_resource(HostSync, "/saltshaker/api/v1.0/host/sync")
+
+# dashboard
+api.add_resource(GrainsStatistics, "/saltshaker/api/v1.0/dashboard/grains/<string:item>")
 
 
 @app.cli.command()
