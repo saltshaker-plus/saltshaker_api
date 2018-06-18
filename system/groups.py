@@ -127,6 +127,7 @@ class GroupsList(Resource):
                     logger.error("Add groups error: %s" % insert_result)
                     return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "groups", "add")
+                group_to_user(args["id"], g.user_info["id"])
                 return {"status": True, "message": ""}, 201
             else:
                 db.close_mysql()
@@ -135,3 +136,19 @@ class GroupsList(Resource):
             db.close_mysql()
             logger.error("Select groups name error: %s" % result)
             return {"status": False, "message": result}, 500
+
+
+def group_to_user(gid, uid):
+    db = DB()
+    select_status, select_result = db.select_by_id("user", uid)
+    if select_status is True and select_result:
+        select_result["groups"].append(gid)
+    else:
+        return {"status": False, "message": select_result}
+    status, result = db.update_by_id("user", json.dumps(select_result, ensure_ascii=False), uid)
+    db.close_mysql()
+    if status is True:
+        return {"status": True, "message": ""}
+    else:
+        logger.error("Group to user error: %s" % result)
+        return {"status": False, "message": result}
