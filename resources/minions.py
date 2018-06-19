@@ -120,7 +120,7 @@ class MinionsGrains(Resource):
                 else:
                     result = salt_api.grains(args["minion"])
                     if result:
-                        create_grains(args["product_id"])
+                        # create_grains(args["product_id"])
                         data = {"data": result, "status": True, "message": ""}
                         return data
                     return {"status": False, "message": "The specified minion does not exist"}, 404
