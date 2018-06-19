@@ -9,6 +9,7 @@ from system.host import Hosts
 from common.utility import salt_api_for_product
 import json
 from common.const import role_dict
+from resources.minions import create_grains
 
 logger = loggers()
 
@@ -35,4 +36,14 @@ class HostSync(Resource):
                 for minion in result.get("down"):
                     minion_status.append(minion)
         Hosts.add_host(minion_status, args["product_id"], user)
+        return {"status": True, "message": ""}, 200
+
+
+class GrainSync(Resource):
+    @access_required(role_dict["common_user"])
+    def get(self):
+        # user = g.user_info["username"]
+        args = parser.parse_args()
+        print(args["product_id"])
+        create_grains(args["product_id"])
         return {"status": True, "message": ""}, 200

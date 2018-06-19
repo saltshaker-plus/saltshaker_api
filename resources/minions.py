@@ -155,6 +155,7 @@ def create_grains(product_id):
                 minion_status.append(minion)
     db = DB()
     for minion in minion_status:
+        print(minion)
         select_status, select_result = db.select("grains", "where data -> '$.id'='%s' and data -> '$.product_id'='%s'"
                                                  % (minion, product_id))
         grains = salt_api.grains(minion)
