@@ -5,6 +5,7 @@ from common.sso import access_required
 from common.db import DB
 from common.const import role_dict
 from collections import Counter
+from common.utility import salt_api_for_product
 
 
 logger = loggers()
@@ -81,13 +82,54 @@ class TitleInfo(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         db = DB()
+        data = {
+            "minion": None,
+            "period": None,
+            "event": None,
+            "log": None
+        }
         args = parser.parse_args()
-        status, result = db.select("event", "where data -> '$.data.product_id'='%s'" % args["product_id"])
+        host_status, host_result = db.select("host", "where data -> '$.product_id'='%s'" % args["product_id"])
+        event_status, event_result = db.select("event", "where data -> '$.data.product_id'='%s'" % args["product_id"])
+        period_status, period_result = db.select("period_task", "where data -> '$.product_id'='%s'" % args["product_id"])
+        log_status, log_result = db.select("period_task", "where data -> '$.product_id'='%s'" % args["product_id"])
         db.close_mysql()
-        if status is True:
-            if result:
-                return {"events": {"event": result}, "status": True, "message": ""}, 200
-            else:
-                return {"status": False, "message": "Even does not exist"}, 404
+        data["minion"] = len(host_result)
+        data["period"] = len(period_result)
+        data["event"] = len(event_result)
+        data["log"] = len(log_result)
+        return {"data": data, "status": True, "message": ""}, 200
+
+
+class Minion(Resource):
+    @access_required(role_dict["common_user"])
+    def get(self):
+        args = parser.parse_args()
+        salt_api = salt_api_for_product(args["product_id"])
+        if isinstance(salt_api, dict):
+            return salt_api, 500
         else:
-            return {"status": False, "message": result}, 500
+            key_result = salt_api.list_all_key()
+            if key_result:
+                if key_result.get("status") is False:
+                    return key_result, 500
+            status_result = salt_api.runner_status("status")
+            if status_result:
+                if status_result.get("status") is False:
+                    return status_result, 500
+            data = {
+                "title": ["Accepted", "Up", "Down", "Rejected", "Unaccepted"],
+                "series": [
+                    {"value": len(key_result.get("minions")), "name": 'Accepted',
+                     "itemStyle": {"normal": {"color": '#f0e334'}}},
+                    {"value": len(status_result.get("up")), "name": 'Up', "itemStyle":
+                        {"normal": {"color": '#64d572'}}},
+                    {"value": len(status_result.get("down")), "name": 'Down', "itemStyle":
+                        {"normal": {"color": '#f25e43'}}},
+                    {"value": len(key_result.get("minions_rejected")), "name": 'Rejected',
+                     "itemStyle": {"normal": {"color": '#ffd572'}}},
+                    {"value": len(key_result.get("minions_pre")), "name": 'Unaccepted',
+                     "itemStyle": {"normal": {"color": '#2d8cf0'}}}
+                ],
+            }
+            return {"data": data, "status": True, "message": ""}, 200
