@@ -36,7 +36,8 @@
 ````
 ````
 4. 启动Flask App
-    python /root/work/github/saltshaker_api/app.py
+    开发模式：python /root/work/github/saltshaker_api/app.py
+    Gunicorn模式： cd /root/work/github/saltshaker_api/ && gunicorn -c gun.py app:app
 ````
 ````
 5. 启动Celery
