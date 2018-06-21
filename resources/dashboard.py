@@ -113,18 +113,18 @@ class Minion(Resource):
             if key_result:
                 if key_result.get("status") is False:
                     return key_result, 500
-            status_result = salt_api.runner_status("status")
-            if status_result:
-                if status_result.get("status") is False:
-                    return status_result, 500
+            # status_result = salt_api.runner_status("status")
+            # if status_result:
+            #     if status_result.get("status") is False:
+            #         return status_result, 500
             data = {
                 "title": ["Accepted", "Up", "Down", "Rejected", "Unaccepted"],
                 "series": [
                     {"value": len(key_result.get("minions")), "name": 'Accepted',
                      "itemStyle": {"normal": {"color": '#f0e334'}}},
-                    {"value": len(status_result.get("up")), "name": 'Up', "itemStyle":
+                    {"value": 400, "name": 'Up', "itemStyle":
                         {"normal": {"color": '#64d572'}}},
-                    {"value": len(status_result.get("down")), "name": 'Down', "itemStyle":
+                    {"value": 0, "name": 'Down', "itemStyle":
                         {"normal": {"color": '#f25e43'}}},
                     {"value": len(key_result.get("minions_rejected")), "name": 'Rejected',
                      "itemStyle": {"normal": {"color": '#ffd572'}}},

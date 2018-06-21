@@ -23,6 +23,7 @@ def see_worker():
                 if mine_pattern.search(event.data):
                     pass
                 elif saltutil_pattern.search(event.data):
+                    print("######################")
                     pass
                 else:
                     event_dict = ast.literal_eval(event.data.replace('true', 'True').replace('false', 'False').
