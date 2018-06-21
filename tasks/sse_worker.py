@@ -14,12 +14,15 @@ def see_worker():
         for product in result:
             # job_pattern = re.compile('salt/job/\d+/ret/')
             mine_pattern = re.compile(r'"fun": "mine.update"')
+            saltutil_pattern = re.compile(r'"fun": "saltutil.find_job"')
             salt_api = salt_api_for_product(product["id"])
             event_response = salt_api.events()
             client = sseclient.SSEClient(event_response)
             for event in client.events():
                 print(event.data)
                 if mine_pattern.search(event.data):
+                    pass
+                elif saltutil_pattern.search(event.data):
                     pass
                 else:
                     event_dict = ast.literal_eval(event.data.replace('true', 'True').replace('false', 'False').
