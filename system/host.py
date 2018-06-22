@@ -161,7 +161,7 @@ class Hosts(object):
             select_status, select_result = db.select("host", "where data -> '$.minion_id'='%s' "
                                                              "and data -> '$.product_id='%s'" % (minion_id, product_id))
             if select_status is False:
-                logger.error("Add % host error: %s" % (minion_id, select_result))
+                logger.error("Add %s host error: %s" % (minion_id, select_result))
                 continue
             if not select_result:
                 id = uuid_prefix("h")
@@ -174,7 +174,7 @@ class Hosts(object):
                 }
                 insert_status, insert_result = db.insert("host", json.dumps(host, ensure_ascii=False))
                 if insert_status is False:
-                    logger.error("Add % host error: %s" % (minion_id, insert_result))
+                    logger.error("Add %s host error: %s" % (minion_id, insert_result))
                 else:
                     audit_log(user, id, product_id, "host", "add")
         db.close_mysql()
@@ -184,7 +184,7 @@ class Hosts(object):
         db = DB()
         group_status, group_result = db.select("groups", "where data -> '$.product_id'='%s'" % product_id)
         if group_status is False:
-            logger.error("Delete % host error: %s" % (minion_list, group_status))
+            logger.error("Delete %s host error: %s" % (minion_list, group_status))
         for minion_id in minion_list:
             try:
                 # 组里面删除主机
@@ -196,7 +196,7 @@ class Hosts(object):
                     if status is not True:
                         logger.error("Modify group error: %s" % result)
             except Exception as e:
-                logger.error("Delete % host error: %s" % (minion_id, e))
+                logger.error("Delete %s host error: %s" % (minion_id, e))
             select_status, select_result = db.select("host", "where data -> '$.minion_id'='%s'" % minion_id)
             if select_status is False:
                 logger.error("Delete % host error: %s" % (minion_id, select_result))
@@ -205,11 +205,11 @@ class Hosts(object):
                     try:
                         status, result = db.delete_by_id("host", host["id"])
                         if status is False:
-                            logger.error("Delete % host error: %s" % (minion_id, result))
+                            logger.error("Delete %s host error: %s" % (minion_id, result))
                         else:
                             audit_log(user, host["id"], product_id, "host", "delete")
                     except Exception as e:
-                        logger.error("Delete % host error: %s" % (minion_id, e))
+                        logger.error("Delete %s host error: %s" % (minion_id, e))
 
             else:
                 logger.error("Select %s host does not exist" % minion_id)
@@ -221,7 +221,7 @@ class Hosts(object):
         for minion_id in minion_list:
             select_status, select_result = db.select("host", "where data -> '$.minion_id'='%s'" % minion_id)
             if select_status is False:
-                logger.error("Reject % host error: %s" % (minion_id, select_result))
+                logger.error("Reject %s host error: %s" % (minion_id, select_result))
             if select_result:
                 for host in select_result:
                     try:
@@ -229,11 +229,11 @@ class Hosts(object):
                         host["tag"].append({"name": "reject", "color": "red"})
                         status, result = db.update_by_id("host", json.dumps(host, ensure_ascii=False), host["id"])
                         if status is False:
-                            logger.error("Reject % host error: %s" % (minion_id, result))
+                            logger.error("Reject %s host error: %s" % (minion_id, result))
                         else:
                             audit_log(user, host["id"], product_id, "host", "reject")
                     except Exception as e:
-                        logger.error("Reject % host error: %s" % (minion_id, e))
+                        logger.error("Reject %s host error: %s" % (minion_id, e))
             else:
                 logger.error("Select %s host does not exist" % minion_id)
         db.close_mysql()
