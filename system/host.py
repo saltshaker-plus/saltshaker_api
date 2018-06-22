@@ -159,7 +159,8 @@ class Hosts(object):
         db = DB()
         for minion_id in minion_list:
             select_status, select_result = db.select("host", "where data -> '$.minion_id'='%s' "
-                                                             "and data -> '$.product_id'='%s'" % (minion_id, product_id))
+                                                             "and data -> '$.product_id'='%s'" % (minion_id,
+                                                                                                  product_id))
             if select_status is False:
                 logger.error("Add %s host error: %s" % (minion_id, select_result))
                 continue
@@ -197,7 +198,9 @@ class Hosts(object):
                         logger.error("Modify group error: %s" % result)
             except Exception as e:
                 logger.error("Delete %s host error: %s" % (minion_id, e))
-            select_status, select_result = db.select("host", "where data -> '$.minion_id'='%s'" % minion_id)
+            select_status, select_result = db.select("host", "where data -> '$.minion_id'='%s' "
+                                                             "and data -> '$.product_id'='%s'" % (minion_id,
+                                                                                                  product_id))
             if select_status is False:
                 logger.error("Delete % host error: %s" % (minion_id, select_result))
             if select_result:
@@ -219,7 +222,9 @@ class Hosts(object):
     def reject_host(minion_list, product_id, user):
         db = DB()
         for minion_id in minion_list:
-            select_status, select_result = db.select("host", "where data -> '$.minion_id'='%s'" % minion_id)
+            select_status, select_result = db.select("host", "where data -> '$.minion_id'='%s' "
+                                                             "and data -> '$.product_id'='%s'" % (minion_id,
+                                                                                                  product_id))
             if select_status is False:
                 logger.error("Reject %s host error: %s" % (minion_id, select_result))
             if select_result:
