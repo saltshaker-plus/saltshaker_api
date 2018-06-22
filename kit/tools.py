@@ -23,19 +23,17 @@ class HostSync(Resource):
         user = g.user_info["username"]
         args = parser.parse_args()
         salt_api = salt_api_for_product(args["product_id"])
-        minion_status = []
+        minions = []
         if isinstance(salt_api, dict):
             return salt_api, 500
         else:
-            result = salt_api.runner_status("status")
+            result = salt_api.list_all_key()
             if result:
                 if result.get("status") is False:
                     return result, 500
-                for minion in result.get("up"):
-                    minion_status.append(minion)
-                for minion in result.get("down"):
-                    minion_status.append(minion)
-        Hosts.add_host(minion_status, args["product_id"], user)
+                for minion in result.get("minions"):
+                    minions.append(minion)
+        Hosts.add_host(minions, args["product_id"], user)
         return {"status": True, "message": ""}, 200
 
 
