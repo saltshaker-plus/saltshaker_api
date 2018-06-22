@@ -32,6 +32,7 @@ from celery import Celery
 from tasks.tasks_conf import CELERY_BROKER_URL
 from tasks.sse_worker import see_worker
 from common.utility import custom_abort
+from common.db import DB
 
 
 config = configparser.ConfigParser()
@@ -55,8 +56,8 @@ flask_restful.abort = custom_abort
 
 
 @celery.task
-def event_to_mysql():
-    see_worker()
+def event_to_mysql(product):
+    see_worker(product)
 
 
 # @celery.task
@@ -74,7 +75,12 @@ def event_to_mysql():
 
 @app.route('/saltshaker/api/v1.0/sse', methods=['GET'])
 def sse():
-    event_to_mysql.delay()
+    db = DB()
+    status, result = db.select("product", "")
+    db.close_mysql()
+    if status is True and result:
+        for product in result:
+            event_to_mysql.delay(product['id'])
     return jsonify({"data": "", "status": True, "message": ""})
 
 
@@ -209,7 +215,6 @@ def logins():
         <p><input type=submit value=Login>
     </form>
     """
-
 
 
 if __name__ == '__main__':
