@@ -80,6 +80,7 @@ def sse():
     db.close_mysql()
     if status is True and result:
         for product in result:
+            print(product['id'])
             event_to_mysql.delay(product['id'])
     return jsonify({"data": "", "status": True, "message": ""})
 
