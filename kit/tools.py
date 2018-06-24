@@ -37,11 +37,10 @@ class HostSync(Resource):
         return {"status": True, "message": ""}, 200
 
 
-class GrainSync(Resource):
+class GrainsSync(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         # user = g.user_info["username"]
         args = parser.parse_args()
-        print(args["product_id"])
         create_grains(args["product_id"])
         return {"status": True, "message": ""}, 200

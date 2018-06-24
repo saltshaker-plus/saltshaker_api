@@ -19,7 +19,7 @@ parser.add_argument("tag", type=int, required=True, trim=True)
 
 
 class Role(Resource):
-    @access_required(role_dict["superuser"])
+    @access_required(role_dict["product"])
     def get(self, role_id):
         db = DB()
         status, result = db.select_by_id("role", role_id)
@@ -32,7 +32,7 @@ class Role(Resource):
         else:
             return {"status": False, "message": result}, 500
 
-    @access_required(role_dict["superuser"])
+    @access_required(role_dict["product"])
     def delete(self, role_id):
         user = g.user_info["username"]
         db = DB()
@@ -49,7 +49,7 @@ class Role(Resource):
             return {"status": False, "message": info["message"]}, 500
         return {"status": True, "message": ""}, 200
 
-    @access_required(role_dict["superuser"])
+    @access_required(role_dict["product"])
     def put(self, role_id):
         user = g.user_info["username"]
         args = parser.parse_args()
@@ -82,7 +82,7 @@ class Role(Resource):
 
 
 class RoleList(Resource):
-    @access_required(role_dict["superuser"])
+    @access_required(role_dict["product"])
     def get(self):
         db = DB()
         status, result = db.select("role", "")
@@ -92,7 +92,7 @@ class RoleList(Resource):
         else:
             return {"status": False, "message": result}, 500
 
-    @access_required(role_dict["superuser"])
+    @access_required(role_dict["product"])
     def post(self):
         args = parser.parse_args()
         args["id"] = uuid_prefix("r")

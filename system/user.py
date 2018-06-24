@@ -118,17 +118,30 @@ class UserList(Resource):
     @access_required(role_dict["user"])
     def get(self):
         db = DB()
-        status, result = db.select("user", "")
-        user_list = []
-        if status is True:
-            if result:
-                for user in result:
-                    user.pop("password")
-                    user_list.append(user)
-            else:
-                return {"data": user_list, "status": True, "message": ""}, 200
-        else:
-            return {"status": False, "message": result}, 500
+        user_info = g.user_info
+        role_sql = []
+        if user_info["role"]:
+            for role in user_info["role"]:
+                role_sql.append("data -> '$.id'='%s'" % role)
+            sql = " or ".join(role_sql)
+            role_status, role_result = db.select("role", "where %s" % sql)
+            if role_status and role_result:
+                for role in role_result:
+                    user_list = []
+                    if role["tag"] == 0:
+                        status, result = db.select("user", "")
+                    else:
+                        status, result = db.select_by_list_list("user", "product", user_info["product"])
+                    if status is True:
+                        if result:
+                            for user in result:
+                                user.pop("password")
+                                user_list.append(user)
+                        else:
+                            return {"data": user_list, "status": True, "message": ""}, 200
+                    else:
+                        return {"status": False, "message": result}, 500
+
         for item in user_list:
             for attr in item.keys():
                 if attr not in ["id", "username", "mail"]:

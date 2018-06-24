@@ -146,9 +146,11 @@ def menu_list(username):
                 if status is True and result:
                     if result["tag"] == role_dict["superuser"]:
                         # 0 放到最后以保证系统管理在最后
-                        menu = [1, 2, 101, 0]
+                        menu = [1, 2, 111, 0, 100, 101, 102, 103, 104, -1]
+                        break
                     elif result["tag"] == role_dict["product"]:
-                        menu = [1, 2, 101]
+                        menu = [1, 2, 111, 0, 100, 103]
+                        break
                     else:
                         menu = [1]
         except Exception as e:
