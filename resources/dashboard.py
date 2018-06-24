@@ -92,7 +92,7 @@ class TitleInfo(Resource):
         host_status, host_result = db.select("host", "where data -> '$.product_id'='%s'" % args["product_id"])
         event_status, event_result = db.select("event", "where data -> '$.data.product_id'='%s'" % args["product_id"])
         period_status, period_result = db.select("period_task", "where data -> '$.product_id'='%s'" % args["product_id"])
-        log_status, log_result = db.select("period_task", "where data -> '$.product_id'='%s'" % args["product_id"])
+        log_status, log_result = db.select("audit_log", "where data -> '$.product_id'='%s'" % args["product_id"])
         db.close_mysql()
         data["minion"] = len(host_result)
         data["period"] = len(period_result)
