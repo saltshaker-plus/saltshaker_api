@@ -148,6 +148,26 @@ class DB(object):
             logger.error("Select by list error: %s" % e)
             return False, str(e)
 
+    # 查询字段和查询的数据都是list
+    def select_by_list_list(self, table, field, array):
+        sql_list = []
+        for i in array:
+            sql_list.append("data -> '$.%s' like '%s'" % (field, "%" + i + "%"))
+        sql = " or ".join(sql_list)
+        sql = "SELECT * FROM %s WHERE %s" % (table, sql)
+        logger.info(sql)
+        result = []
+        try:
+            self.cursor.execute(sql)
+            tmp = self.cursor.fetchall()
+            for i in tmp:
+                result.append(ast.literal_eval(i[0].replace('true', 'True').replace('false', 'False').
+                              replace('null', '""')))
+            return True, result
+        except Exception as e:
+            logger.error("Select by list error: %s" % e)
+            return False, str(e)
+
     def close_mysql(self):
         self.cursor.close()
         self.conn.close()
