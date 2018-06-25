@@ -141,40 +141,41 @@ class MinionsGrainsList(Resource):
             return {"status": False, "message": result}, 500
 
 
-def create_grains(product_id):
-    salt_api = salt_api_for_product(product_id)
-    minion_status = []
-    if isinstance(salt_api, dict):
-        return salt_api, 500
-    else:
-        result = salt_api.runner_status("status")
-        if result:
-            if result.get("status") is False:
-                return result, 500
-            for minion in result.get("up"):
-                minion_status.append(minion)
-    db = DB()
-    for minion in minion_status:
-        print(minion)
-        select_status, select_result = db.select("grains", "where data -> '$.id'='%s' and data -> '$.product_id'='%s'"
-                                                 % (minion, product_id))
-        grains = salt_api.grains(minion)
-        grains[minion].update({"product_id": product_id})
-        if select_status is True:
-            if len(select_result) > 1:
-                for m in select_result:
-                    db.delete_by_id("grains", m["id"])
-                insert_status, insert_result = db.insert("grains", json.dumps(grains[minion], ensure_ascii=False))
-                if insert_status is not True:
-                    logger.error("Add Grains error: %s" % insert_result)
-            elif len(select_result) == 1:
-                update_status, update_result = db.update_by_id("grains", json.dumps(grains[minion], ensure_ascii=False),
-                                                               select_result[0]["id"])
-                if update_status is not True:
-                    logger.error("Update Grains error: %s" % update_result)
-            else:
-                insert_status, insert_result = db.insert("grains", json.dumps(grains[minion], ensure_ascii=False))
-                if insert_status is not True:
-                    logger.error("Add Grains error: %s" % insert_result)
-    db.close_mysql()
+class Grains(object):
+    @staticmethod
+    def create_grains(minion_list, product_id, user):
+        salt_api = salt_api_for_product(product_id)
+        if isinstance(salt_api, dict):
+            return salt_api, 500
+        db = DB()
+        for minion in minion_list:
+            select_status, select_result = db.select("grains", "where data -> '$.id'='%s' and data -> "
+                                                               "'$.product_id'='%s'" % (minion, product_id))
+            grains = salt_api.grains(minion)
+            grains[minion].update({"product_id": product_id})
+            if select_status is True:
+                if len(select_result) > 1:
+                    for m in select_result:
+                        db.delete_by_id("grains", m["id"])
+                    insert_status, insert_result = db.insert("grains", json.dumps(grains[minion], ensure_ascii=False))
+                    if insert_status is not True:
+                        logger.error("Add Grains error: %s" % insert_result)
+                elif len(select_result) == 1:
+                    update_status, update_result = db.update_by_id("grains", json.dumps(grains[minion],
+                                                                                        ensure_ascii=False),
+                                                                   select_result[0]["id"])
+                    if update_status is not True:
+                        logger.error("Update Grains error: %s" % update_result)
+                else:
+                    insert_status, insert_result = db.insert("grains", json.dumps(grains[minion], ensure_ascii=False))
+                    if insert_status is not True:
+                        logger.error("Add Grains error: %s" % insert_result)
+        db.close_mysql()
 
+    @staticmethod
+    def delete_grains(minion_list, product_id, user):
+        db = DB()
+        for minion in minion_list:
+            db.delete_by_id("grains", minion)
+            audit_log(user, minion, product_id, "grains", "delete")
+        db.close_mysql()

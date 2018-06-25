@@ -139,20 +139,6 @@ class HostList(Resource):
             return {"status": False, "message": result}, 500
 
 
-class DifferenceHost(Resource):
-    @access_required(role_dict["common_user"])
-    def get(self):
-        args = parser.parse_args()
-        salt_api = salt_api_for_product(args["product_id"])
-        if isinstance(salt_api, dict):
-            return salt_api, 500
-        else:
-            result = salt_api.list_all_key()
-            # result_dict = eval(result)
-            # result_dict.get("minions").extend(result_dict.get("minions_rejected"))
-            # all_minion = result_dict.get("minions")
-
-
 class Hosts(object):
     @staticmethod
     def add_host(minion_list, product_id, user):
