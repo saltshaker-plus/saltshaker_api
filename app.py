@@ -23,7 +23,7 @@ from resources.rsa_encrypt import RSA
 from webhook.salt_hook import Hook
 from common.cli import initialize
 from common.sso import create_token, verify_password
-from period.period_task import Period, PeriodList
+from period.period_task import Period, PeriodList, Reopen
 import os
 import click
 import configparser
@@ -149,6 +149,7 @@ api.add_resource(LogList, "/saltshaker/api/v1.0/log")
 # period task
 api.add_resource(PeriodList, "/saltshaker/api/v1.0/period")
 api.add_resource(Period, "/saltshaker/api/v1.0/period/<string:period_id>")
+api.add_resource(Reopen, "/saltshaker/api/v1.0/period/reopen/<string:period_id>")
 
 # command log
 api.add_resource(HistoryList, "/saltshaker/api/v1.0/history")

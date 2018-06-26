@@ -99,6 +99,8 @@ class Period(Resource):
             if period_id != result[0].get("id"):
                 db.close_mysql()
                 return {"status": False, "message": "The period_task name already exists"}, 200
+        period_task["results"] = select_result["results"]
+        period_task["timestamp"] = select_result["timestamp"]
         status, result = db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
         db.close_mysql()
         if status is not True:
@@ -137,6 +139,7 @@ class PeriodList(Resource):
         user = g.user_info["username"]
         period_task = args
         period_task["timestamp"] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        period_task["results"] = []
         db = DB()
         status, result = db.select("period_task", "where data -> '$.name'='%s' and data -> '$.product_id'='%s'"
                                    % (args["name"], args["product_id"]))
@@ -149,7 +152,7 @@ class PeriodList(Resource):
                     return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "period_task", "add")
                 if args["type"] == "shell" and args["period"] == "once":
-                    Periods.once_shell(args["id"], args["product_id"], user, args["target"], args["shell"], period_task)
+                    once_shell(args["id"], args["product_id"], user, args["target"], args["shell"], period_task)
                 return {"status": True, "message": ""}, 201
             else:
                 db.close_mysql()
@@ -160,26 +163,44 @@ class PeriodList(Resource):
             return {"status": False, "message": result}, 500
 
 
-class Periods(object):
-    @staticmethod
-    def once_shell(id, product_id, user, target, command, period_task):
+class Reopen(Resource):
+    @access_required(role_dict["common_user"])
+    def get(self, period_id):
+        product_id = request.args.get("product_id")
+        user = g.user_info["username"]
         db = DB()
-        minions = []
-        for group in target:
-            status, result = db.select_by_id("groups", group)
-            if status is True and result:
-                minions.extend(result.get("minion"))
-        minion_list = list(set(minions))
-        salt_api = salt_api_for_product(product_id)
-        if isinstance(salt_api, dict):
-            return salt_api, 500
-        result = salt_api.shell_remote_execution(minion_list, command)
-        results = [{
-            "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
-            "result": result
-        }]
-        period_task["results"] = results
-        db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), id)
-        audit_log(user, minion_list, product_id, "minion", "shell")
+        status, result = db.select_by_id("period_task", period_id)
+        db.close_mysql()
+        if status is True:
+            if result:
+                if result["type"] == "shell" and result["period"] == "once":
+                    once_shell(period_id, product_id, user, result.get("target"), result.get("shell"), result)
+                    return {"status": True, "message": ""}, 200
+            else:
+                return {"status": False, "message": "The period_task does not exist"}, 404
+        else:
+            return {"status": False, "message": result}, 500
+
+
+def once_shell(period_id, product_id, user, target, command, period_task):
+    db = DB()
+    minions = []
+    for group in target:
+        status, result = db.select_by_id("groups", group)
+        if status is True and result:
+            minions.extend(result.get("minion"))
+    minion_list = list(set(minions))
+    salt_api = salt_api_for_product(product_id)
+    if isinstance(salt_api, dict):
+        return salt_api, 500
+    result = salt_api.shell_remote_execution(minion_list, command)
+    results = {
+        "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+        "result": result
+    }
+    period_task["results"].append(results)
+    db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
+    db.close_mysql()
+    audit_log(user, minion_list, product_id, "minion", "shell")
 
 
