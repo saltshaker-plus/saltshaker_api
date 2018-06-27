@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import flask_restful
 from resources.minions import MinionsKeys, MinionsStatus, MinionsGrains, MinionsGrainsList
 from resources.job import Job, JobList, JobManager

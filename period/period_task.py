@@ -6,11 +6,10 @@ from common.audit_log import audit_log
 from common.db import DB
 from common.utility import uuid_prefix
 from common.sso import access_required
-import json
 from common.const import role_dict
-from common.utility import salt_api_for_product
+from tasks.tasks import once_shell
+import json
 import time
-
 
 logger = loggers()
 
@@ -152,7 +151,7 @@ class PeriodList(Resource):
                     return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "period_task", "add")
                 if args["type"] == "shell" and args["period"] == "once":
-                    once_shell(args["id"], args["product_id"], user, args["target"], args["shell"], period_task)
+                    once_shell.delay(args["id"], args["product_id"], user, args["target"], args["shell"], period_task)
                 return {"status": True, "message": ""}, 201
             else:
                 db.close_mysql()
@@ -174,33 +173,10 @@ class Reopen(Resource):
         if status is True:
             if result:
                 if result["type"] == "shell" and result["period"] == "once":
-                    once_shell(period_id, product_id, user, result.get("target"), result.get("shell"), result)
+                    once_shell.delay(period_id, product_id, user, result.get("target"), result.get("shell"), result)
                     return {"status": True, "message": ""}, 200
             else:
                 return {"status": False, "message": "The period_task does not exist"}, 404
         else:
             return {"status": False, "message": result}, 500
-
-
-def once_shell(period_id, product_id, user, target, command, period_task):
-    db = DB()
-    minions = []
-    for group in target:
-        status, result = db.select_by_id("groups", group)
-        if status is True and result:
-            minions.extend(result.get("minion"))
-    minion_list = list(set(minions))
-    salt_api = salt_api_for_product(product_id)
-    if isinstance(salt_api, dict):
-        return salt_api, 500
-    result = salt_api.shell_remote_execution(minion_list, command)
-    results = {
-        "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
-        "result": result
-    }
-    period_task["results"].append(results)
-    db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
-    db.close_mysql()
-    audit_log(user, minion_list, product_id, "minion", "shell")
-
 

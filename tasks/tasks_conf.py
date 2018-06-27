@@ -1,6 +1,6 @@
+# -*- coding:utf-8 -*-
 import configparser
 import os
-
 
 config = configparser.ConfigParser()
 conf_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
