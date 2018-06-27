@@ -11,6 +11,8 @@ def see_worker(product):
     mine_pattern = re.compile(r'"fun": "mine.update"')
     saltutil_pattern = re.compile(r'"fun": "saltutil.find_job"')
     running_pattern = re.compile(r'"fun": "saltutil.running"')
+    lookup_pattern = re.compile(r'"fun": "runner.jobs.lookup_jid"')
+    event_pattern = re.compile(r'"tag": "salt/event/new_client"')
     salt_api = salt_api_for_product(product)
     event_response = salt_api.events()
     client = sseclient.SSEClient(event_response)
@@ -21,6 +23,10 @@ def see_worker(product):
         elif saltutil_pattern.search(event.data):
             pass
         elif running_pattern.search(event.data):
+            pass
+        elif lookup_pattern.search(event.data):
+            pass
+        elif event_pattern.search(event.data):
             pass
         else:
             event_dict = ast.literal_eval(event.data.replace('true', 'True').replace('false', 'False').
