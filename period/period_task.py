@@ -101,6 +101,7 @@ class Period(Resource):
                 return {"status": False, "message": "The period_task name already exists"}, 200
         period_task["results"] = select_result["results"]
         period_task["timestamp"] = select_result["timestamp"]
+        period_task["status"] = select_result["status"]
         status, result = db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
         db.close_mysql()
         if status is not True:
