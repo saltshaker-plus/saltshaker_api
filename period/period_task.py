@@ -8,6 +8,7 @@ from common.utility import uuid_prefix
 from common.sso import access_required
 from common.const import role_dict
 from tasks.tasks import once_shell
+from common.const import period_status
 import json
 import time
 
@@ -139,6 +140,7 @@ class PeriodList(Resource):
         period_task = args
         period_task["timestamp"] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         period_task["results"] = []
+        period_task["status"] = period_status.get(0)
         db = DB()
         status, result = db.select("period_task", "where data -> '$.name'='%s' and data -> '$.product_id'='%s'"
                                    % (args["name"], args["product_id"]))

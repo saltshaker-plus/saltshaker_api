@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from common.log import loggers
 from common.audit_log import audit_log
+from common.const import period_status
 import time
 import json
 import sseclient
@@ -45,6 +46,8 @@ def sse_worker(product):
 
 def once_shell_worker(period_id, product_id, user, target, command, period_task):
     db = DB()
+    period_task["status"] = period_status.get(2)
+    db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
     minions = []
     for group in target:
         status, result = db.select_by_id("groups", group)
@@ -53,12 +56,15 @@ def once_shell_worker(period_id, product_id, user, target, command, period_task)
     minion_list = list(set(minions))
     salt_api = salt_api_for_product(product_id)
     if isinstance(salt_api, dict):
+        period_task["status"] = period_status.get(4)
+        db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
         return salt_api, 500
     result = salt_api.shell_remote_execution(minion_list, command)
     results = {
         "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
         "result": result
     }
+    period_task["status"] = period_status.get(3)
     period_task["results"].append(results)
     db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
     db.close_mysql()
