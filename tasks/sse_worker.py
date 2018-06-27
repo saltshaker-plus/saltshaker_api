@@ -17,7 +17,6 @@ def see_worker(product):
     event_response = salt_api.events()
     client = sseclient.SSEClient(event_response)
     for event in client.events():
-        print(event.data)
         if mine_pattern.search(event.data):
             pass
         elif saltutil_pattern.search(event.data):
@@ -29,6 +28,7 @@ def see_worker(product):
         elif event_pattern.search(event.data):
             pass
         else:
+            print(event.data)
             event_dict = ast.literal_eval(event.data.replace('true', 'True').replace('false', 'False').
                                           replace('null', '""'))
             event_dict['data']['product_id'] = product
