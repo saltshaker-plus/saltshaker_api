@@ -65,7 +65,20 @@ def once_shell_worker(period_id, product_id, user, target, command, period_task)
         "result": result
     }
     period_task["status"] = period_status.get(3)
-    period_task["results"].append(results)
+    insert_period_result(period_id, results)
+    # period_task["results"].append(results)
     db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
     db.close_mysql()
     audit_log(user, minion_list, product_id, "minion", "shell")
+
+
+def insert_period_result(period_id, period_result):
+    db = DB()
+    results = {
+        "id": period_id,
+        "result": period_result
+    }
+    status, result = db.insert("period_result", json.dumps(results, ensure_ascii=False))
+    if status is False:
+        db.close_mysql()
+        logger.error("Insert period result error: %s" % result)

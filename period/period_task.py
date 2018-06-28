@@ -53,6 +53,11 @@ class Period(Resource):
                 product_status, product_result = db.select_by_id("product", result.get("product_id"))
                 if product_status is True and product_result:
                     result["product_id"] = product_result.get("name")
+                period_result_status, period_result_result = db.select("period_result",
+                                                                       "where data -> '$.id'='%s'" % result["id"])
+                if period_result_status is True:
+                    for r in period_result_result:
+                        result["result"].append(r.get("result"))
                 db.close_mysql()
                 return {"data": result, "status": True, "message": ""}, 200
             else:
@@ -67,12 +72,16 @@ class Period(Resource):
         user = g.user_info["username"]
         db = DB()
         status, result = db.delete_by_id("period_task", period_id)
-        db.close_mysql()
         if status is not True:
             logger.error("Delete period_task error: %s" % result)
             return {"status": False, "message": result}, 500
         if result is 0:
             return {"status": False, "message": "%s does not exist" % period_id}, 404
+        period_result_status, period_result_result = db.delete_by_id("period_result",  period_id)
+        if period_result_status is not True:
+            logger.error("Delete period_result error: %s" % result)
+            return {"status": False, "message": result}, 500
+        db.close_mysql()
         audit_log(user, period_id, "", "period_task", "delete")
         return {"status": True, "message": ""}, 200
 
@@ -99,7 +108,7 @@ class Period(Resource):
             if period_id != result[0].get("id"):
                 db.close_mysql()
                 return {"status": False, "message": "The period_task name already exists"}, 200
-        period_task["results"] = select_result["results"]
+        period_task["result"] = select_result["result"]
         period_task["timestamp"] = select_result["timestamp"]
         period_task["status"] = select_result["status"]
         status, result = db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
@@ -140,7 +149,7 @@ class PeriodList(Resource):
         user = g.user_info["username"]
         period_task = args
         period_task["timestamp"] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        period_task["results"] = []
+        period_task["result"] = []
         period_task["status"] = period_status.get(0)
         db = DB()
         status, result = db.select("period_task", "where data -> '$.name'='%s' and data -> '$.product_id'='%s'"
@@ -167,7 +176,26 @@ class PeriodList(Resource):
 
 class Reopen(Resource):
     @access_required(role_dict["common_user"])
-    def get(self, period_id):
+    def put(self, period_id):
+        product_id = request.args.get("product_id")
+        user = g.user_info["username"]
+        db = DB()
+        status, result = db.select_by_id("period_task", period_id)
+        db.close_mysql()
+        if status is True:
+            if result:
+                if result["type"] == "shell" and result["period"] == "once":
+                    once_shell.delay(period_id, product_id, user, result.get("target"), result.get("shell"), result)
+                    return {"status": True, "message": ""}, 200
+            else:
+                return {"status": False, "message": "The period_task does not exist"}, 404
+        else:
+            return {"status": False, "message": result}, 500
+
+
+class Pause(Resource):
+    @access_required(role_dict["common_user"])
+    def put(self, period_id):
         product_id = request.args.get("product_id")
         user = g.user_info["username"]
         db = DB()

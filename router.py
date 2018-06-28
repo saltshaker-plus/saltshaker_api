@@ -21,7 +21,7 @@ from resources.pillar import PillarItems
 from resources.rsa_encrypt import RSA
 from resources.sse import SSE
 from webhook.salt_hook import Hook
-from period.period_task import Period, PeriodList, Reopen
+from period.period_task import Period, PeriodList, Reopen, Pause
 from common.utility import custom_abort
 
 api = flask_restful.Api(catch_all_404s=True)
@@ -98,6 +98,7 @@ api.add_resource(LogList, "/saltshaker/api/v1.0/log")
 api.add_resource(PeriodList, "/saltshaker/api/v1.0/period")
 api.add_resource(Period, "/saltshaker/api/v1.0/period/<string:period_id>")
 api.add_resource(Reopen, "/saltshaker/api/v1.0/period/reopen/<string:period_id>")
+api.add_resource(Pause, "/saltshaker/api/v1.0/period/pause/<string:period_id>")
 
 # command log
 api.add_resource(HistoryList, "/saltshaker/api/v1.0/history")
