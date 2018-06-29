@@ -46,8 +46,6 @@ def sse_worker(product):
 
 def once_shell_worker(period_id, product_id, user, target, command, period_task):
     db = DB()
-    period_task["status"] = period_status.get(2)
-    db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
     minions = []
     for group in target:
         status, result = db.select_by_id("groups", group)
@@ -56,20 +54,70 @@ def once_shell_worker(period_id, product_id, user, target, command, period_task)
     minion_list = list(set(minions))
     salt_api = salt_api_for_product(product_id)
     if isinstance(salt_api, dict):
-        period_task["status"] = period_status.get(4)
+        period_task["status"] = {
+            "id": 4,
+            "name": period_status.get(4)
+        }
         db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
         return salt_api, 500
-    result = salt_api.shell_remote_execution(minion_list, command)
-    results = {
-        "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
-        "result": result
+    concurrent = int(period_task["concurrent"])
+    # 全部一次执行
+    if concurrent == 0:
+        period_task["status"] = {
+            "id": 2,
+            "name": period_status.get(2)
+        }
+        db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
+        result = salt_api.shell_remote_execution(minion_list, command)
+        results = {
+            "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+            "result": result
+        }
+        period_task["status"] = {
+            "id": 3,
+            "name": period_status.get(3)
+        }
+        insert_period_result(period_id, results)
+        # period_task["results"].append(results)
+        db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
+        db.close_mysql()
+        audit_log(user, minion_list, product_id, "minion", "shell")
+    # 并行分组执行
+    if concurrent > 0:
+        count = 1
+        for i in range(0, len(minion_list), concurrent):
+            # 记录状态为第N组运行中
+            period_task["status"] = {
+                "id": 7,
+                "name": period_status.get(7) % count
+            }
+            db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
+            # 根据并行数，对minion进行切分
+            minion = minion_list[i:i+concurrent]
+            result = salt_api.shell_remote_execution(minion, command)
+            results = {
+                "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                "result": result
+            }
+            insert_period_result(period_id, results)
+            # 执行完命令更新状态
+            period_task["status"] = {
+                "id": 8,
+                "name": period_status.get(8) % count
+            }
+            db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
+            # 并行间隔时间，最后一次不等待
+            if i != len(minion_list) - 1:
+                time.sleep(int(period_task["interval"]))
+                count += 1
+            # audit_log(user, minion, product_id, "minion", "shell")
+    # 更新状态为完成
+    period_task["status"] = {
+        "id": 3,
+        "name": period_status.get(3)
     }
-    period_task["status"] = period_status.get(3)
-    insert_period_result(period_id, results)
-    # period_task["results"].append(results)
     db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
     db.close_mysql()
-    audit_log(user, minion_list, product_id, "minion", "shell")
 
 
 def insert_period_result(period_id, period_result):

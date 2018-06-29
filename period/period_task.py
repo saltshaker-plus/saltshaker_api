@@ -19,6 +19,7 @@ parser.add_argument("product_id", type=str, required=True, trim=True)
 parser.add_argument("name", type=str, required=True, trim=True)
 parser.add_argument("description", type=str, required=True, trim=True)
 parser.add_argument("concurrent", type=int, default=0, trim=True)
+parser.add_argument("interval", type=int, default=60, trim=True)
 parser.add_argument("period", type=str, default="once", trim=True)
 parser.add_argument("time", type=str, default="now", trim=True)
 parser.add_argument("date", type=str, default="now", trim=True)
@@ -150,7 +151,10 @@ class PeriodList(Resource):
         period_task = args
         period_task["timestamp"] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         period_task["result"] = []
-        period_task["status"] = period_status.get(0)
+        period_task["status"] = {
+            "id": 0,
+            "name": period_status.get(0)
+        }
         db = DB()
         status, result = db.select("period_task", "where data -> '$.name'='%s' and data -> '$.product_id'='%s'"
                                    % (args["name"], args["product_id"]))
