@@ -9,5 +9,5 @@ def event_to_mysql(product):
 
 
 @celery.task
-def once_shell(period_id, product_id, user, target, command, period_task):
-    once_shell_worker(period_id, product_id, user, target, command, period_task)
+def once_shell(period_id, product_id, user):
+    once_shell_worker(period_id, product_id, user)

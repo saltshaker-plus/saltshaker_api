@@ -8,7 +8,7 @@ from common.utility import uuid_prefix
 from common.sso import access_required
 from common.const import role_dict
 from tasks.tasks import once_shell
-from common.const import period_status
+from common.const import period_status, period_audit
 import json
 import time
 
@@ -21,14 +21,16 @@ parser.add_argument("description", type=str, required=True, trim=True)
 parser.add_argument("concurrent", type=int, default=0, trim=True)
 parser.add_argument("interval", type=int, default=60, trim=True)
 parser.add_argument("period", type=str, default="once", trim=True)
-parser.add_argument("time", type=str, default="now", trim=True)
-parser.add_argument("date", type=str, default="now", trim=True)
+parser.add_argument("time_type", type=str, default="now", trim=True)
+parser.add_argument("time", type=str, default="", trim=True)
+parser.add_argument("date", type=str, default="", trim=True)
 parser.add_argument("cron", type=str, default="", trim=True)
 parser.add_argument("type", type=str, default="", trim=True)
 parser.add_argument("sls", type=str, default="", trim=True)
 parser.add_argument("shell", type=str, default="", trim=True)
 parser.add_argument("module", type=str, default="", trim=True)
-
+parser.add_argument("action", type=str, default="play", trim=True)
+parser.add_argument("executed_minion", type=str, action="append")
 parser.add_argument("target", type=str, required=True, action="append")
 
 
@@ -112,6 +114,9 @@ class Period(Resource):
         period_task["result"] = select_result["result"]
         period_task["timestamp"] = select_result["timestamp"]
         period_task["status"] = select_result["status"]
+        period_task["action"] = select_result["action"]
+        period_task["executed_minion"] = select_result["executed_minion"]
+        period_task["audit"] = select_result["audit"]
         status, result = db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
         db.close_mysql()
         if status is not True:
@@ -155,6 +160,12 @@ class PeriodList(Resource):
             "id": 0,
             "name": period_status.get(0)
         }
+        period_task["executed_minion"] = []
+        period_task["audit"] = [{
+            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+            "user": user,
+            "option": period_audit.get(0)
+        }]
         db = DB()
         status, result = db.select("period_task", "where data -> '$.name'='%s' and data -> '$.product_id'='%s'"
                                    % (args["name"], args["product_id"]))
@@ -167,7 +178,7 @@ class PeriodList(Resource):
                     return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "period_task", "add")
                 if args["type"] == "shell" and args["period"] == "once":
-                    once_shell.delay(args["id"], args["product_id"], user, args["target"], args["shell"], period_task)
+                    once_shell.delay(args["id"], args["product_id"], user)
                 return {"status": True, "message": ""}, 201
             else:
                 db.close_mysql()
@@ -185,33 +196,85 @@ class Reopen(Resource):
         user = g.user_info["username"]
         db = DB()
         status, result = db.select_by_id("period_task", period_id)
-        db.close_mysql()
         if status is True:
             if result:
                 if result["type"] == "shell" and result["period"] == "once":
-                    once_shell.delay(period_id, product_id, user, result.get("target"), result.get("shell"), result)
+                    # 重开之前清空已经执行过的minion
+                    result["executed_minion"] = []
+                    result["audit"].append({
+                        "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                        "user": user,
+                        "option": period_audit.get(1)
+                    })
+                    update_status, update_result = db.update_by_id("period_task",
+                                                                   json.dumps(result, ensure_ascii=False),
+                                                                   period_id)
+                    if update_status is not True:
+                        logger.error("Reopen period_task error: %s" % update_result)
+                        db.close_mysql()
+                        return {"status": False, "message": update_result}, 500
+                    audit_log(user, period_id, "", "period_task", "reopen")
+                    once_shell.delay(period_id, product_id, user)
+                    db.close_mysql()
                     return {"status": True, "message": ""}, 200
             else:
+                db.close_mysql()
                 return {"status": False, "message": "The period_task does not exist"}, 404
         else:
+            db.close_mysql()
             return {"status": False, "message": result}, 500
 
 
 class Pause(Resource):
     @access_required(role_dict["common_user"])
     def put(self, period_id):
+        user = g.user_info["username"]
+        db = DB()
+        status, result = db.select_by_id("period_task", period_id)
+        if status is True:
+            result["action"] = "pause"
+            result["audit"].append({
+                "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                "user": user,
+                "option": period_audit.get(5)
+            })
+            update_status, update_result = db.update_by_id("period_task", json.dumps(result, ensure_ascii=False),
+                                                           period_id)
+            if update_status is not True:
+                logger.error("Pause period_task error: %s" % update_result)
+                db.close_mysql()
+                return {"status": False, "message": update_result}, 500
+            audit_log(user, period_id, "", "period_task", "pause")
+            return {"status": True, "message": ""}, 200
+        else:
+            db.close_mysql()
+            return {"status": False, "message": result}, 500
+
+
+class Play(Resource):
+    @access_required(role_dict["common_user"])
+    def put(self, period_id):
         product_id = request.args.get("product_id")
         user = g.user_info["username"]
         db = DB()
         status, result = db.select_by_id("period_task", period_id)
-        db.close_mysql()
         if status is True:
-            if result:
-                if result["type"] == "shell" and result["period"] == "once":
-                    once_shell.delay(period_id, product_id, user, result.get("target"), result.get("shell"), result)
-                    return {"status": True, "message": ""}, 200
-            else:
-                return {"status": False, "message": "The period_task does not exist"}, 404
+            result["action"] = "play"
+            result["audit"].append({
+                "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                "user": user,
+                "option": period_audit.get(2)
+            })
+            update_status, update_result = db.update_by_id("period_task", json.dumps(result, ensure_ascii=False),
+                                                           period_id)
+            if update_status is not True:
+                logger.error("Pause period_task error: %s" % update_result)
+                db.close_mysql()
+                return {"status": False, "message": update_result}, 500
+            if result["type"] == "shell" and result["period"] == "once":
+                once_shell.delay(period_id, product_id, user)
+            audit_log(user, period_id, "", "period_task", "pause")
+            return {"status": True, "message": ""}, 200
         else:
+            db.close_mysql()
             return {"status": False, "message": result}, 500
-
