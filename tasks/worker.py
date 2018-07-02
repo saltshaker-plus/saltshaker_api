@@ -137,8 +137,8 @@ def once_shell_worker(period_id, product_id, user):
                         p_result["executed_minion"].extend(minion)
                         db.update_by_id("period_task", json.dumps(p_result, ensure_ascii=False), period_id)
                         # 并行间隔时间，最后一次不等待
-                        if concurrent <= len(minion_list):
-                            if i != len(minion_list) - 1:
+                        if concurrent < len(minion_list):
+                            if i != len(minion_list) - concurrent:
                                 time.sleep(int(p_result["interval"]))
                                 count += 1
                         db.close_mysql()
