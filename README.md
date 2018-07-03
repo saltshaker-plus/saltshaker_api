@@ -56,7 +56,8 @@ fileserver_backend:
   - git               # git和roots表示既支持本地又支持git 先后顺序决定了当sls文件冲突时,使用哪个sls文件(谁在前面用谁的)
   
 gitfs_remotes:
-  - http://test.com.cn:9000/root/salt_sls.git # GitLab项目地址 格式https://<user>:<password>@<url>
+  - http://test.com.cn:9000/root/salt_sls.git: # GitLab项目地址 格式https://<user>:<password>@<url>
+    - mountpoint: salt://                      # 很重要，否则在使用file.managed等相关文件管理的时候会找不到GitLab上的文件 https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html
   
 gitfs_base: master    # git分支默认master
 
@@ -66,7 +67,8 @@ pillar_roots:
     
 ext_pillar:           # 配置pillar使用gitfs, 需要配置top.sls
   - git:
-    - http://test.com.cn:9000/root/salt_pillar.git
+    - http://test.com.cn:9000/root/salt_pillar.git：
+      - mountpoint: salt://
 
 ````
 #### **后端文件服务器文件更新**
