@@ -4,9 +4,8 @@ from common.cli import initialize
 import click
 from flask_cors import CORS
 from tasks.tasks_conf import CELERY_BROKER_URL
-from extensions import celery
+from extensions import celery, Config, scheduler
 from router import api
-
 
 app = Flask(__name__)
 # 跨域访问
@@ -17,6 +16,9 @@ api.init_app(app)
 # celery init
 app.config['CELERY_BROKER_URL'] = CELERY_BROKER_URL
 celery.init_app(app)
+
+# APScheduler
+app.config.from_object(Config())
 
 
 @app.cli.command()
@@ -30,4 +32,6 @@ def init(username, password):
 
 
 if __name__ == '__main__':
+    scheduler.init_app(app)
+    scheduler.start()
     app.run(debug=True, host="0.0.0.0")

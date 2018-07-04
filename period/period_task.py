@@ -7,10 +7,12 @@ from common.db import DB
 from common.utility import uuid_prefix
 from common.sso import access_required
 from common.const import role_dict
-from tasks.tasks import once_shell
+from tasks.tasks import once
 from common.const import period_status, period_audit
+from common.utility import utc_to_local
 import json
 import time
+from scheduler.period_scheduler import scheduler_timing_add, scheduler_timing_modify, scheduler_delete
 
 logger = loggers()
 
@@ -85,6 +87,8 @@ class Period(Resource):
             logger.error("Delete period_result error: %s" % result)
             return {"status": False, "message": result}, 500
         db.close_mysql()
+        # 删除定期任务的时候删除对应的调度
+        scheduler_delete(period_id)
         audit_log(user, period_id, "", "period_task", "delete")
         return {"status": True, "message": ""}, 200
 
@@ -117,8 +121,12 @@ class Period(Resource):
         period_task["action"] = select_result["action"]
         period_task["executed_minion"] = select_result["executed_minion"]
         period_task["audit"] = select_result["audit"]
+        args["date"] = utc_to_local(args["date"])
         status, result = db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
         db.close_mysql()
+        if args["period"] == "once" and args["time_type"] == "timing":
+            run_date = args["date"].split(" ")[0] + " " + args["time"]
+            scheduler_timing_modify(args["id"], args["product_id"], user, run_date)
         if status is not True:
             logger.error("Modify period_task error: %s" % result)
             return {"status": False, "message": result}, 500
@@ -166,6 +174,7 @@ class PeriodList(Resource):
             "user": user,
             "option": period_audit.get(0)
         }]
+        args["date"] = utc_to_local(args["date"])
         db = DB()
         status, result = db.select("period_task", "where data -> '$.name'='%s' and data -> '$.product_id'='%s'"
                                    % (args["name"], args["product_id"]))
@@ -177,8 +186,13 @@ class PeriodList(Resource):
                     logger.error("Add period_task error: %s" % insert_result)
                     return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "period_task", "add")
-                if args["type"] == "shell" and args["period"] == "once":
-                    once_shell.delay(args["id"], args["product_id"], user)
+                # 一次立即执行的直接扔给celery
+                if args["period"] == "once" and args["time_type"] == "now":
+                    once.delay(args["id"], args["product_id"], user)
+                # 一次定时执行的扔给APScheduler,进行定时处理
+                if args["period"] == "once" and args["time_type"] == "timing":
+                    run_date = args["date"].split(" ")[0] + " " + args["time"]
+                    scheduler_timing_add(args["id"], args["product_id"], user, run_date)
                 return {"status": True, "message": ""}, 201
             else:
                 db.close_mysql()
@@ -198,7 +212,7 @@ class Reopen(Resource):
         status, result = db.select_by_id("period_task", period_id)
         if status is True:
             if result:
-                if result["type"] == "shell" and result["period"] == "once":
+                if result["period"] == "once" and result["time_type"] == "now":
                     # 重开之前清空已经执行过的minion
                     result["executed_minion"] = []
                     result["audit"].append({
@@ -213,8 +227,9 @@ class Reopen(Resource):
                         logger.error("Reopen period_task error: %s" % update_result)
                         db.close_mysql()
                         return {"status": False, "message": update_result}, 500
+
                     audit_log(user, period_id, "", "period_task", "reopen")
-                    once_shell.delay(period_id, product_id, user)
+                    once.delay(period_id, product_id, user)
                     db.close_mysql()
                     return {"status": True, "message": ""}, 200
             else:
@@ -271,8 +286,8 @@ class Play(Resource):
                 logger.error("Pause period_task error: %s" % update_result)
                 db.close_mysql()
                 return {"status": False, "message": update_result}, 500
-            if result["type"] == "shell" and result["period"] == "once":
-                once_shell.delay(period_id, product_id, user)
+            if result["period"] == "once" and result["time_type"] == "now":
+                once.delay(period_id, product_id, user)
             audit_log(user, period_id, "", "period_task", "pause")
             return {"status": True, "message": ""}, 200
         else:

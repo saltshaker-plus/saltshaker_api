@@ -44,7 +44,7 @@ def sse_worker(product):
             db.close_mysql()
 
 
-def once_shell_worker(period_id, product_id, user):
+def once_worker(period_id, product_id, user):
     db = DB()
     status, period_result = db.select_by_id("period_task", period_id)
     if status is True and period_result:
@@ -70,7 +70,12 @@ def once_shell_worker(period_id, product_id, user):
                 "name": period_status.get(2)
             }
             db.update_by_id("period_task", json.dumps(period_result, ensure_ascii=False), period_id)
-            result = salt_api.shell_remote_execution(minion_list, period_result.get("shell"))
+            if period_result.get("type") == "shell":
+                result = salt_api.shell_remote_execution(minion_list, period_result.get("shell"))
+            elif period_result.get("type") == "sls":
+                # 去掉后缀
+                sls = period_result.get("sls").replace(".sls", "")
+                result = salt_api.target_deploy(minion_list, sls)
             results = {
                 "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
                 "result": result,
@@ -117,7 +122,10 @@ def once_shell_worker(period_id, product_id, user):
                         db.update_by_id("period_task", json.dumps(p_result, ensure_ascii=False), period_id)
                         # 根据并行数，对minion进行切分
                         minion = minion_list[i:i+concurrent]
-                        result = salt_api.shell_remote_execution(minion, p_result.get("shell"))
+                        if period_result.get("type") == "shell":
+                            result = salt_api.shell_remote_execution(minion_list, period_result.get("shell"))
+                        elif period_result.get("type") == "sls":
+                            result = salt_api.target_deploy(minion_list, period_result.get("sls"))
                         results = {
                             "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
                             "result": result,
@@ -160,6 +168,7 @@ def once_shell_worker(period_id, product_id, user):
 
 def insert_period_result(period_id, period_result):
     db = DB()
+    print(period_result)
     results = {
         "id": period_id,
         "result": period_result

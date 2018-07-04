@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from extensions import celery
-from tasks.worker import sse_worker, once_shell_worker
+from tasks.worker import sse_worker, once_worker
 
 
 @celery.task
@@ -9,5 +9,5 @@ def event_to_mysql(product):
 
 
 @celery.task
-def once_shell(period_id, product_id, user):
-    once_shell_worker(period_id, product_id, user)
+def once(period_id, product_id, user):
+    once_worker(period_id, product_id, user)
