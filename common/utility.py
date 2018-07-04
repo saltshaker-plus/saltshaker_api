@@ -104,3 +104,11 @@ def utc_to_local(utc):
     offset = local_tm - utc_dtm
     local = utc_tm + offset
     return local.strftime("%Y-%m-%d %H:%M:%S")
+
+
+# 本地时间转UTC
+def local_to_utc(local):
+    local_format = "%Y-%m-%d %H:%M:%S"
+    local_tm = datetime.strptime(local, local_format)
+    utc = datetime.utcfromtimestamp(local_tm.timestamp())
+    return utc.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
