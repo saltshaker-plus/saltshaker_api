@@ -16,6 +16,7 @@ mysql_user = config.get("Mysql", "MYSQL_USER")
 mysql_password = config.get("Mysql", "MYSQL_PASSWORD")
 mysql_db = config.get("Mysql", "MYSQL_DB")
 mysql_charset = config.get("Mysql", "MYSQL_CHARSET")
+url = "mysql+pymysql://%s:%s@%s:%s/%s" % (mysql_user, mysql_password, mysql_host, mysql_port, mysql_db)
 
 
 class DB(object):
