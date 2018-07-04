@@ -6,7 +6,7 @@ import time
 # 添加一次性定时执行
 def scheduler_timing_add(period_id, product_id, user, run_date):
     # run_date="2018-07-04 14:01:00"
-    scheduler.add_job(func="tasks.tasks:once_now", trigger='date', run_date=run_date,
+    scheduler.add_job(func="tasks.tasks:once", trigger='date', run_date=run_date,
                       args=[period_id, product_id, user], id=period_id)
 
 
@@ -14,7 +14,7 @@ def scheduler_timing_add(period_id, product_id, user, run_date):
 def scheduler_timing_modify(period_id, product_id, user, run_date):
     # run_date="2018-07-04 14:01:00"
     try:
-        scheduler.modify_job(func="tasks.tasks:once_now", trigger='date', run_date=run_date,
+        scheduler.modify_job(func="tasks.tasks:once", trigger='date', run_date=run_date,
                              args=[period_id, product_id, user], id=period_id)
     except Exception as e:
         # 如果之前的scheduler已经不存在，重新添加定时任务
