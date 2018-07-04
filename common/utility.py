@@ -11,6 +11,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA
 from Crypto.Cipher import PKCS1_v1_5 as Cipher_pkcs1_v1_5
 from Crypto.Signature import PKCS1_v1_5 as Signature_pkcs1_v1_5
+from datetime import datetime
 
 logger = loggers()
 
@@ -92,3 +93,14 @@ def rsa_encrypt(encrypt_text):
     except Exception as e:
         logger.error("Encrypt rsa error: %s" % e)
         return False
+
+
+# UTC转本地时间
+def utc_to_local(utc):
+    utc_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    utc_tm = datetime.strptime(utc, utc_format)
+    local_tm = datetime.fromtimestamp(0)
+    utc_dtm = datetime.utcfromtimestamp(0)
+    offset = local_tm - utc_dtm
+    local = utc_tm + offset
+    return local.strftime("%Y-%m-%d %H:%M:%S")
