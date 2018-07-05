@@ -70,9 +70,9 @@ def once_worker(period_id, product_id, user):
                 "name": period_status.get(2)
             }
             db.update_by_id("period_task", json.dumps(period_result, ensure_ascii=False), period_id)
-            if period_result.get("type") == "shell":
+            if period_result.get("execute") == "shell":
                 result = salt_api.shell_remote_execution(minion_list, period_result.get("shell"))
-            elif period_result.get("type") == "sls":
+            elif period_result.get("execute") == "sls":
                 # 去掉后缀
                 sls = period_result.get("sls").replace(".sls", "")
                 result = salt_api.target_deploy(minion_list, sls)
@@ -107,7 +107,6 @@ def once_worker(period_id, product_id, user):
                 db = DB()
                 p_status, p_result = db.select_by_id("period_task", period_id)
                 if p_status is True and p_result:
-                    print(p_result.get("action"))
                     if p_result.get("action") == "play":
                         # 记录状态为第N组运行中
                         p_result["status"] = {
@@ -122,10 +121,10 @@ def once_worker(period_id, product_id, user):
                         db.update_by_id("period_task", json.dumps(p_result, ensure_ascii=False), period_id)
                         # 根据并行数，对minion进行切分
                         minion = minion_list[i:i+concurrent]
-                        if period_result.get("type") == "shell":
-                            result = salt_api.shell_remote_execution(minion_list, period_result.get("shell"))
-                        elif period_result.get("type") == "sls":
-                            result = salt_api.target_deploy(minion_list, period_result.get("sls"))
+                        if period_result.get("execute") == "shell":
+                            result = salt_api.shell_remote_execution(minion, period_result.get("shell"))
+                        elif period_result.get("execute") == "sls":
+                            result = salt_api.target_deploy(minion, period_result.get("sls"))
                         results = {
                             "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
                             "result": result,
@@ -168,7 +167,6 @@ def once_worker(period_id, product_id, user):
 
 def insert_period_result(period_id, period_result):
     db = DB()
-    print(period_result)
     results = {
         "id": period_id,
         "result": period_result

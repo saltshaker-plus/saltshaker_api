@@ -12,7 +12,8 @@ from common.const import period_status, period_audit
 from common.utility import utc_to_local
 import json
 import time
-from scheduler.period_scheduler import scheduler_timing_add, scheduler_timing_modify, scheduler_delete
+from scheduler.period_scheduler import scheduler_timing_add, scheduler_timing_modify, \
+    scheduler_delete, scheduler_interval_add
 
 logger = loggers()
 
@@ -22,12 +23,11 @@ parser.add_argument("name", type=str, required=True, trim=True)
 parser.add_argument("description", type=str, required=True, trim=True)
 parser.add_argument("concurrent", type=int, default=0, trim=True)
 parser.add_argument("interval", type=int, default=60, trim=True)
-parser.add_argument("period", type=str, default="once", trim=True)
-parser.add_argument("time_type", type=str, default="now", trim=True)
-parser.add_argument("time", type=str, default="", trim=True)
-parser.add_argument("date", type=str, default="", trim=True)
-parser.add_argument("cron", type=str, default="", trim=True)
-parser.add_argument("type", type=str, default="", trim=True)
+parser.add_argument("scheduler", type=str, default="period", trim=True)
+parser.add_argument("once", type=dict, default={"type": "once", "date": "", "time": ""})
+parser.add_argument("period", type=dict, default={"type": "", "interval": 1})
+parser.add_argument("crontab", type=dict, default={"type": "", "second": 0, "minute": 0, "hour": 0, "day": 0, "week": 0})
+parser.add_argument("execute", type=str, default="", trim=True)
 parser.add_argument("sls", type=str, default="", trim=True)
 parser.add_argument("shell", type=str, default="", trim=True)
 parser.add_argument("module", type=str, default="", trim=True)
@@ -121,11 +121,12 @@ class Period(Resource):
         period_task["action"] = select_result["action"]
         period_task["executed_minion"] = select_result["executed_minion"]
         period_task["audit"] = select_result["audit"]
-        args["date"] = utc_to_local(args["date"])
+        if args["once"]["date"]:
+            args["once"]["date"] = utc_to_local(args["once"]["date"])
         status, result = db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
         db.close_mysql()
-        if args["period"] == "once" and args["time_type"] == "timing":
-            run_date = args["date"].split(" ")[0] + " " + args["time"]
+        if args["scheduler"] == "once" and args["once"]["type"] == "timing":
+            run_date = args["once"]["date"].split(" ")[0] + " " + args["once"]["time"]
             scheduler_timing_modify(args["id"], args["product_id"], user, run_date)
         if status is not True:
             logger.error("Modify period_task error: %s" % result)
@@ -174,7 +175,8 @@ class PeriodList(Resource):
             "user": user,
             "option": period_audit.get(0)
         }]
-        args["date"] = utc_to_local(args["date"])
+        if args["once"]["date"]:
+            args["once"]["date"] = utc_to_local(args["once"]["date"])
         db = DB()
         status, result = db.select("period_task", "where data -> '$.name'='%s' and data -> '$.product_id'='%s'"
                                    % (args["name"], args["product_id"]))
@@ -187,12 +189,16 @@ class PeriodList(Resource):
                     return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "period_task", "add")
                 # 一次立即执行的直接扔给celery
-                if args["period"] == "once" and args["time_type"] == "now":
+                if args["scheduler"] == "once" and args["once"]["type"] == "now":
                     once.delay(args["id"], args["product_id"], user)
                 # 一次定时执行的扔给APScheduler,进行定时处理
-                if args["period"] == "once" and args["time_type"] == "timing":
-                    run_date = args["date"].split(" ")[0] + " " + args["time"]
+                if args["scheduler"] == "once" and args["once"]["type"] == "timing":
+                    run_date = args["once"]["date"].split(" ")[0] + " " + args["once"]["time"]
                     scheduler_timing_add(args["id"], args["product_id"], user, run_date)
+                # 周期性的
+                if args["scheduler"] == "period":
+                    scheduler_interval_add(args["id"], args["product_id"], user, args["period"]["interval"],
+                                           args["period"]["type"])
                 return {"status": True, "message": ""}, 201
             else:
                 db.close_mysql()
@@ -212,7 +218,7 @@ class Reopen(Resource):
         status, result = db.select_by_id("period_task", period_id)
         if status is True:
             if result:
-                if result["period"] == "once" and result["time_type"] == "now":
+                if result["scheduler"] == "once" and result["once"]["type"] == "now":
                     # 重开之前清空已经执行过的minion
                     result["executed_minion"] = []
                     result["audit"].append({
@@ -286,7 +292,7 @@ class Play(Resource):
                 logger.error("Pause period_task error: %s" % update_result)
                 db.close_mysql()
                 return {"status": False, "message": update_result}, 500
-            if result["period"] == "once" and result["time_type"] == "now":
+            if result["scheduler"] == "once" and result["once"]["type"] == "now":
                 once.delay(period_id, product_id, user)
             audit_log(user, period_id, "", "period_task", "pause")
             return {"status": True, "message": ""}, 200

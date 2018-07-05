@@ -30,6 +30,25 @@ def scheduler_delete(period_id):
         print(e)
 
 
+# 添加周期间隔任务
+def scheduler_interval_add(period_id, product_id, user, run_interval, interval):
+    if interval == "second":
+        scheduler.add_job(func="tasks.tasks:once", trigger='interval', seconds=run_interval,
+                          args=[period_id, product_id, user], id=period_id)
+    elif interval == "minutes":
+        scheduler.add_job(func="tasks.tasks:once", trigger='interval', minutes=run_interval,
+                          args=[period_id, product_id, user], id=period_id)
+    elif interval == "hours":
+        scheduler.add_job(func="tasks.tasks:once", trigger='interval', hours=run_interval,
+                          args=[period_id, product_id, user], id=period_id)
+    elif interval == "days":
+        scheduler.add_job(func="tasks.tasks:once", trigger='interval', days=run_interval,
+                          args=[period_id, product_id, user], id=period_id)
+    elif interval == "weeks":
+        scheduler.add_job(func="tasks.tasks:once", trigger='interval', weeks=run_interval,
+                          args=[period_id, product_id, user], id=period_id)
+
+
 def my_job():
     print("bbbb" + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 
