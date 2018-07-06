@@ -77,16 +77,27 @@ def once_worker(period_id, product_id, user):
                 sls = period_result.get("sls").replace(".sls", "")
                 result = salt_api.target_deploy(minion_list, sls)
             results = {
-                "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                "time": int(time.time()),
                 "result": result,
                 "option": period_audit.get(9)
             }
-            period_result["status"] = {
-                "id": 3,
-                "name": period_status.get(3)
-            }
+            if period_result["scheduler"] == "period":
+                period_result["status"] = {
+                    "id": 9,
+                    "name": period_status.get(9)
+                }
+            elif period_result["scheduler"] == "crontab":
+                period_result["status"] = {
+                    "id": 10,
+                    "name": period_status.get(10)
+                }
+            else:
+                period_result["status"] = {
+                    "id": 3,
+                    "name": period_status.get(3)
+                }
             period_result["audit"].append({
-                "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                "timestamp": int(time.time()),
                 "user": "机器人",
                 "option": period_audit.get(3)
             })
@@ -114,7 +125,7 @@ def once_worker(period_id, product_id, user):
                             "name": period_status.get(7) % count
                         }
                         p_result["audit"].append({
-                            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                            "timestamp": int(time.time()),
                             "user": "机器人",
                             "option": period_audit.get(7) % count
                         })
@@ -126,7 +137,7 @@ def once_worker(period_id, product_id, user):
                         elif period_result.get("execute") == "sls":
                             result = salt_api.target_deploy(minion, period_result.get("sls"))
                         results = {
-                            "time": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                            "time": int(time.time()),
                             "result": result,
                             "option": period_audit.get(7) % count
                         }
@@ -137,7 +148,7 @@ def once_worker(period_id, product_id, user):
                             "name": period_status.get(8) % count
                         }
                         p_result["audit"].append({
-                            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                            "timestamp": int(time.time()),
                             "user": "机器人",
                             "option": period_audit.get(8) % count
                         })
@@ -151,12 +162,23 @@ def once_worker(period_id, product_id, user):
                         db.close_mysql()
                         # audit_log(user, minion, product_id, "minion", "shell")
             # 更新状态为完成
-            p_result["status"] = {
-                "id": 3,
-                "name": period_status.get(3)
-            }
+            if p_result["scheduler"] == "period":
+                p_result["status"] = {
+                    "id": 9,
+                    "name": period_status.get(9)
+                }
+            elif p_result["scheduler"] == "crontab":
+                p_result["status"] = {
+                    "id": 10,
+                    "name": period_status.get(10)
+                }
+            else:
+                p_result["status"] = {
+                    "id": 3,
+                    "name": period_status.get(3)
+                }
             p_result["audit"].append({
-                "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                "timestamp": int(time.time()),
                 "user": "机器人",
                 "option": period_audit.get(3)
             })

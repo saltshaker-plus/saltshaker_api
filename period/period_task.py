@@ -13,7 +13,7 @@ from common.utility import utc_to_local
 import json
 import time
 from scheduler.period_scheduler import scheduler_timing_add, scheduler_timing_modify, \
-    scheduler_delete, scheduler_interval_add
+    scheduler_delete, scheduler_interval_add, scheduler_interval_modify
 
 logger = loggers()
 
@@ -58,12 +58,20 @@ class Period(Resource):
                 product_status, product_result = db.select_by_id("product", result.get("product_id"))
                 if product_status is True and product_result:
                     result["product_id"] = product_result.get("name")
-                period_result_status, period_result_result = db.select("period_result",
-                                                                       "where data -> '$.id'='%s'" % result["id"])
+                period_result_status, period_result_result = db.select(
+                    "period_result", "where data -> '$.id'='%s'order by data -> '$.result.time' desc limit 20"
+                                     % result["id"])
                 if period_result_status is True:
                     for r in period_result_result:
                         result["result"].append(r.get("result"))
                 db.close_mysql()
+                # 周期性Job审计信息超过10条后显示前10条及最后两条
+                if result["scheduler"] != "once":
+                    if len(result["audit"]) > 10:
+                        result_limit = result["audit"][0:10]
+                        result_limit.append({'user': '', 'option': '', 'timestamp': ''})
+                        result_limit.extend(result["audit"][-2:])
+                        result["audit"] = result_limit
                 return {"data": result, "status": True, "message": ""}, 200
             else:
                 db.close_mysql()
@@ -76,6 +84,16 @@ class Period(Resource):
     def delete(self, period_id):
         user = g.user_info["username"]
         db = DB()
+        select_status, select_result = db.select_by_id("period_task", period_id)
+        if select_status is not True:
+            db.close_mysql()
+            logger.error("Modify period_task error: %s" % select_result)
+            return {"status": False, "message": select_result}, 500
+        # 删除定期任务的时候删除对应的调度
+        if select_result["scheduler"] == "period":
+            scheduler_result = scheduler_delete(period_id)
+            if scheduler_result.get("status") is not True:
+                return {"status": False, "message": scheduler_result.get("message")}, 500
         status, result = db.delete_by_id("period_task", period_id)
         if status is not True:
             logger.error("Delete period_task error: %s" % result)
@@ -87,8 +105,6 @@ class Period(Resource):
             logger.error("Delete period_result error: %s" % result)
             return {"status": False, "message": result}, 500
         db.close_mysql()
-        # 删除定期任务的时候删除对应的调度
-        scheduler_delete(period_id)
         audit_log(user, period_id, "", "period_task", "delete")
         return {"status": True, "message": ""}, 200
 
@@ -125,9 +141,13 @@ class Period(Resource):
             args["once"]["date"] = utc_to_local(args["once"]["date"])
         status, result = db.update_by_id("period_task", json.dumps(period_task, ensure_ascii=False), period_id)
         db.close_mysql()
+        # 修改调度任务
         if args["scheduler"] == "once" and args["once"]["type"] == "timing":
             run_date = args["once"]["date"].split(" ")[0] + " " + args["once"]["time"]
             scheduler_timing_modify(args["id"], args["product_id"], user, run_date)
+        if args["scheduler"] == "period":
+            scheduler_interval_modify(args["id"], args["product_id"], user,  args["period"]["interval"],
+                                      args["period"]["type"])
         if status is not True:
             logger.error("Modify period_task error: %s" % result)
             return {"status": False, "message": result}, 500
@@ -163,7 +183,7 @@ class PeriodList(Resource):
         args["id"] = uuid_prefix("t")
         user = g.user_info["username"]
         period_task = args
-        period_task["timestamp"] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        period_task["timestamp"] = int(time.time())
         period_task["result"] = []
         period_task["status"] = {
             "id": 0,
@@ -171,7 +191,7 @@ class PeriodList(Resource):
         }
         period_task["executed_minion"] = []
         period_task["audit"] = [{
-            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+            "timestamp": int(time.time()),
             "user": user,
             "option": period_audit.get(0)
         }]
@@ -194,11 +214,15 @@ class PeriodList(Resource):
                 # 一次定时执行的扔给APScheduler,进行定时处理
                 if args["scheduler"] == "once" and args["once"]["type"] == "timing":
                     run_date = args["once"]["date"].split(" ")[0] + " " + args["once"]["time"]
-                    scheduler_timing_add(args["id"], args["product_id"], user, run_date)
-                # 周期性的
+                    scheduler_result = scheduler_timing_add(args["id"], args["product_id"], user, run_date)
+                    if scheduler_result.get("status") is not True:
+                        return {"status": False, "message": scheduler_result.get("message")}, 500
+                # 周期性的扔给APScheduler,进行定时处理
                 if args["scheduler"] == "period":
-                    scheduler_interval_add(args["id"], args["product_id"], user, args["period"]["interval"],
-                                           args["period"]["type"])
+                    scheduler_result = scheduler_interval_add(args["id"], args["product_id"],
+                                                              user, args["period"]["interval"], args["period"]["type"])
+                    if scheduler_result.get("status") is not True:
+                        return {"status": False, "message": scheduler_result.get("message")}, 500
                 return {"status": True, "message": ""}, 201
             else:
                 db.close_mysql()
@@ -222,7 +246,7 @@ class Reopen(Resource):
                     # 重开之前清空已经执行过的minion
                     result["executed_minion"] = []
                     result["audit"].append({
-                        "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                        "timestamp": int(time.time()),
                         "user": user,
                         "option": period_audit.get(1)
                     })
@@ -255,7 +279,7 @@ class Pause(Resource):
         if status is True:
             result["action"] = "pause"
             result["audit"].append({
-                "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                "timestamp": int(time.time()),
                 "user": user,
                 "option": period_audit.get(5)
             })
@@ -282,7 +306,7 @@ class Play(Resource):
         if status is True:
             result["action"] = "play"
             result["audit"].append({
-                "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                "timestamp": int(time.time()),
                 "user": user,
                 "option": period_audit.get(2)
             })

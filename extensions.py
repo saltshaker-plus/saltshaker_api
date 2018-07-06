@@ -21,7 +21,8 @@ class Config(object):
     }
     SCHEDULER_JOB_DEFAULTS = {
         'coalesce': False,
-        'max_instances': 3
+        'max_instances': 3,
+        'misfire_grace_time': 60
     }
     SCHEDULER_API_ENABLED = True
 
