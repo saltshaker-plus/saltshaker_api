@@ -83,7 +83,6 @@ def rsa_decrypt(decrypt_text):
 
 # 加密RSA
 def rsa_encrypt(encrypt_text):
-    print(encrypt_text)
     try:
         public_key = RedisTool.get("public_key")
         rsa_key = RSA.importKey(public_key)

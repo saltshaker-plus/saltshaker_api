@@ -7,7 +7,7 @@ import json
 import sseclient
 import re
 from common.db import DB
-from common.utility import salt_api_for_product
+from common.utility import salt_api_for_product, utc_to_local
 import ast
 
 logger = loggers()
@@ -38,6 +38,7 @@ def sse_worker(product):
             print(event.data)
             event_dict = ast.literal_eval(event.data.replace('true', 'True').replace('false', 'False').
                                           replace('null', '""'))
+            event_dict['data']['_stamp'] = utc_to_local(event_dict['data']['_stamp'] + "Z")
             event_dict['data']['product_id'] = product
             db = DB()
             db.insert("event", json.dumps(event_dict, ensure_ascii=False))
