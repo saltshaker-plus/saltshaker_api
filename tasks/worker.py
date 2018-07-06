@@ -81,6 +81,8 @@ def once_worker(period_id, product_id, user):
                 "result": result,
                 "option": period_audit.get(9)
             }
+            insert_period_result(period_id, results)
+            # 不同调度方式使用不同的状态显示
             if period_result["scheduler"] == "period":
                 period_result["status"] = {
                     "id": 9,
@@ -96,13 +98,13 @@ def once_worker(period_id, product_id, user):
                     "id": 3,
                     "name": period_status.get(3)
                 }
-            period_result["audit"].append({
+            # 执行审计写入到period_audit表
+            audits = {
                 "timestamp": int(time.time()),
                 "user": "机器人",
                 "option": period_audit.get(3)
-            })
-            insert_period_result(period_id, results)
-            # period_task["results"].append(results)
+            }
+            insert_period_audit(period_id, audits)
             db.update_by_id("period_task", json.dumps(period_result, ensure_ascii=False), period_id)
             db.close_mysql()
             audit_log(user, minion_list, product_id, "minion", "shell")
@@ -124,11 +126,12 @@ def once_worker(period_id, product_id, user):
                             "id": 7,
                             "name": period_status.get(7) % count
                         }
-                        p_result["audit"].append({
+                        audits = {
                             "timestamp": int(time.time()),
                             "user": "机器人",
                             "option": period_audit.get(7) % count
-                        })
+                        }
+                        insert_period_audit(period_id, audits)
                         db.update_by_id("period_task", json.dumps(p_result, ensure_ascii=False), period_id)
                         # 根据并行数，对minion进行切分
                         minion = minion_list[i:i+concurrent]
@@ -136,6 +139,7 @@ def once_worker(period_id, product_id, user):
                             result = salt_api.shell_remote_execution(minion, period_result.get("shell"))
                         elif period_result.get("execute") == "sls":
                             result = salt_api.target_deploy(minion, period_result.get("sls"))
+                        # 执行结果写入到period_result表
                         results = {
                             "time": int(time.time()),
                             "result": result,
@@ -147,11 +151,13 @@ def once_worker(period_id, product_id, user):
                             "id": 8,
                             "name": period_status.get(8) % count
                         }
-                        p_result["audit"].append({
+                        # 执行审计写入到period_audit表
+                        audits = {
                             "timestamp": int(time.time()),
                             "user": "机器人",
                             "option": period_audit.get(8) % count
-                        })
+                        }
+                        insert_period_audit(period_id, audits)
                         p_result["executed_minion"].extend(minion)
                         db.update_by_id("period_task", json.dumps(p_result, ensure_ascii=False), period_id)
                         # 并行间隔时间，最后一次不等待
@@ -161,7 +167,7 @@ def once_worker(period_id, product_id, user):
                                 count += 1
                         db.close_mysql()
                         # audit_log(user, minion, product_id, "minion", "shell")
-            # 更新状态为完成
+            # 不同调度方式使用不同的状态显示
             if p_result["scheduler"] == "period":
                 p_result["status"] = {
                     "id": 9,
@@ -177,16 +183,18 @@ def once_worker(period_id, product_id, user):
                     "id": 3,
                     "name": period_status.get(3)
                 }
-            p_result["audit"].append({
+            audits = {
                 "timestamp": int(time.time()),
                 "user": "机器人",
                 "option": period_audit.get(3)
-            })
+            }
+            insert_period_audit(period_id, audits)
             db = DB()
             db.update_by_id("period_task", json.dumps(p_result, ensure_ascii=False), period_id)
             db.close_mysql()
 
 
+# 结果信息放到period_result表
 def insert_period_result(period_id, period_result):
     db = DB()
     results = {
@@ -197,3 +205,16 @@ def insert_period_result(period_id, period_result):
     if status is False:
         db.close_mysql()
         logger.error("Insert period result error: %s" % result)
+
+
+# 审计信息放到period_audit表
+def insert_period_audit(period_id, period_audits):
+    db = DB()
+    results = {
+        "id": period_id,
+        "result": period_audits
+    }
+    status, result = db.insert("period_audit", json.dumps(results, ensure_ascii=False))
+    if status is False:
+        db.close_mysql()
+        logger.error("Insert period audit error: %s" % result)

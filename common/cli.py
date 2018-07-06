@@ -29,7 +29,8 @@ def initialize(username, password):
         "host",
         "grains",
         "period_task",
-        "period_result"
+        "period_result",
+        "period_audit"
     ]
     for t in tables:
         status, result = db.create_table(t)

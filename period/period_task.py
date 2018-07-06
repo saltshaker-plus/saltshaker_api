@@ -8,6 +8,7 @@ from common.utility import uuid_prefix
 from common.sso import access_required
 from common.const import role_dict
 from tasks.tasks import once
+from tasks.worker import insert_period_audit
 from common.const import period_status, period_audit
 from common.utility import utc_to_local
 import json
@@ -64,6 +65,11 @@ class Period(Resource):
                 if period_result_status is True:
                     for r in period_result_result:
                         result["result"].append(r.get("result"))
+                period_audit_status, period_audit_result = db.select(
+                    "period_audit", "where data -> '$.id'='%s'" % result["id"])
+                if period_audit_status is True:
+                    for a in period_audit_result:
+                        result["audit"].append(a.get("result"))
                 db.close_mysql()
                 # 周期性Job审计信息超过10条后显示前10条及最后两条
                 if result["scheduler"] != "once":
@@ -102,7 +108,11 @@ class Period(Resource):
             return {"status": False, "message": "%s does not exist" % period_id}, 404
         period_result_status, period_result_result = db.delete_by_id("period_result",  period_id)
         if period_result_status is not True:
-            logger.error("Delete period_result error: %s" % result)
+            logger.error("Delete period_result error: %s" % period_result_result)
+            return {"status": False, "message": result}, 500
+        period_audit_status, period_audit_result = db.delete_by_id("period_audit", period_id)
+        if period_audit_status is not True:
+            logger.error("Delete period_result error: %s" % period_audit_result)
             return {"status": False, "message": result}, 500
         db.close_mysql()
         audit_log(user, period_id, "", "period_task", "delete")
@@ -171,6 +181,10 @@ class PeriodList(Resource):
                     if group_status is True:
                         target.append({"id": group_id, "name": group_result.get("name")})
                 period["target"] = target
+                period_audit_status, period_audit_result = db.select(
+                    "period_audit", "where data -> '$.id'='%s' order by data -> '$.result.timestamp' desc limit 1" %
+                                    period["id"])
+                period["audit"].extend(period_audit_result)
                 task.append(period)
             db.close_mysql()
             return {"data": task, "status": True, "message": ""}, 200
@@ -185,16 +199,18 @@ class PeriodList(Resource):
         period_task = args
         period_task["timestamp"] = int(time.time())
         period_task["result"] = []
+        period_task["audit"] = []
         period_task["status"] = {
             "id": 0,
             "name": period_status.get(0)
         }
         period_task["executed_minion"] = []
-        period_task["audit"] = [{
+        audit = {
             "timestamp": int(time.time()),
             "user": user,
             "option": period_audit.get(0)
-        }]
+        }
+        insert_period_audit(args["id"], audit)
         if args["once"]["date"]:
             args["once"]["date"] = utc_to_local(args["once"]["date"])
         db = DB()
@@ -245,11 +261,12 @@ class Reopen(Resource):
                 if result["scheduler"] == "once" and result["once"]["type"] == "now":
                     # 重开之前清空已经执行过的minion
                     result["executed_minion"] = []
-                    result["audit"].append({
+                    audit = {
                         "timestamp": int(time.time()),
                         "user": user,
                         "option": period_audit.get(1)
-                    })
+                    }
+                    insert_period_audit(period_id, audit)
                     update_status, update_result = db.update_by_id("period_task",
                                                                    json.dumps(result, ensure_ascii=False),
                                                                    period_id)
@@ -278,11 +295,12 @@ class Pause(Resource):
         status, result = db.select_by_id("period_task", period_id)
         if status is True:
             result["action"] = "pause"
-            result["audit"].append({
+            audit = {
                 "timestamp": int(time.time()),
                 "user": user,
                 "option": period_audit.get(5)
-            })
+            }
+            insert_period_audit(period_id, audit)
             update_status, update_result = db.update_by_id("period_task", json.dumps(result, ensure_ascii=False),
                                                            period_id)
             if update_status is not True:
@@ -305,11 +323,12 @@ class Play(Resource):
         status, result = db.select_by_id("period_task", period_id)
         if status is True:
             result["action"] = "play"
-            result["audit"].append({
+            audit = {
                 "timestamp": int(time.time()),
                 "user": user,
                 "option": period_audit.get(2)
-            })
+            }
+            insert_period_audit(period_id, audit)
             update_status, update_result = db.update_by_id("period_task", json.dumps(result, ensure_ascii=False),
                                                            period_id)
             if update_status is not True:
