@@ -169,10 +169,15 @@ class PeriodList(Resource):
     @access_required(role_dict["common_user"])
     def get(self):
         product_id = request.args.get("product_id")
+        scheduler_type = request.args.get("scheduler_type")
         db = DB()
         task = []
-        status, result = db.select("period_task", "where data -> '$.product_id'='%s' "
-                                                  "order by data -> '$.timestamp' desc" % product_id)
+        if scheduler_type:
+            sql = "where data -> '$.product_id'='%s' and data -> '$.scheduler'!='%s' " \
+                  "order by data -> '$.timestamp' desc" % (product_id, scheduler_type)
+        else:
+            sql = "where data -> '$.product_id'='%s' order by data -> '$.timestamp' desc" % product_id
+        status, result = db.select("period_task", sql)
         if status is True:
             for period in result:
                 target = []
@@ -201,8 +206,8 @@ class PeriodList(Resource):
         period_task["result"] = []
         period_task["audit"] = []
         period_task["status"] = {
-            "id": 0,
-            "name": period_status.get(0)
+            "id": 1,
+            "name": period_status.get(1)
         }
         period_task["executed_minion"] = []
         audit = {
@@ -218,11 +223,6 @@ class PeriodList(Resource):
                                    % (args["name"], args["product_id"]))
         if status is True:
             if len(result) == 0:
-                insert_status, insert_result = db.insert("period_task", json.dumps(period_task, ensure_ascii=False))
-                db.close_mysql()
-                if insert_status is not True:
-                    logger.error("Add period_task error: %s" % insert_result)
-                    return {"status": False, "message": insert_result}, 500
                 audit_log(user, args["id"], "", "period_task", "add")
                 # 一次立即执行的直接扔给celery
                 if args["scheduler"] == "once" and args["once"]["type"] == "now":
@@ -239,6 +239,11 @@ class PeriodList(Resource):
                                                               user, args["period"]["interval"], args["period"]["type"])
                     if scheduler_result.get("status") is not True:
                         return {"status": False, "message": scheduler_result.get("message")}, 500
+                insert_status, insert_result = db.insert("period_task", json.dumps(period_task, ensure_ascii=False))
+                db.close_mysql()
+                if insert_status is not True:
+                    logger.error("Add period_task error: %s" % insert_result)
+                    return {"status": False, "message": insert_result}, 500
                 return {"status": True, "message": ""}, 201
             else:
                 db.close_mysql()

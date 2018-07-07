@@ -14,7 +14,7 @@ from resources.log import LogList
 from resources.cherry_stats import CherryStats
 from resources.execute import ExecuteShell, ExecuteSLS, ExecuteGroups
 from resources.gitfs import BranchList, FilesList, FileContent, Commit, Upload
-from resources.dashboard import GrainsStatistics, TitleInfo, Minion
+from resources.dashboard import GrainsStatistics, TitleInfo, Minion, ServiceStatus
 from kit.tools import HostSync, GrainsSync
 from resources.command import HistoryList
 from resources.pillar import PillarItems
@@ -124,3 +124,4 @@ api.add_resource(GrainsSync, "/saltshaker/api/v1.0/grains/sync")
 api.add_resource(GrainsStatistics, "/saltshaker/api/v1.0/dashboard/grains/<string:item>")
 api.add_resource(TitleInfo, "/saltshaker/api/v1.0/dashboard/title")
 api.add_resource(Minion, "/saltshaker/api/v1.0/dashboard/minion")
+api.add_resource(ServiceStatus, "/saltshaker/api/v1.0/dashboard/status")

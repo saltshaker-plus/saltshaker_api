@@ -6,7 +6,7 @@ from common.db import DB
 from common.const import role_dict
 from collections import Counter
 from common.utility import salt_api_for_product
-
+import os
 
 logger = loggers()
 
@@ -91,7 +91,9 @@ class TitleInfo(Resource):
         args = parser.parse_args()
         host_status, host_result = db.select("host", "where data -> '$.product_id'='%s'" % args["product_id"])
         event_status, event_result = db.select("event", "where data -> '$.data.product_id'='%s'" % args["product_id"])
-        period_status, period_result = db.select("period_task", "where data -> '$.product_id'='%s'" % args["product_id"])
+        period_status, period_result = db.select("period_task",
+                                                 "where data -> '$.product_id'='%s' and "
+                                                 "data -> '$.scheduler'!='once'" % args["product_id"])
         log_status, log_result = db.select("audit_log", "where data -> '$.product_id'='%s'" % args["product_id"])
         db.close_mysql()
         data["minion"] = len(host_result)
@@ -122,7 +124,7 @@ class Minion(Resource):
                 "series": [
                     {"value": len(key_result.get("minions")), "name": 'Accepted',
                      "itemStyle": {"normal": {"color": '#f0e334'}}},
-                    {"value": 400, "name": 'Up', "itemStyle":
+                    {"value": 40, "name": 'Up', "itemStyle":
                         {"normal": {"color": '#64d572'}}},
                     {"value": 0, "name": 'Down', "itemStyle":
                         {"normal": {"color": '#f25e43'}}},
@@ -133,3 +135,51 @@ class Minion(Resource):
                 ],
             }
             return {"data": data, "status": True, "message": ""}, 200
+
+
+class ServiceStatus(Resource):
+    @access_required(role_dict["common_user"])
+    def get(self):
+        status = []
+        args = parser.parse_args()
+        salt_api = salt_api_for_product(args["product_id"])
+        if isinstance(salt_api, dict):
+            return salt_api, 500
+        else:
+            cherry_result = salt_api.stats()
+            if isinstance(cherry_result, dict):
+                if cherry_result.get("CherryPy Applications").get("Enabled") is True:
+                    status.append({
+                        "name": "Cherry",
+                        "status": "UP"
+                    })
+            else:
+                status.append({
+                    "name": "Cherry",
+                    "status": "Down"
+                })
+            master_status = salt_api.list_all_key()
+            if master_status.get("status") is not False:
+                status.append({
+                    "name": "Master",
+                    "status": "UP"
+                })
+            else:
+                status.append({
+                    "name": "Master",
+                    "status": "Down"
+                })
+        echo = os.popen("ps aux|grep app.celery|grep -v grep |wc -l")
+        try:
+            num = int(echo.readline().split('\n')[0])
+            status.append({
+                "name": "Celery",
+                "status": num
+            })
+        except Exception as e:
+            status.append({
+                "name": "Celery",
+                "status": 0
+            })
+            logger.error("Get celery error: %s" % e)
+        return {"data": status, "status": True, "message": ""}, 200
