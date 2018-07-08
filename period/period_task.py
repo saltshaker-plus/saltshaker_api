@@ -99,7 +99,9 @@ class Period(Resource):
         if select_result["scheduler"] == "period":
             scheduler_result = scheduler_delete(period_id)
             if scheduler_result.get("status") is not True:
-                return {"status": False, "message": scheduler_result.get("message")}, 500
+                # 假如不是job不存在，才返回
+                if "'No job" not in scheduler_result.get("message"):
+                    return {"status": False, "message": scheduler_result.get("message")}, 500
         status, result = db.delete_by_id("period_task", period_id)
         if status is not True:
             logger.error("Delete period_task error: %s" % result)
