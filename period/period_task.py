@@ -13,8 +13,7 @@ from common.const import period_status, period_audit
 from common.utility import utc_to_local
 import json
 import time
-from scheduler.period_scheduler import scheduler_timing_add, scheduler_timing_modify, \
-    scheduler_delete, scheduler_interval_add, scheduler_interval_modify
+from scheduler.period_scheduler import *
 
 logger = loggers()
 
@@ -228,15 +227,18 @@ class PeriodList(Resource):
                 audit_log(user, args["id"], "", "period_task", "add")
                 # 一次立即执行的直接扔给celery
                 if args["scheduler"] == "once" and args["once"]["type"] == "now":
+                    period_task["action"] = "concurrent_play"
                     once.delay(args["id"], args["product_id"], user)
                 # 一次定时执行的扔给APScheduler,进行定时处理
                 if args["scheduler"] == "once" and args["once"]["type"] == "timing":
+                    period_task["action"] = "scheduler_resume"
                     run_date = args["once"]["date"].split(" ")[0] + " " + args["once"]["time"]
                     scheduler_result = scheduler_timing_add(args["id"], args["product_id"], user, run_date)
                     if scheduler_result.get("status") is not True:
                         return {"status": False, "message": scheduler_result.get("message")}, 500
                 # 周期性的扔给APScheduler,进行定时处理
                 if args["scheduler"] == "period":
+                    period_task["action"] = "scheduler_resume"
                     scheduler_result = scheduler_interval_add(args["id"], args["product_id"],
                                                               user, args["period"]["interval"], args["period"]["type"])
                     if scheduler_result.get("status") is not True:
@@ -282,7 +284,7 @@ class Reopen(Resource):
                         db.close_mysql()
                         return {"status": False, "message": update_result}, 500
 
-                    audit_log(user, period_id, "", "period_task", "reopen")
+                    audit_log(user, period_id, product_id, "period_task", "reopen")
                     once.delay(period_id, product_id, user)
                     db.close_mysql()
                     return {"status": True, "message": ""}, 200
@@ -294,14 +296,15 @@ class Reopen(Resource):
             return {"status": False, "message": result}, 500
 
 
-class Pause(Resource):
+class ConcurrentPause(Resource):
     @access_required(role_dict["common_user"])
     def put(self, period_id):
+        product_id = request.args.get("product_id")
         user = g.user_info["username"]
         db = DB()
         status, result = db.select_by_id("period_task", period_id)
         if status is True:
-            result["action"] = "pause"
+            result["action"] = "concurrent_pause"
             audit = {
                 "timestamp": int(time.time()),
                 "user": user,
@@ -314,14 +317,14 @@ class Pause(Resource):
                 logger.error("Pause period_task error: %s" % update_result)
                 db.close_mysql()
                 return {"status": False, "message": update_result}, 500
-            audit_log(user, period_id, "", "period_task", "pause")
+            audit_log(user, period_id, product_id, "period_task", "pause")
             return {"status": True, "message": ""}, 200
         else:
             db.close_mysql()
             return {"status": False, "message": result}, 500
 
 
-class Play(Resource):
+class ConcurrentPlay(Resource):
     @access_required(role_dict["common_user"])
     def put(self, period_id):
         product_id = request.args.get("product_id")
@@ -329,7 +332,7 @@ class Play(Resource):
         db = DB()
         status, result = db.select_by_id("period_task", period_id)
         if status is True:
-            result["action"] = "play"
+            result["action"] = "concurrent_play"
             audit = {
                 "timestamp": int(time.time()),
                 "user": user,
@@ -344,8 +347,79 @@ class Play(Resource):
                 return {"status": False, "message": update_result}, 500
             if result["scheduler"] == "once" and result["once"]["type"] == "now":
                 once.delay(period_id, product_id, user)
-            audit_log(user, period_id, "", "period_task", "pause")
+            audit_log(user, period_id, product_id, "period_task", "pause")
             return {"status": True, "message": ""}, 200
         else:
             db.close_mysql()
             return {"status": False, "message": result}, 500
+
+
+class SchedulerPause(Resource):
+    @access_required(role_dict["common_user"])
+    def put(self, period_id):
+        product_id = request.args.get("product_id")
+        user = g.user_info["username"]
+        db = DB()
+        status, result = db.select_by_id("period_task", period_id)
+        if status is True:
+            result["action"] = "scheduler_pause"
+            result["status"] = {
+                "id": 11,
+                "name": period_status.get(11)
+            }
+            audit = {
+                "timestamp": int(time.time()),
+                "user": user,
+                "option": period_audit.get(11)
+            }
+            insert_period_audit(period_id, audit)
+            update_status, update_result = db.update_by_id("period_task", json.dumps(result, ensure_ascii=False),
+                                                           period_id)
+            if update_status is not True:
+                logger.error("Scheduler Pause period_task error: %s" % update_result)
+                db.close_mysql()
+                return {"status": False, "message": update_result}, 500
+            scheduler_result = scheduler_pause(period_id)
+            if scheduler_result.get("status") is not True:
+                return {"status": False, "message": scheduler_result.get("message")}, 500
+            audit_log(user, period_id, product_id, "period_task", "scheduler pause")
+            return {"status": True, "message": ""}, 200
+        else:
+            db.close_mysql()
+            return {"status": False, "message": result}, 500
+
+
+class SchedulerResume(Resource):
+    @access_required(role_dict["common_user"])
+    def put(self, period_id):
+        product_id = request.args.get("product_id")
+        user = g.user_info["username"]
+        db = DB()
+        status, result = db.select_by_id("period_task", period_id)
+        if status is True:
+            result["action"] = "scheduler_resume"
+            result["status"] = {
+                "id": 9,
+                "name": period_status.get(9)
+            }
+            audit = {
+                "timestamp": int(time.time()),
+                "user": user,
+                "option": period_audit.get(10)
+            }
+            insert_period_audit(period_id, audit)
+            update_status, update_result = db.update_by_id("period_task", json.dumps(result, ensure_ascii=False),
+                                                           period_id)
+            if update_status is not True:
+                logger.error("Pause period_task error: %s" % update_result)
+                db.close_mysql()
+                return {"status": False, "message": update_result}, 500
+            scheduler_result = scheduler_resume(period_id)
+            if scheduler_result.get("status") is not True:
+                return {"status": False, "message": scheduler_result.get("message")}, 500
+            audit_log(user, period_id, product_id, "period_task", "scheduler resume")
+            return {"status": True, "message": ""}, 200
+        else:
+            db.close_mysql()
+            return {"status": False, "message": result}, 500
+

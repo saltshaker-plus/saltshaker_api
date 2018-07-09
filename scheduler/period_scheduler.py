@@ -158,7 +158,7 @@ def scheduler_delete(period_id):
 
 
 # 暂停任务
-def scheduler_interval_pause(period_id):
+def scheduler_pause(period_id):
     try:
         scheduler.pause_job(id=period_id)
         return {"status": True, "message": ""}
@@ -168,7 +168,7 @@ def scheduler_interval_pause(period_id):
 
 
 # 恢复任务
-def scheduler_interval_resume(period_id):
+def scheduler_resume(period_id):
     try:
         scheduler.resume_job(id=period_id)
         return {"status": True, "message": ""}
