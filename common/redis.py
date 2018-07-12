@@ -66,3 +66,11 @@ class RedisTool:
     @staticmethod
     def expire(name, time):
         return redisConnect.expire(name, time)
+
+    @staticmethod
+    def pexpire(name, time):
+        return redisConnect.pexpire(name, time)
+
+    @staticmethod
+    def setnx(name, value):
+        return redisConnect.setnx(name, value)
