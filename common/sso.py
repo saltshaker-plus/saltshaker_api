@@ -145,14 +145,37 @@ def menu_list(username):
                 status, result = db.select_by_id("role", role)
                 if status is True and result:
                     if result["tag"] == role_dict["superuser"]:
-                        # 0 放到最后以保证系统管理在最后
-                        menu = [1, 2, 111, 0, 100, 101, 102, 103, 104, -1]
+                        # 100 放到最后以保证系统管理在最后
+                        menu = [1, 10, 11, 12,
+                                2, 20, 21, 22,
+                                3, 30,
+                                4, 40,
+                                5, 50,
+                                6, 60, 61, 62, 63,
+                                7, 70,
+                                8, 80,
+                                100, 101, 102, 103, 104
+                                ]
                         break
                     elif result["tag"] == role_dict["product"]:
-                        menu = [1, 2, 111, 0, 100, 103]
+                        menu = [1, 10, 11, 12,
+                                2, 20, 21, 22,
+                                3, 30,
+                                4, 40,
+                                5, 50,
+                                6, 60, 61, 62, 63,
+                                7, 70,
+                                8, 80,
+                                100, 103
+                                ]
                         break
                     else:
-                        menu = [1]
+                        menu = [1, 10, 11, 12,
+                                2, 20, 22,
+                                3, 30,
+                                5, 50,
+                                6, 60, 61, 62, 63
+                                ]
         except Exception as e:
             logger.error("Menu list error: %s" % e)
     db.close_mysql()
