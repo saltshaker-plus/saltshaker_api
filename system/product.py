@@ -98,7 +98,8 @@ class Product(Resource):
             return {"status": False, "message": result}, 500
         audit_log(user, args["id"], product_id, "product", "edit")
         # 更新Rsync配置
-        rsync_config()
+        if args["file_server"] == "rsync":
+            rsync_config()
         return {"status": True, "message": ""}, 200
 
 
