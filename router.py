@@ -21,9 +21,10 @@ from resources.pillar import PillarItems
 from resources.rsa_encrypt import RSA
 from resources.sse import SSE
 from webhook.salt_hook import Hook
-from period.period_task import Period, PeriodList, Reopen, ConcurrentPause, ConcurrentPlay, SchedulerPause, \
-    SchedulerResume
+from period.period_task import *
 from common.utility import custom_abort
+from resources.sls import SLSCreate
+
 
 api = flask_restful.Api(catch_all_404s=True)
 
@@ -128,3 +129,6 @@ api.add_resource(GrainsStatistics, "/saltshaker/api/v1.0/dashboard/grains/<strin
 api.add_resource(TitleInfo, "/saltshaker/api/v1.0/dashboard/title")
 api.add_resource(Minion, "/saltshaker/api/v1.0/dashboard/minion")
 api.add_resource(ServiceStatus, "/saltshaker/api/v1.0/dashboard/status")
+
+# sls
+api.add_resource(SLSCreate, "/saltshaker/api/v1.0/sls/create")
