@@ -4,6 +4,9 @@ from fileserver.git_fs import gitlab_project
 from common.const import role_dict
 from common.log import loggers
 from common.sso import access_required
+from common.audit_log import audit_log
+from flask import g
+from resources.sls import delete_sls
 import base64
 
 logger = loggers()
@@ -113,6 +116,7 @@ class Commit(Resource):
     @access_required(role_dict["common_user"])
     def post(self):
         args = parser.parse_args()
+        user = g.user_info["username"]
         project, _ = gitlab_project(args["product_id"], args["project_type"])
         # 支持的action create, delete, move, update
         data = {
@@ -131,17 +135,22 @@ class Commit(Resource):
         else:
             try:
                 project.commits.create(data)
+                # 假如删除，删除数据库中封装的SLS信息
+                if args["action"] == "delete":
+                    delete_sls(args["path"])
+                audit_log(user, args["path"], args["product_id"], "sls", args["action"])
             except Exception as e:
                 logger.error("Commit file: %s" % e)
                 return {"status": False, "message": str(e)}, 500
             return {"status": True, "message": ""}, 200
 
 
-# 创建修改删除文件
+# 上传文件
 class Upload(Resource):
     @access_required(role_dict["common_user"])
     def post(self):
         args = parser.parse_args()
+        user = g.user_info["username"]
         project, _ = gitlab_project(args["product_id"], args["project_type"])
         file = request.files['file']
         if args["path"]:
@@ -180,6 +189,7 @@ class Upload(Resource):
         else:
             try:
                 project.commits.create(data)
+                audit_log(user, file_path, args["product_id"], "sls", "upload")
             except Exception as e:
                 logger.error("Upload file: %s" % e)
                 return {"status": False, "message": str(e)}, 500

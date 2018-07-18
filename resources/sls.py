@@ -118,3 +118,11 @@ class SLSCreate(Resource):
             db.close_mysql()
             logger.error("Select sls name error: %s" % result)
             return {"status": False, "message": result}, 500
+
+
+def delete_sls(path):
+    db = DB()
+    status, result = db.select("sls", "where data -> '$.path'='%s'" % path)
+    if status is True and result:
+        for sls in result:
+            db.delete_by_id("sls", sls.get("id"))
