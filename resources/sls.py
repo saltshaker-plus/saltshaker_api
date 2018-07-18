@@ -20,19 +20,11 @@ parser.add_argument("branch", type=str, default="master", trim=True)
 parser.add_argument("path", type=str, default="", trim=True)
 parser.add_argument("project_type", type=str, trim=True)
 parser.add_argument("action", type=str, default="", trim=True)
-parser.add_argument("file_managed", type=dict, default={
-    "name": "",
-    "destination": "",
-    "source": "",
-    "user": "",
-    "group": "",
-    "template": "",
-    "mode": 644,
-    "attrs": ""
-}, action="append")
+parser.add_argument("file_managed", type=dict, action="append")
 parser.add_argument("file_directory", type=dict, action="append")
 parser.add_argument("cmd_run", type=dict, action="append")
 parser.add_argument("pkg_installed", type=dict, action="append")
+parser.add_argument("steps", required=True, type=dict, action="append")
 
 
 # 封装SLS文件
@@ -43,8 +35,6 @@ class SLSCreate(Resource):
         args["id"] = uuid_prefix("s")
         user = g.user_info["username"]
         db = DB()
-        print(args)
-        print(args['file_managed'])
         yaml = ""
         status, result = db.select("sls", "where data -> '$.path'='%s'" % args["path"])
         if status is True:
@@ -54,17 +44,50 @@ class SLSCreate(Resource):
                 if insert_status is not True:
                     logger.error("Add sls error: %s" % insert_result)
                     return {"status": False, "message": insert_result}, 500
-                # 获取YAML文件格式
-                for file_managed in args['file_managed']:
-                    file = ParseYaml.file_managed(name=file_managed["name"],
-                                                  destination=file_managed["destination"],
-                                                  source=file_managed["source"],
-                                                  user=file_managed["user"],
-                                                  group=file_managed["group"],
-                                                  template=file_managed["template"],
-                                                  mode=file_managed["mode"],
-                                                  attrs=file_managed["attrs"], )
-                    yaml += file
+                # 根据步骤循环
+                for step in args['steps']:
+                    # 文件管理
+                    if step.get("state_name") == "file_managed" and args.get("file_managed"):
+                        for file_managed in args.get("file_managed"):
+                            # 在文件管理找到对应的ID
+                            if step["id"] == file_managed.get("name"):
+                                # 获取YAML文件格式
+                                file = ParseYaml.file_managed(name=file_managed.get("name"),
+                                                              destination=file_managed.get("destination"),
+                                                              source=file_managed.get("source"),
+                                                              user=file_managed.get("user"),
+                                                              group=file_managed.get("group"),
+                                                              template=file_managed.get("template"),
+                                                              mode=file_managed.get("mode"))
+                                yaml += file
+                    if step.get("state_name") == "cmd_run" and args.get("cmd_run"):
+                        for cmd_run in args.get("cmd_run"):
+                            if step["id"] == cmd_run.get("name"):
+                                # 获取YAML文件格式
+                                file = ParseYaml.cmd_run(name=cmd_run.get("name"),
+                                                         cmd=cmd_run.get("cmd"),
+                                                         env=cmd_run.get("env"),
+                                                         unless=cmd_run.get("unless"),
+                                                         require=cmd_run.get("require"))
+                                yaml += file
+                    if step.get("state_name") == "pkg_installed" and args.get("pkg_installed"):
+                        for pkg_installed in args.get("pkg_installed"):
+                            if step["id"] == pkg_installed.get("name"):
+                                # 获取YAML文件格式
+                                file = ParseYaml.pkg_installed(name=pkg_installed.get("name"),
+                                                               pkgs=pkg_installed.get("pkgs"))
+                                yaml += file
+                    if step.get("state_name") == "file_directory" and args.get("file_directory"):
+                        for file_directory in args.get("file_directory"):
+                            if step["id"] == file_directory.get("name"):
+                                # 获取YAML文件格式
+                                file = ParseYaml.file_directory(name=file_directory.get("name"),
+                                                                destination=file_directory.get("destination"),
+                                                                user=file_directory.get("user"),
+                                                                group=file_directory.get("group"),
+                                                                mode=file_directory.get("mode"),
+                                                                makedirs=file_directory.get("makedirs"))
+                                yaml += file
                 print(yaml)
                 project, _ = gitlab_project(args["product_id"], args["project_type"])
                 data = {
@@ -95,82 +118,3 @@ class SLSCreate(Resource):
             db.close_mysql()
             logger.error("Select sls name error: %s" % result)
             return {"status": False, "message": result}, 500
-
-
-
-# 创建修改提交文件
-class Commit(Resource):
-    @access_required(role_dict["common_user"])
-    def post(self):
-        args = parser.parse_args()
-        project, _ = gitlab_project(args["product_id"], args["project_type"])
-        # 支持的action create, delete, move, update
-        data = {
-            'branch': args["branch"],
-            'commit_message': args["action"] + " " + args["path"],
-            'actions': [
-                {
-                    'action': args["action"],
-                    'file_path': args["path"],
-                    'content': args["content"]
-                }
-            ]
-        }
-        if isinstance(project, dict):
-            return project, 500
-        else:
-            try:
-                project.commits.create(data)
-            except Exception as e:
-                logger.error("Commit file: %s" % e)
-                return {"status": False, "message": str(e)}, 500
-            return {"status": True, "message": ""}, 200
-
-
-# 创建修改删除文件
-class Upload(Resource):
-    @access_required(role_dict["common_user"])
-    def post(self):
-        args = parser.parse_args()
-        project, _ = gitlab_project(args["product_id"], args["project_type"])
-        file = request.files['file']
-        if args["path"]:
-            file_path = args["path"] + "/" + file.filename
-        content = file.read()
-        try:
-            content_decode = content.decode()
-            actions = [
-                {
-                    'action': 'create',
-                    'file_path': file_path,
-                    'content': content_decode
-                }
-            ]
-        except Exception as e:
-            return {"status": False, "message": str(e)}, 500
-        # try:
-        #     content_decode = content.decode()
-        #     actions = [
-        #         {
-        #             'action': args["action"],
-        #             'file_path': file_path,
-        #             'content': base64.b64encode(content_decode),
-        #             'encoding': 'base64',
-        #         }
-        #     ]
-        # except Exception as e:
-        #     print(e)
-        data = {
-            'branch': args["branch"],
-            'commit_message': args["action"] + " " + args["path"],
-            'actions': actions
-        }
-        if isinstance(project, dict):
-            return project, 500
-        else:
-            try:
-                project.commits.create(data)
-            except Exception as e:
-                logger.error("Upload file: %s" % e)
-                return {"status": False, "message": str(e)}, 500
-            return {"status": True, "message": ""}, 200
