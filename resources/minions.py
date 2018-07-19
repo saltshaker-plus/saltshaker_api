@@ -30,13 +30,15 @@ class MinionsStatus(Resource):
             return salt_api, 500
         else:
             result = salt_api.runner_status("status")
-            if result:
+            if isinstance(result, dict):
                 if result.get("status") is False:
                     return result, 500
                 for minion in result.get("up"):
                     minion_status.append({"status": "up", "minions_id": minion})
                 for minion in result.get("down"):
                     minion_status.append({"status": "down", "minions_id": minion})
+            else:
+                logger.error("Get minion status error: %s" % result)
             return {"data": minion_status, "status": True, "message": ""}, 200
 
 
@@ -50,7 +52,7 @@ class MinionsKeys(Resource):
             return salt_api, 500
         else:
             result = salt_api.list_all_key()
-            if result:
+            if isinstance(result, dict):
                 if result.get("status") is False:
                     return result, 500
                 for minions_rejected in result.get("minions_rejected"):
@@ -61,6 +63,8 @@ class MinionsKeys(Resource):
                     minion_key.append({"minions_status": "Accepted", "minions_id": minions})
                 for minions_pre in result.get("minions_pre"):
                     minion_key.append({"minions_status": "Unaccepted", "minions_id": minions_pre})
+            else:
+                logger.error("Get minion key error: %s" % result)
             return {"data": minion_key, "status": True, "message": ""}, 200
 
     @access_required(role_dict["common_user"])
