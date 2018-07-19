@@ -88,7 +88,6 @@ class SLSCreate(Resource):
                                                                 mode=file_directory.get("mode"),
                                                                 makedirs=file_directory.get("makedirs"))
                                 yaml += file
-                print(yaml)
                 project, _ = gitlab_project(args["product_id"], args["project_type"])
                 data = {
                     'branch': args["branch"],

@@ -16,16 +16,17 @@ class ParseYaml(object):
         return yaml
 
     @staticmethod
-    def cmd_run(**kwargs):
+    def cmd_run(name, cmd, env, unless, require):
         yaml = '''{name}:
   cmd.run:
     - name: {cmd}
-    - env: {env}
-    - unless: {unless}
-    - require_in:
-      - file: {require}
-
-'''.format(**kwargs)
+'''.format(name=name, cmd=cmd)
+        if env:
+            yaml += "    - env: {env}\n".format(env=env)
+        if unless:
+            yaml += "    - unless: {unless}\n".format(unless=unless)
+        if require:
+            yaml += "    - require_in:\n      - file: {require}\n".format(require=require)
         return yaml
 
     @staticmethod
