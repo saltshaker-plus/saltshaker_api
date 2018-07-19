@@ -104,7 +104,6 @@ class DB(object):
 
     def update_by_id_kv(self, table, k, v, id):
         sql = "UPDATE %s SET data=JSON_SET(data, '%s', '%s') WHERE data -> '$.id'='%s'" % (table, k, v, id)
-        print(sql)
         logger.info(sql)
         try:
             self.cursor.execute(sql)
@@ -181,6 +180,18 @@ class DB(object):
             return True, result
         except Exception as e:
             logger.error("Select by list error: %s" % e)
+            return False, str(e)
+
+    # 查询表数据条数
+    def select_count(self, table, id):
+        sql = "SELECT count(*) FROM %s WHERE data -> '$.id'='%s'" % (table, id)
+        try:
+            self.cursor.execute(sql)
+            self.conn.commit()
+            return True, self.cursor.fetchall()[0][0]
+        except Exception as e:
+            logger.error("Select count error: %s" % e)
+            self.conn.rollback()
             return False, str(e)
 
     def close_mysql(self):
