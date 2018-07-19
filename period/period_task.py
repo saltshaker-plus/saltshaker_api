@@ -58,9 +58,16 @@ class Period(Resource):
                 product_status, product_result = db.select_by_id("product", result.get("product_id"))
                 if product_status is True and product_result:
                     result["product_id"] = product_result.get("name")
+                count_status, count_result = db.select_count("period_result", result["id"])
+                if count_result is False:
+                    return {"status": False, "message": count_result}, 500
+                # 数量小于15的时候避免等于负数
+                if int(count_result) < 15:
+                    count_result = 15
+                # 获取最后15条数据
                 period_result_status, period_result_result = db.select(
-                    "period_result", "where data -> '$.id'='%s'order by data -> '$.result.time' desc limit 20"
-                                     % result["id"])
+                    "period_result", "where data -> '$.id'='%s' limit %s,%s"
+                                     % (result["id"], int(count_result) - 15, 15))
                 if period_result_status is True:
                     for r in period_result_result:
                         result["result"].append(r.get("result"))
