@@ -101,6 +101,10 @@ ext_pillar:           # 配置pillar使用gitfs, 需要配置top.sls
 ````
 支持Roots模式的fileserver, 由于支持多产品多个独立master的管理方式, 采用Roots模式的服务将使用Rsync进行数据的同步及管理
 ````
+#### 功能展示 ####
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/key.png)
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/group.png)
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/grains.png)
 
 ### Saltshaker 交流学习QQ群:622806083
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/qq.png)
