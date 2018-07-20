@@ -121,7 +121,7 @@ def once_worker(period_id, product_id, user):
                 db = DB()
                 p_status, p_result = db.select_by_id("period_task", period_id)
                 if p_status is True and p_result:
-                    if p_result.get("action") == "play":
+                    if p_result.get("action") == "concurrent_play":
                         # 记录状态为第N组运行中
                         p_result["status"] = {
                             "id": 7,
@@ -179,17 +179,18 @@ def once_worker(period_id, product_id, user):
                     "id": 10,
                     "name": period_status.get(10)
                 }
-            else:
+            elif p_result.get("action") != "concurrent_pause":
                 p_result["status"] = {
                     "id": 3,
                     "name": period_status.get(3)
                 }
-            audits = {
-                "timestamp": int(time.time()),
-                "user": "机器人",
-                "option": period_audit.get(3)
-            }
-            insert_period_audit(period_id, audits)
+            if p_result.get("action") != "concurrent_pause":
+                audits = {
+                    "timestamp": int(time.time()),
+                    "user": "机器人",
+                    "option": period_audit.get(3)
+                }
+                insert_period_audit(period_id, audits)
             db = DB()
             db.update_by_id("period_task", json.dumps(p_result, ensure_ascii=False), period_id)
             db.close_mysql()

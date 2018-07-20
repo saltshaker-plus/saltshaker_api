@@ -39,8 +39,12 @@ def scheduler_timing_modify(period_id, product_id, user, run_date):
 def scheduler_interval_add(period_id, product_id, user, run_interval, interval):
     if interval == "second":
         try:
+            print(run_interval)
+            print(period_id)
+            print(scheduler)
             scheduler.add_job(func="tasks.tasks:once", trigger='interval', seconds=run_interval,
                               args=[period_id, product_id, user], id=period_id)
+            print("ddddddddd")
             return {"status": True, "message": ""}
         except Exception as e:
             logger.error("Add second period scheduler error: %s" % e)
