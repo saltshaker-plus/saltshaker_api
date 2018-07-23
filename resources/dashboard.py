@@ -90,7 +90,7 @@ class TitleInfo(Resource):
         }
         args = parser.parse_args()
         host_status, host_result = db.select_count("host", "product_id", args["product_id"])
-        event_status, event_result = db.select_count("event", "product_id", args["product_id"])
+        event_status, event_result = db.select_count("event", "data.product_id", args["product_id"])
         period_status, period_result = db.select("period_task",
                                                  "where data -> '$.product_id'='%s' and "
                                                  "data -> '$.scheduler'!='once'" % args["product_id"])
