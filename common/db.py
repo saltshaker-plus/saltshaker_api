@@ -182,8 +182,8 @@ class DB(object):
             logger.error("Select by list error: %s" % e)
             return False, str(e)
 
-    # 查询表数据条数
-    def select_count(self, table, id):
+    # 查询表数据条数通过id
+    def select_count_by_id(self, table, id):
         sql = "SELECT count(*) FROM %s WHERE data -> '$.id'='%s'" % (table, id)
         try:
             self.cursor.execute(sql)
@@ -191,7 +191,17 @@ class DB(object):
             return True, self.cursor.fetchall()[0][0]
         except Exception as e:
             logger.error("Select count error: %s" % e)
-            self.conn.rollback()
+            return False, str(e)
+
+    # 查询表数据条数
+    def select_count(self, table):
+        sql = "SELECT count(*) FROM %s" % table
+        try:
+            self.cursor.execute(sql)
+            self.conn.commit()
+            return True, self.cursor.fetchall()[0][0]
+        except Exception as e:
+            logger.error("Select count error: %s" % e)
             return False, str(e)
 
     def close_mysql(self):

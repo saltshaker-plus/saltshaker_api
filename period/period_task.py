@@ -58,7 +58,7 @@ class Period(Resource):
                 product_status, product_result = db.select_by_id("product", result.get("product_id"))
                 if product_status is True and product_result:
                     result["product_id"] = product_result.get("name")
-                count_status, count_result = db.select_count("period_result", result["id"])
+                count_status, count_result = db.select_count_by_id("period_result", result["id"])
                 if count_result is False:
                     return {"status": False, "message": count_result}, 500
                 # 数量小于15的时候避免等于负数
