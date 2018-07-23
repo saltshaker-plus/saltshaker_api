@@ -10,7 +10,7 @@ logger = loggers()
 def scheduler_timing_add(period_id, product_id, user, run_date):
     # run_date="2018-07-04 14:01:00"
     try:
-        scheduler.add_job(func="tasks.tasks:once", trigger='date', run_date=run_date,
+        scheduler.add_job(func="tasks.tasks:job", trigger='date', run_date=run_date,
                           args=[period_id, product_id, user], id=period_id)
         return {"status": True, "message": ""}
     except Exception as e:
@@ -22,7 +22,7 @@ def scheduler_timing_add(period_id, product_id, user, run_date):
 def scheduler_timing_modify(period_id, product_id, user, run_date):
     # run_date="2018-07-04 14:01:00"
     try:
-        scheduler.modify_job(func="tasks.tasks:once", trigger='date', run_date=run_date,
+        scheduler.modify_job(func="tasks.tasks:job", trigger='date', run_date=run_date,
                              args=[period_id, product_id, user], id=period_id)
         return {"status": True, "message": ""}
     except Exception as e:
@@ -42,7 +42,7 @@ def scheduler_interval_add(period_id, product_id, user, run_interval, interval):
             print(run_interval)
             print(period_id)
             print(scheduler)
-            scheduler.add_job(func="tasks.tasks:once", trigger='interval', seconds=run_interval,
+            scheduler.add_job(func="tasks.tasks:job", trigger='interval', seconds=run_interval,
                               args=[period_id, product_id, user], id=period_id)
             print("ddddddddd")
             return {"status": True, "message": ""}
@@ -51,7 +51,7 @@ def scheduler_interval_add(period_id, product_id, user, run_interval, interval):
             return {"status": False, "message": str(e)}
     elif interval == "minute":
         try:
-            scheduler.add_job(func="tasks.tasks:once", trigger='interval', minutes=run_interval,
+            scheduler.add_job(func="tasks.tasks:job", trigger='interval', minutes=run_interval,
                               args=[period_id, product_id, user], id=period_id)
             return {"status": True, "message": ""}
         except Exception as e:
@@ -59,7 +59,7 @@ def scheduler_interval_add(period_id, product_id, user, run_interval, interval):
             return {"status": False, "message": str(e)}
     elif interval == "hour":
         try:
-            scheduler.add_job(func="tasks.tasks:once", trigger='interval', hours=run_interval,
+            scheduler.add_job(func="tasks.tasks:job", trigger='interval', hours=run_interval,
                               args=[period_id, product_id, user], id=period_id)
             return {"status": True, "message": ""}
         except Exception as e:
@@ -67,7 +67,7 @@ def scheduler_interval_add(period_id, product_id, user, run_interval, interval):
             return {"status": False, "message": str(e)}
     elif interval == "day":
         try:
-            scheduler.add_job(func="tasks.tasks:once", trigger='interval', days=run_interval,
+            scheduler.add_job(func="tasks.tasks:job", trigger='interval', days=run_interval,
                               args=[period_id, product_id, user], id=period_id)
             return {"status": True, "message": ""}
         except Exception as e:
@@ -75,7 +75,7 @@ def scheduler_interval_add(period_id, product_id, user, run_interval, interval):
             return {"status": False, "message": str(e)}
     elif interval == "week":
         try:
-            scheduler.add_job(func="tasks.tasks:once", trigger='interval', weeks=run_interval,
+            scheduler.add_job(func="tasks.tasks:job", trigger='interval', weeks=run_interval,
                               args=[period_id, product_id, user], id=period_id)
             return {"status": True, "message": ""}
         except Exception as e:
@@ -89,7 +89,7 @@ def scheduler_interval_add(period_id, product_id, user, run_interval, interval):
 def scheduler_interval_modify(period_id, product_id, user, run_interval, interval):
     if interval == "second":
         try:
-            scheduler.modify_job(func="tasks.tasks:once", trigger='interval', seconds=run_interval,
+            scheduler.modify_job(func="tasks.tasks:job", trigger='interval', seconds=run_interval,
                                  args=[period_id, product_id, user], id=period_id)
             return {"status": True, "message": ""}
         except Exception as e:
@@ -101,7 +101,7 @@ def scheduler_interval_modify(period_id, product_id, user, run_interval, interva
                 return {"status": True, "message": ""}
     elif interval == "minute":
         try:
-            scheduler.modify_job(func="tasks.tasks:once", trigger='interval', minutes=run_interval,
+            scheduler.modify_job(func="tasks.tasks:job", trigger='interval', minutes=run_interval,
                                  args=[period_id, product_id, user], id=period_id)
             return {"status": True, "message": ""}
         except Exception as e:
@@ -113,7 +113,7 @@ def scheduler_interval_modify(period_id, product_id, user, run_interval, interva
                 return {"status": True, "message": ""}
     elif interval == "hour":
         try:
-            scheduler.modify_job(func="tasks.tasks:once", trigger='interval', hours=run_interval,
+            scheduler.modify_job(func="tasks.tasks:job", trigger='interval', hours=run_interval,
                                  args=[period_id, product_id, user], id=period_id)
             return {"status": True, "message": ""}
         except Exception as e:
@@ -125,7 +125,7 @@ def scheduler_interval_modify(period_id, product_id, user, run_interval, interva
                 return {"status": True, "message": ""}
     elif interval == "day":
         try:
-            scheduler.modify_job(func="tasks.tasks:once", trigger='interval', days=run_interval,
+            scheduler.modify_job(func="tasks.tasks:job", trigger='interval', days=run_interval,
                                  args=[period_id, product_id, user], id=period_id)
             return {"status": True, "message": ""}
         except Exception as e:
@@ -137,7 +137,7 @@ def scheduler_interval_modify(period_id, product_id, user, run_interval, interva
                 return {"status": True, "message": ""}
     elif interval == "week":
         try:
-            scheduler.modify_job(func="tasks.tasks:once", trigger='interval', weeks=run_interval,
+            scheduler.modify_job(func="tasks.tasks:job", trigger='interval', weeks=run_interval,
                                  args=[period_id, product_id, user], id=period_id)
             return {"status": True, "message": ""}
         except Exception as e:

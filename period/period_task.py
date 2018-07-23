@@ -7,7 +7,7 @@ from common.db import DB
 from common.utility import uuid_prefix
 from common.sso import access_required
 from common.const import role_dict
-from tasks.tasks import once
+from tasks.tasks import job
 from tasks.worker import insert_period_audit
 from common.const import period_status, period_audit
 from common.utility import utc_to_local
@@ -154,6 +154,8 @@ class Period(Resource):
         period_task["status"] = select_result["status"]
         period_task["action"] = select_result["action"]
         period_task["executed_minion"] = select_result["executed_minion"]
+        period_task["count"] = select_result["count"]
+        period_task["step"] = select_result["step"]
         period_task["audit"] = select_result["audit"]
         if args["once"]["date"]:
             args["once"]["date"] = utc_to_local(args["once"]["date"])
@@ -217,7 +219,8 @@ class PeriodList(Resource):
             "id": 1,
             "name": period_status.get(1)
         }
-        period_task["executed_minion"] = []
+        period_task["count"] = 0
+        period_task["step"] = 0
         audit = {
             "timestamp": int(time.time()),
             "user": user,
@@ -235,7 +238,7 @@ class PeriodList(Resource):
                 # 一次立即执行的直接扔给celery
                 if args["scheduler"] == "once" and args["once"]["type"] == "now":
                     period_task["action"] = "concurrent_play"
-                    once.delay(args["id"], args["product_id"], user)
+                    job.delay(args["id"], args["product_id"], user)
                 # 一次定时执行的扔给APScheduler,进行定时处理
                 if args["scheduler"] == "once" and args["once"]["type"] == "timing":
                     period_task["action"] = "scheduler_resume"
@@ -276,7 +279,8 @@ class Reopen(Resource):
             if result:
                 if result["scheduler"] == "once" and result["once"]["type"] == "now":
                     # 重开之前清空已经执行过的minion
-                    result["executed_minion"] = []
+                    result["count"] = 0
+                    result["step"] = 0
                     audit = {
                         "timestamp": int(time.time()),
                         "user": user,
@@ -292,7 +296,7 @@ class Reopen(Resource):
                         return {"status": False, "message": update_result}, 500
 
                     audit_log(user, period_id, product_id, "period_task", "reopen")
-                    once.delay(period_id, product_id, user)
+                    job.delay(period_id, product_id, user)
                     db.close_mysql()
                     return {"status": True, "message": ""}, 200
             else:
@@ -353,7 +357,7 @@ class ConcurrentPlay(Resource):
                 db.close_mysql()
                 return {"status": False, "message": update_result}, 500
             if result["scheduler"] == "once" and result["once"]["type"] == "now":
-                once.delay(period_id, product_id, user)
+                job.delay(period_id, product_id, user)
             audit_log(user, period_id, product_id, "period_task", "pause")
             return {"status": True, "message": ""}, 200
         else:
