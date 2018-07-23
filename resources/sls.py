@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from flask_restful import Resource, reqparse, request
+from flask_restful import Resource, reqparse
 from flask import g
 from fileserver.git_fs import gitlab_project
 from common.const import role_dict
@@ -10,7 +10,6 @@ from common.parse_yaml import ParseYaml
 import json
 from common.audit_log import audit_log
 from common.utility import uuid_prefix
-import yaml
 
 logger = loggers()
 
