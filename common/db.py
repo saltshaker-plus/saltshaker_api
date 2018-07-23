@@ -194,8 +194,8 @@ class DB(object):
             return False, str(e)
 
     # 查询表数据条数
-    def select_count(self, table):
-        sql = "SELECT count(*) FROM %s" % table
+    def select_count(self, table, field, id):
+        sql = "SELECT count(*) FROM %s WHERE data -> '$.%s'='%s'" % (table, field, id)
         try:
             self.cursor.execute(sql)
             self.conn.commit()

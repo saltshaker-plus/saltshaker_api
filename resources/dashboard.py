@@ -89,12 +89,12 @@ class TitleInfo(Resource):
             "log": None
         }
         args = parser.parse_args()
-        host_status, host_result = db.select_count_by_id("host", args["product_id"])
-        event_status, event_result = db.select_count_by_id("event", args["product_id"])
+        host_status, host_result = db.select_count("host", "product_id", args["product_id"])
+        event_status, event_result = db.select_count("event", "product_id", args["product_id"])
         period_status, period_result = db.select("period_task",
                                                  "where data -> '$.product_id'='%s' and "
                                                  "data -> '$.scheduler'!='once'" % args["product_id"])
-        log_status, log_result = db.select_count_by_id("audit_log", args["product_id"])
+        log_status, log_result = db.select_count("audit_log", "product_id", args["product_id"])
         db.close_mysql()
         data["minion"] = host_result
         data["period"] = len(period_result)
