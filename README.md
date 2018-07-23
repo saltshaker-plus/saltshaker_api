@@ -110,6 +110,50 @@ ext_pillar:           # 配置pillar使用gitfs, 需要配置top.sls
 2. 周期性Job
     可以进行 暂停周期、继续周期、删除 操作
 ````
+#### **并行为0**
+<table class="table table-bordered table-striped">
+        <tr>
+            <th></th>
+            <th>立即</th>
+            <th>定时</th>
+            <th>周期</th>
+        </tr>
+        <tr>
+            <th>一次</th>
+            <th>暂停并行、继续并行、重开、删除</th>
+            <th>暂停并行、继续并行、重开、删除</th>
+            <th>无</th>
+        </tr>
+        <tr>
+            <th>周期</th>
+            <th>无</th>
+            <th>无</th>
+            <th>暂停周期、继续周期、删除</th>
+        </tr>
+</table>
+
+#### **并行为0**
+<table class="table table-bordered table-striped">
+        <tr>
+            <th></th>
+            <th>立即</th>
+            <th>定时</th>
+            <th>周期</th>
+        </tr>
+        <tr>
+            <th>一次</th>
+            <th>重开、删除</th>
+            <th>重开、删除</th>
+            <th>无</th>
+        </tr>
+        <tr>
+            <th>周期</th>
+            <th>无</th>
+            <th>无</th>
+            <th>暂停周期、继续周期、删除</th>
+        </tr>
+</table>
+
 #### 部分功能展示 ####
 ##### key #####
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/key.gif)
@@ -123,3 +167,4 @@ ext_pillar:           # 配置pillar使用gitfs, 需要配置top.sls
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/shell.gif)
 ### Saltshaker 交流学习QQ群:622806083
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/qq.png)
+
