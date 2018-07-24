@@ -32,6 +32,10 @@ class RedisTool:
         return redisConnect.hdel(name, *keys)
 
     @staticmethod
+    def delete(name):
+        return redisConnect.delete(name)
+
+    @staticmethod
     def hgetall(name):
         return redisConnect.hgetall(name)
 
