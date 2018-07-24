@@ -185,6 +185,7 @@ class DB(object):
     # 查询表数据条数通过id
     def select_count_by_id(self, table, id):
         sql = "SELECT count(*) FROM %s WHERE data -> '$.id'='%s'" % (table, id)
+        logger.info(sql)
         try:
             self.cursor.execute(sql)
             self.conn.commit()
@@ -196,6 +197,7 @@ class DB(object):
     # 查询表数据条数
     def select_count(self, table, field, id):
         sql = "SELECT count(*) FROM %s WHERE data -> '$.%s'='%s'" % (table, field, id)
+        logger.info(sql)
         try:
             self.cursor.execute(sql)
             self.conn.commit()
