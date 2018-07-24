@@ -4,10 +4,8 @@ from common.cli import initialize
 import click
 from flask_cors import CORS
 from tasks.tasks_conf import CELERY_BROKER_URL
-from extensions import celery, Config, scheduler, aps_listener
+from extensions import celery, scheduler, aps_listener
 from router import api
-from common.redis import RedisTool
-import time
 
 app = Flask(__name__)
 # 跨域访问
@@ -19,22 +17,11 @@ api.init_app(app)
 app.config['CELERY_BROKER_URL'] = CELERY_BROKER_URL
 celery.init_app(app)
 
-# APScheduler
-# 全局锁避免使用gunicorn多进程导致的计划任务多次运行
-try:
-    status = RedisTool.setnx("gunicorn.lock", time.time())
-except Exception as e:
-    raise
-if status:
-    app.config.from_object(Config())
-    scheduler.init_app(app)
-    scheduler.add_listener(aps_listener)
-    scheduler.start()
-# 设置过期时间3秒
-try:
-    RedisTool.pexpire("gunicorn.lock", 3000)
-except Exception as e:
-    raise
+
+# app.config.from_object(Config())
+# scheduler.init_app(app)
+scheduler.add_listener(aps_listener)
+scheduler.start()
 
 
 @app.cli.command()
