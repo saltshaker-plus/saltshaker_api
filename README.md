@@ -147,12 +147,20 @@ ext_pillar:           # 配置pillar使用gitfs, 需要配置top.sls
 </table>
 
 #### 部分功能展示 ####
+##### 登录注册 #####
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/login.gif)
 ##### key #####
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/key.gif)
 ##### Grains #####
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/grains.gif)
 ##### 主机及分组 #####
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/host.gif)
+##### 文件管理 #####
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/file.gif)
+##### 文件管理 #####
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/file01.gif)
+##### 文件管理 #####
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/file02.gif)
 ##### 产品线 #####
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/product.gif)
 ##### 执行Shell命令 #####
