@@ -1,15 +1,13 @@
 # Saltshaker API
 
-<img align="right" width="159px" src="https://raw.githubusercontent.com/gin-gonic/logo/master/color.png">
+Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工具，简化了saltstack的日常使用，丰富了saltstack的功能。此项目为Saltshaker的后端Restful API，需要结合前端项目[Saltshaker_frontend](https://github.com/yueyongyue/saltshaker_frontend)。
 
-Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工具，简化了saltstack的日常使用，丰富了saltstack的功能。此项目为Saltshaker的后端Restful API，需要结合前端项目[Saltshaker_frontend](https://github.com/yueyongyue/saltshaker_frontend) 
-
-![Gin console logger](https://gin-gonic.github.io/gin/other/console.png)
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/dashboard.png)
 
 ## 指导手册
 
-- [安装](#installation)
-- [要求](#prerequisite)
+- [安装](#安装)
+- [要求](#要求)
 - [Quick start](#quick-start)
 - [Benchmarks](#benchmarks)
 - [Gin v1.stable](#gin-v1-stable)
@@ -107,10 +105,10 @@ $ go run main.go
 ```
 
 ## 要求
-
- python >= 3.6
- Mysql >= 5.7.8 (支持Json的Mysql都可以)
-
+- Python >= 3.6
+- Mysql >= 5.7.8 （支持Json的Mysql都可以）
+- Redis（无版本要求）
+- RabbitMQ 无版本要求）
 ## Quick start
  
 ```sh
