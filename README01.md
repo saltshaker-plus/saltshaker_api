@@ -8,7 +8,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
 
 - [安装](#安装)
 - [要求](#要求)
-- [Restful API文档](#Restful API文档)
+- [Restful_API文档](#Restful_API文档)
 - [Benchmarks](#benchmarks)
 - [Gin v1.stable](#gin-v1-stable)
 - [Build with jsoniter](#build-with-jsoniter)
@@ -55,136 +55,92 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
 安装Saltshaker，你需要首先准备Python环境
 
 1. 准备工作（相关依赖及配置见saltshaker.conf）:
-- 安装Redis： 建议使用Docker命令如下：
+    - 安装Redis： 建议使用Docker命令如下：
+    
+        ```sh
+        $ docker run -p 0.0.0.0:6379:6379 --name saltshaker_redis -e REDIS_PASSWORD=saltshaker -d yueyongyue/redis:05
+        ```
 
-    ```sh
-    $ docker run -p 0.0.0.0:6379:6379 --name saltshaker_redis -e REDIS_PASSWORD=saltshaker -d yueyongyue/redis:05
-    ```
-
-- 安装RabbitMQ： 建议使用Docker命令如下：
-
-    ```sh
-    $ docker run -d --name saltshaker_rabbitmq -e RABBITMQ_DEFAULT_USER=saltshaker -e RABBITMQ_DEFAULT_PASS=saltshaker -p 15672:15672 -p 5672:5672 rabbitmq:3-management
-    ```
-- 安装Mysql: 请自行安装
+    - 安装RabbitMQ： 建议使用Docker命令如下：
+    
+        ```sh
+        $ docker run -d --name saltshaker_rabbitmq -e RABBITMQ_DEFAULT_USER=saltshaker -e RABBITMQ_DEFAULT_PASS=saltshaker -p 15672:15672 -p 5672:5672 rabbitmq:3-management
+        ```
+    - 安装Mysql: 请自行安装
 
 2. 下载:
 
-```sh
-$ git clone https://github.com/yueyongyue/saltshaker_api.git
-```
+    ```sh
+    $ git clone https://github.com/yueyongyue/saltshaker_api.git
+    ```
 
 3. 安装依赖:
 
-```sh
-$ pip install -r requirements.txt
-```
+    ```sh
+    $ pip install -r requirements.txt
+    ```
 
 4. 导入FLASK_APP环境变量以便使用Flask CLI工具,路径为所部署的app的路径
 
-```sh
-$ export FLASK_APP=$Home/saltshaker_api/app.py
-```
+    ```sh
+    $ export FLASK_APP=$Home/saltshaker_api/app.py
+    ```
 
 5. 初始化数据库表及相关信息，键入超级管理员用户名和密码（数据库的配置见saltshaker.conf，请确保数据库可以连接并已经创建对应的数据库）
 
-```sh
-$ flask init
-```
-
-```
-输出如下：
-    Enter the initial administrators username [admin]: 
-    Enter the initial Administrators password: 
-    Repeat for confirmation: 
-    Create user table is successful
-    Create role table is successful
-    Create acl table is successful
-    Create groups table is successful
-    Create product table is successful
-    Create audit_log table is successful
-    Create event table is successful
-    Init role successful
-    Init user successful
-    Successful
-```
+    ```sh
+    $ flask init
+    ```
+    
+    ```
+    输出如下：
+        Enter the initial administrators username [admin]: 
+        Enter the initial Administrators password: 
+        Repeat for confirmation: 
+        Create user table is successful
+        Create role table is successful
+        Create acl table is successful
+        Create groups table is successful
+        Create product table is successful
+        Create audit_log table is successful
+        Create event table is successful
+        Init role successful
+        Init user successful
+        Successful
+    ```
 
 6. 启动Flask App
-- 开发模式
-
-    ```sh
-    $ python $Home/saltshaker_api/app.py
-    ```
-- Gunicorn模式
-
-    ```sh
-    $ cd $Home/saltshaker_api/ && gunicorn -c gun.py app:app
-    ```
-- 生产模式
-
-    ```sh
-    $ /usr/local/bin/supervisord -c $Home/saltshaker_api/supervisord.conf
-    ```
+    - 开发模式
+    
+        ```sh
+        $ python $Home/saltshaker_api/app.py
+        ```
+    - Gunicorn模式
+    
+        ```sh
+        $ cd $Home/saltshaker_api/ && gunicorn -c gun.py app:app
+        ```
+    - 生产模式
+    
+        ```sh
+        $ /usr/local/bin/supervisord -c $Home/saltshaker_api/supervisord.conf
+        ```
     
 7. 启动Celery (使用生产模式的忽略此步骤，因为在Supervisor里面已经启动Celery)
 
-```sh
-$ cd $Home/saltshaker_api/ && celery -A app.celery worker --loglevel=info
-```
-
-3. 导入FLASK_APP环境变量以便使用Flask CLI工具,路径为所部署的app的路径
-
-```sh
-$ export FLASK_APP=$Home/saltshaker_api/app.py
-```
-
-3. 导入FLASK_APP环境变量以便使用Flask CLI工具,路径为所部署的app的路径
-
-```sh
-$ export FLASK_APP=$Home/saltshaker_api/app.py
-```
-
-### Use a vendor tool like [Govendor](https://github.com/kardianos/govendor)
-
-1. `go get` govendor
-
-```sh
-$ go get github.com/kardianos/govendor
-```
-2. Create your project folder and `cd` inside
-
-```sh
-$ mkdir -p $GOPATH/src/github.com/myusername/project && cd "$_"
-```
-
-3. Vendor init your project and add gin
-
-```sh
-$ govendor init
-$ govendor fetch github.com/gin-gonic/gin@v1.2
-```
-
-4. Copy a starting template inside your project
-
-```sh
-$ curl https://raw.githubusercontent.com/gin-gonic/gin/master/examples/basic/main.go > main.go
-```
-
-5. Run your project
-
-```sh
-$ go run main.go
-```
+    ```sh
+    $ cd $Home/saltshaker_api/ && celery -A app.celery worker --loglevel=info
+    ```
 
 ## 要求
 - Python >= 3.6
 - Mysql >= 5.7.8 （支持Json的Mysql都可以）
 - Redis（无版本要求）
-- RabbitMQ 无版本要求）
+- RabbitMQ （无版本要求）
 - Python 软件包见requirements.txt
 - Supervisor (4.0.0.dev0 版本)
 
-## Restful API文档
+## Restful_API文档
 Restful API文档见Wiki: https://github.com/yueyongyue/saltshaker_api/wiki
 
 ## Quick start
