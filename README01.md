@@ -26,6 +26,14 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
         - [Shell](#Shell)
         - [State](#State)
         - [Pillar](#Pillar)
+    - [产品管理](#产品管理)
+    - [产品管理](#产品管理)
+    - [ACL管理](#ACL管理)
+    - [系统管理](#ACL管理)
+        - [用户管理](#用户管理)
+        - [角色管理](#角色管理)
+        - [操作日志](#操作日志)
+        - [系统工具](#系统工具)
 
 ## 要求
 
@@ -156,60 +164,28 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
     - Saltshaker页面通过Webhook提供刷新功能, 使用reactor监听event, 当event的tag中出现gitfs/update的时候更新fiilerserve
     
         ```sh
-            a. 在master上开启saltstack reactor
-               reactor:
-                 - 'salt/netapi/hook/gitfs/*':
-                   - /srv/reactor/gitfs.sls
-            b. 编写/srv/reactor/gitfs.sls
-                {% if 'gitfs/update' in tag %}
-                gitfs_update: 
-                  runner.fileserver.update
-                pillar_update:
-                  runner.git_pillar.update
-                {% endif %}
+        a. 在master上开启saltstack reactor
+           reactor:
+             - 'salt/netapi/hook/gitfs/*':
+               - /srv/reactor/gitfs.sls
+        b. 编写/srv/reactor/gitfs.sls
+            {% if 'gitfs/update' in tag %}
+            gitfs_update: 
+              runner.fileserver.update
+            pillar_update:
+              runner.git_pillar.update
+            {% endif %}
         ```
     
 ## Restful_API文档
 
 Restful API文档见Wiki: https://github.com/yueyongyue/saltshaker_api/wiki
 
-## Benchmarks
+## 功能介绍
+### Job创建
 
-Gin uses a custom version of [HttpRouter](https://github.com/julienschmidt/httprouter)
 
-[See all benchmarks](/BENCHMARKS.md)
-
-Benchmark name                              | (1)        | (2)         | (3) 		    | (4)
---------------------------------------------|-----------:|------------:|-----------:|---------:
-**BenchmarkGin_GithubAll**                  | **30000**  |  **48375**  |     **0**  |   **0**
-BenchmarkAce_GithubAll                      |   10000    |   134059    |   13792    |   167
-BenchmarkBear_GithubAll                     |    5000    |   534445    |   86448    |   943
-BenchmarkBeego_GithubAll                    |    3000    |   592444    |   74705    |   812
-BenchmarkBone_GithubAll                     |     200    |  6957308    |  698784    |  8453
-BenchmarkDenco_GithubAll                    |   10000    |   158819    |   20224    |   167
-BenchmarkEcho_GithubAll                     |   10000    |   154700    |    6496    |   203
-BenchmarkGocraftWeb_GithubAll               |    3000    |   570806    |  131656    |  1686
-BenchmarkGoji_GithubAll                     |    2000    |   818034    |   56112    |   334
-BenchmarkGojiv2_GithubAll                   |    2000    |  1213973    |  274768    |  3712
-BenchmarkGoJsonRest_GithubAll               |    2000    |   785796    |  134371    |  2737
-BenchmarkGoRestful_GithubAll                |     300    |  5238188    |  689672    |  4519
-BenchmarkGorillaMux_GithubAll               |     100    | 10257726    |  211840    |  2272
-BenchmarkHttpRouter_GithubAll               |   20000    |   105414    |   13792    |   167
-BenchmarkHttpTreeMux_GithubAll              |   10000    |   319934    |   65856    |   671
-BenchmarkKocha_GithubAll                    |   10000    |   209442    |   23304    |   843
-BenchmarkLARS_GithubAll                     |   20000    |    62565    |       0    |     0
-BenchmarkMacaron_GithubAll                  |    2000    |  1161270    |  204194    |  2000
-BenchmarkMartini_GithubAll                  |     200    |  9991713    |  226549    |  2325
-BenchmarkPat_GithubAll                      |     200    |  5590793    | 1499568    | 27435
-BenchmarkPossum_GithubAll                   |   10000    |   319768    |   84448    |   609
-BenchmarkR2router_GithubAll                 |   10000    |   305134    |   77328    |   979
-BenchmarkRivet_GithubAll                    |   10000    |   132134    |   16272    |   167
-BenchmarkTango_GithubAll                    |    3000    |   552754    |   63826    |  1618
-BenchmarkTigerTonic_GithubAll               |    1000    |  1439483    |  239104    |  5374
-BenchmarkTraffic_GithubAll                  |     100    | 11383067    | 2659329    | 21848
-BenchmarkVulcan_GithubAll                   |    5000    |   394253    |   19894    |   609
-
-- (1): Total Repetitions achieved in constant time, higher means more confident result
-- (2): Single Repetition Duration (ns/op), lower is better
-- (3): Heap Memory (B/op), lower is better
-- (4): Average Allocations per Repetition (allocs/op), lower is better
+**并行为0**     |  **立即**        |  **定时**       |  **周期**   
+----------------------------------------------------------------------------
+**一次**        |  **重开、删除**  |  **重开、删除**  |  **无**   
+**周期**        |  **无**         |   **无**         |  **暂停周期、继续周期、删除**
