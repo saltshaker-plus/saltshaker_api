@@ -9,27 +9,27 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
 - [要求](#要求)
 - [安装](#安装)
 - [配置Salt Master](#配置salt-master)
-- [Restful_API](#restful_API)
+- [Restful API](#restful-api)
 - [功能介绍](#功能介绍)
-    - [Job管理](#Job管理)
-        - [Job创建](#Job创建)
-        - [Job历史](#Job历史)
-        - [Job管理](#Job管理)
-    - [Minion管理](#Minion管理)
+    - [Job](#job)
+        - [Job创建](#job创建)
+        - [Job历史](#job历史)
+        - [Job管理](#job管理)
+    - [Minion管理](#minion管理)
         - [状态信息](#状态信息)
-        - [Key管理](#Key管理)
-        - [Grains](#Grains)
+        - [Key管理](#key管理)
+        - [Grains](#grains)
     - [主机管理](#主机管理)
     - [分组管理](#分组管理)
     - [文件管理](#文件管理)
     - [执行命令](#执行命令)
-        - [Shell](#Shell)
-        - [State](#State)
-        - [Pillar](#Pillar)
+        - [Shell](#shell)
+        - [State](#state)
+        - [Pillar](#pillar)
     - [产品管理](#产品管理)
     - [产品管理](#产品管理)
-    - [ACL管理](#ACL管理)
-    - [系统管理](#ACL管理)
+    - [ACL管理](#acl管理)
+    - [系统管理](#acl管理)
         - [用户管理](#用户管理)
         - [角色管理](#角色管理)
         - [操作日志](#操作日志)
@@ -182,7 +182,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
 Restful API文档见Wiki: https://github.com/yueyongyue/saltshaker_api/wiki
 
 ## 功能介绍
-### Job管理
+### Job
 #### Job创建
 
 Job创建，主要是以Job的方式进行日常的配管工作，避免重复性的手动执行配管操作，同时支持定时及周期性的Job
