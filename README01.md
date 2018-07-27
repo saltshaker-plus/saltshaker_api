@@ -8,7 +8,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
 
 - [要求](#要求)
 - [安装](#安装)
-- [Salt_Master配置](#salt_Master配置)
+- [配置](#配置)
 - [Restful_API](#restful_API)
 - [功能介绍](#功能介绍)
     - [Job管理](#Job管理)
@@ -127,7 +127,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
     $ cd $Home/saltshaker_api/ && celery -A app.celery worker --loglevel=info
     ```
     
-## Salt_Master配置
+## 配置
 
 1. 使用GitLab作为FileServer:
     官方配置gitfs说明 请查看此[链接](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)需要 pygit2 或者 GitPython 包用于支持git, 如果都存在优先选择pygit2
