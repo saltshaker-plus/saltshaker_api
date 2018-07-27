@@ -185,6 +185,8 @@ Restful API文档见Wiki: https://github.com/yueyongyue/saltshaker_api/wiki
 ### Job管理
 #### Job创建
 
+Job创建，主要是以Job的方式进行日常的配管工作，避免重复性的手动执行配管操作，同时支持定时及周期性的Job
+
 并行为0                                      | 立即        | 定时        | 周期 	
 --------------------------------------------|-----------:|------------:|-----------:
 一次                                         | 重开、删除  |  重开、删除  |  无
@@ -194,3 +196,16 @@ Restful API文档见Wiki: https://github.com/yueyongyue/saltshaker_api/wiki
 --------------------------------------------|-----------:|------------:|-----------:
 一次                                         | 暂停并行、继续并行、重开、删除	  |  暂停并行、继续并行、重开、删除  |  无
 周期                                         | 无         |  无         |  暂停周期、继续周期、删除
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/job_create.gif)
+
+#### Job历史
+
+Job历史，通过saltstack event获取相关saltshaker 事件供用户查看及检索
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/job_history.gif)
+
+#### Job管理
+
+Job管理，如果执行了某些长时间驻留的任务，如ping，top这种，可以在里面进行kill
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/job_history.gif)
