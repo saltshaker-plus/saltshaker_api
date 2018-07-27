@@ -177,7 +177,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
             {% endif %}
         ```
     
-## Restful_API
+## Restful API
 
 Restful API文档见Wiki: https://github.com/yueyongyue/saltshaker_api/wiki
 
