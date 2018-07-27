@@ -208,4 +208,41 @@ Job历史，通过saltstack event获取相关saltshaker 事件供用户查看及
 #### Job管理
 
 Job管理，如果执行了某些长时间驻留的任务，如ping，top这种，可以在里面进行kill
+
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/job_manage.gif)
+
+### Minion管理
+#### 状态信息
+
+可以查看minion的状态信息
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/minion_status.gif)
+
+#### Key管理
+
+可以对minion key 进行管理，接受key会自动同步minion到主机，删除后自动从主机，分组中删除
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/minion_key.gif)
+
+#### Grains
+
+展示minion Grains 信息
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/minion_grains.gif)
+
+
+
+### 主机管理
+### 分组管理
+### 文件管理
+### 执行命令
+#### Shell
+#### State
+#### Pillar
+### 产品管理
+### ACL管理
+### 系统管理
+#### 用户管理
+#### 角色管理
+#### 操作日志
+#### 系统工具
