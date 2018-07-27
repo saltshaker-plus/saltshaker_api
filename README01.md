@@ -208,4 +208,4 @@ Job历史，通过saltstack event获取相关saltshaker 事件供用户查看及
 #### Job管理
 
 Job管理，如果执行了某些长时间驻留的任务，如ping，top这种，可以在里面进行kill
-![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/job_history.gif)
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/job_manage.gif)
