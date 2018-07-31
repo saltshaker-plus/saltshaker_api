@@ -120,14 +120,14 @@ class Minion(Resource):
             #     if status_result.get("status") is False:
             #         return status_result, 500
             data = {
-                "title": ["Accepted", "Up", "Down", "Rejected", "Unaccepted"],
+                "title": ["Accepted", "Rejected", "Unaccepted"],
                 "series": [
                     {"value": len(key_result.get("minions")), "name": 'Accepted',
                      "itemStyle": {"normal": {"color": '#f0e334'}}},
-                    {"value": 40, "name": 'Up', "itemStyle":
-                        {"normal": {"color": '#64d572'}}},
-                    {"value": 0, "name": 'Down', "itemStyle":
-                        {"normal": {"color": '#f25e43'}}},
+                    # {"value": 40, "name": 'Up', "itemStyle":
+                    #     {"normal": {"color": '#64d572'}}},
+                    # {"value": 0, "name": 'Down', "itemStyle":
+                    #     {"normal": {"color": '#f25e43'}}},
                     {"value": len(key_result.get("minions_rejected")), "name": 'Rejected',
                      "itemStyle": {"normal": {"color": '#ffd572'}}},
                     {"value": len(key_result.get("minions_pre")), "name": 'Unaccepted',
