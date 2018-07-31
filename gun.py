@@ -2,7 +2,7 @@
 # coding:utf-8
 import multiprocessing
 
-bind = '0.0.0.0:8000'
+bind = '0.0.0.0:5000'
 # 用于处理工作进程的数量
 workers = multiprocessing.cpu_count() * 2 + 1
 # 等待服务的客户的数量,一般设置为2048，超过这个数字将导致客户端在尝试连接时错误
