@@ -19,7 +19,7 @@ from kit.tools import HostSync, GrainsSync
 from resources.command import HistoryList
 from resources.pillar import PillarItems
 from resources.rsa_encrypt import RSA
-from resources.sse import SSE
+from resources.sse import SSE, SSEStatus
 from webhook.salt_hook import Hook
 from period.period_task import *
 from common.utility import custom_abort
@@ -36,6 +36,7 @@ api.add_resource(Login, "/saltshaker/api/v1.0/login")
 
 # sse
 api.add_resource(SSE, "/saltshaker/api/v1.0/sse")
+api.add_resource(SSEStatus, "/saltshaker/api/v1.0/sse/status")
 
 # product
 api.add_resource(ProductList, "/saltshaker/api/v1.0/product")
