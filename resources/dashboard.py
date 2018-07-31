@@ -172,14 +172,20 @@ class ServiceStatus(Resource):
         echo = os.popen("ps aux|grep app.celery|grep -v grep |wc -l")
         try:
             num = int(echo.readline().split('\n')[0])
-            status.append({
-                "name": "Celery",
-                "status": num
-            })
+            if num == 0:
+                status.append({
+                    "name": "Celery",
+                    "status": "Down"
+                })
+            else:
+                status.append({
+                    "name": "Celery",
+                    "status": "Up"
+                })
         except Exception as e:
             status.append({
                 "name": "Celery",
-                "status": 0
+                "status": "Down"
             })
             logger.error("Get celery error: %s" % e)
         return {"data": status, "status": True, "message": ""}, 200
