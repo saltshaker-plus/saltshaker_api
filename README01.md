@@ -201,7 +201,7 @@ Job创建，主要是以Job的方式进行日常的配管工作，避免重复�
 
 #### Job历史
 
-Job历史，通过saltstack event获取相关saltshaker 事件供用户查看及检索
+Job历史，通过saltstack event获取相关saltshaker事件供用户查看及检索（系统工具里面的event要开启才会有，每增加一个产品线要重启一次）
 
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/job_history.gif)
 
@@ -231,19 +231,80 @@ Job管理，如果执行了某些长时间驻留的任务，如ping，top这种�
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/minion_grains.gif)
 
 
-
-
 ### 主机管理
+
+同意key后的minion会自动加到主机管理中，在主机管理中可以对主机打标签等操作
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/host.gif)
+
 ### 分组管理
+
+对主机进行分组，以便进行批量操作
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/group.gif)
+
 ### 文件管理
+
+使用基于gifsf的方式进行日常的文件管理，state、template、pillar等文件都可以放到里面；支持添加、编辑、删除、上传等操作；使用webhook对gitfs文件进行更新
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/fs01.gif)
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/fs02.gif)
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/fs03.gif)
+
 ### 执行命令
 #### Shell
+
+根据分组执行对应的shell命令
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/shell.gif)
+
 #### State
+
+根据分组执行对应的state
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/state.gif)
+
 #### Pillar
+
+根据分组执行对应的pillar(只有pillar形式的sls,执行才有效果)
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/pillar.gif)
+
 ### 产品管理
+
+支持多产品的管理，不同产品线使用不同的master,可以分别进行管理，方便其他产品接入
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/product.gif)
+
 ### ACL管理
+
+对执行的shell进行ACL,避免执行敏感命令，如reboot、shutdown等，现在只支持黑名单（拒绝的名）
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/acl.gif)
+
 ### 系统管理
 #### 用户管理
+
+对注册进来的用户，进行产品线的分配、主机组的分配、ACL的分配、角色的分配等
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/user.gif)
+
 #### 角色管理
+
+系统预定义的角色，不能删除修改，如有需要可以扩展角色
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/role.gif)
+
 #### 操作日志
+
+记录用户日常操作
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/log.gif)
+
 #### 系统工具
+
+event工具用于对saltstack event进行记录，每添加一个产品重启一次，如果发现celery worker的数量的数量多于产品线数量，job历史可能重复
+
+![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/tools.gif)
