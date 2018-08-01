@@ -245,7 +245,7 @@ Job管理，如果执行了某些长时间驻留的任务，如ping，top这种�
 
 ### 文件管理
 
-使用基于gifsf的方式进行日常的文件管理，state、template、pillar等文件都可以放到里面；支持添加、编辑、删除、上传等操作；使用webhook对gitfs文件进行更新
+使用基于gitfs的方式进行日常的文件管理；state、template、pillar等文件都可以放到里面；支持添加、编辑、删除、上传等操作；使用webhook对gitfs文件进行更新
 
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/fs01.gif)
 
@@ -280,7 +280,7 @@ Job管理，如果执行了某些长时间驻留的任务，如ping，top这种�
 
 ### ACL管理
 
-对执行的shell进行ACL,避免执行敏感命令，如reboot、shutdown等，现在只支持黑名单（拒绝的名）
+对执行的shell进行ACL,避免执行敏感命令，如reboot、shutdown等，现在只支持黑名单（拒绝的,只有Shell有效，SLS的文件暂时不支持）
 
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/acl.gif)
 
