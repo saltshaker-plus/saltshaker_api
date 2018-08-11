@@ -24,7 +24,7 @@ def grains_worker(minion_list, product_id):
         print(minion)
         grains = salt_api.grains(minion)
         if grains.get("status"):
-            if grains.get("data"):
+            if grains.get("data").get(minion):
                 grains["data"][minion].update({"product_id": product_id})
                 if select_status is True:
                     if len(select_result) > 1:
