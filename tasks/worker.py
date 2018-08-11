@@ -51,7 +51,6 @@ def grains_worker(minion_list, product_id):
 
 
 def sse_worker(product):
-    print("fffff")
     # job_pattern = re.compile('salt/job/\d+/ret/')
     mine_pattern = re.compile(r'"fun": "mine.update"')
     saltutil_pattern = re.compile(r'"fun": "saltutil.find_job"')
