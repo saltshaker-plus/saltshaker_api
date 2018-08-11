@@ -18,6 +18,7 @@ def grains_worker(minion_list, salt_api, product_id):
     for minion in minion_list:
         select_status, select_result = db.select("grains", "where data -> '$.id'='%s' and data -> "
                                                            "'$.product_id'='%s'" % (minion, product_id))
+        print(minion)
         grains = salt_api.grains(minion)
         if grains.get("status"):
             if grains.get("data"):
@@ -26,7 +27,8 @@ def grains_worker(minion_list, salt_api, product_id):
                     if len(select_result) > 1:
                         for m in select_result:
                             db.delete_by_id("grains", m["id"])
-                        insert_status, insert_result = db.insert("grains", json.dumps(grains["data"][minion], ensure_ascii=False))
+                        insert_status, insert_result = db.insert("grains", json.dumps(grains["data"][minion],
+                                                                                      ensure_ascii=False))
                         if insert_status is not True:
                             logger.error("Add Grains error: %s" % insert_result)
                     elif len(select_result) == 1:
@@ -36,7 +38,8 @@ def grains_worker(minion_list, salt_api, product_id):
                         if update_status is not True:
                             logger.error("Update Grains error: %s" % update_result)
                     else:
-                        insert_status, insert_result = db.insert("grains", json.dumps(grains["data"][minion], ensure_ascii=False))
+                        insert_status, insert_result = db.insert("grains", json.dumps(grains["data"][minion],
+                                                                                      ensure_ascii=False))
                         if insert_status is not True:
                             logger.error("Add Grains error: %s" % insert_result)
         else:
