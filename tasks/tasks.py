@@ -14,5 +14,5 @@ def job(period_id, product_id, user):
 
 
 @celery.task
-def grains(minion_list, salt_api, product_id):
-    grains_worker(minion_list, salt_api, product_id)
+def grains(minion_list, product_id):
+    grains_worker(minion_list, product_id)

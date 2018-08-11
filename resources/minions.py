@@ -149,10 +149,7 @@ class MinionsGrainsList(Resource):
 class Grains(object):
     @staticmethod
     def create_grains(minion_list, product_id, user):
-        salt_api = salt_api_for_product(product_id)
-        if isinstance(salt_api, dict):
-            return salt_api, 500
-        grains.delay(minion_list, salt_api, product_id)
+        grains.delay(minion_list, product_id)
         audit_log(user, "", product_id, "grains", "update")
 
     @staticmethod

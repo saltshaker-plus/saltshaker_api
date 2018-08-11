@@ -13,7 +13,10 @@ import ast
 logger = loggers()
 
 
-def grains_worker(minion_list, salt_api, product_id):
+def grains_worker(minion_list, product_id):
+    salt_api = salt_api_for_product(product_id)
+    if isinstance(salt_api, dict):
+        return salt_api, 500
     db = DB()
     for minion in minion_list:
         select_status, select_result = db.select("grains", "where data -> '$.id'='%s' and data -> "
