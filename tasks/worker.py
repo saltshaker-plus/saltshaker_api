@@ -13,6 +13,36 @@ import ast
 logger = loggers()
 
 
+def grains_worker(minion_list, salt_api, product_id):
+    db = DB()
+    for minion in minion_list:
+        select_status, select_result = db.select("grains", "where data -> '$.id'='%s' and data -> "
+                                                           "'$.product_id'='%s'" % (minion, product_id))
+        grains = salt_api.grains(minion)
+        if grains.get("status"):
+            if grains.get("data"):
+                grains["data"][minion].update({"product_id": product_id})
+                if select_status is True:
+                    if len(select_result) > 1:
+                        for m in select_result:
+                            db.delete_by_id("grains", m["id"])
+                        insert_status, insert_result = db.insert("grains", json.dumps(grains["data"][minion], ensure_ascii=False))
+                        if insert_status is not True:
+                            logger.error("Add Grains error: %s" % insert_result)
+                    elif len(select_result) == 1:
+                        update_status, update_result = db.update_by_id("grains", json.dumps(grains["data"][minion],
+                                                                                            ensure_ascii=False),
+                                                                       select_result[0]["id"])
+                        if update_status is not True:
+                            logger.error("Update Grains error: %s" % update_result)
+                    else:
+                        insert_status, insert_result = db.insert("grains", json.dumps(grains["data"][minion], ensure_ascii=False))
+                        if insert_status is not True:
+                            logger.error("Add Grains error: %s" % insert_result)
+        else:
+            continue
+    db.close_mysql()
+
 def sse_worker(product):
     # job_pattern = re.compile('salt/job/\d+/ret/')
     mine_pattern = re.compile(r'"fun": "mine.update"')

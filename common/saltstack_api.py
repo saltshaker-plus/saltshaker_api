@@ -143,7 +143,7 @@ class SaltAPI(object):
         content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]
-            return ret
+            return {"status": True, "message": "", "data": ret}
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
