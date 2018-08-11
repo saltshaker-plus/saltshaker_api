@@ -156,24 +156,27 @@ class Grains(object):
             select_status, select_result = db.select("grains", "where data -> '$.id'='%s' and data -> "
                                                                "'$.product_id'='%s'" % (minion, product_id))
             grains = salt_api.grains(minion)
-            grains[minion].update({"product_id": product_id})
-            if select_status is True:
-                if len(select_result) > 1:
-                    for m in select_result:
-                        db.delete_by_id("grains", m["id"])
-                    insert_status, insert_result = db.insert("grains", json.dumps(grains[minion], ensure_ascii=False))
-                    if insert_status is not True:
-                        logger.error("Add Grains error: %s" % insert_result)
-                elif len(select_result) == 1:
-                    update_status, update_result = db.update_by_id("grains", json.dumps(grains[minion],
-                                                                                        ensure_ascii=False),
-                                                                   select_result[0]["id"])
-                    if update_status is not True:
-                        logger.error("Update Grains error: %s" % update_result)
-                else:
-                    insert_status, insert_result = db.insert("grains", json.dumps(grains[minion], ensure_ascii=False))
-                    if insert_status is not True:
-                        logger.error("Add Grains error: %s" % insert_result)
+            if grains:
+                grains[minion].update({"product_id": product_id})
+                if select_status is True:
+                    if len(select_result) > 1:
+                        for m in select_result:
+                            db.delete_by_id("grains", m["id"])
+                        insert_status, insert_result = db.insert("grains", json.dumps(grains[minion], ensure_ascii=False))
+                        if insert_status is not True:
+                            logger.error("Add Grains error: %s" % insert_result)
+                    elif len(select_result) == 1:
+                        update_status, update_result = db.update_by_id("grains", json.dumps(grains[minion],
+                                                                                            ensure_ascii=False),
+                                                                       select_result[0]["id"])
+                        if update_status is not True:
+                            logger.error("Update Grains error: %s" % update_result)
+                    else:
+                        insert_status, insert_result = db.insert("grains", json.dumps(grains[minion], ensure_ascii=False))
+                        if insert_status is not True:
+                            logger.error("Add Grains error: %s" % insert_result)
+            else:
+                continue
         db.close_mysql()
 
     @staticmethod
