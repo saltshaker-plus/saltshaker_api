@@ -49,15 +49,17 @@ def grains_worker(minion_list, product_id):
             continue
     db.close_mysql()
 
+
 def sse_worker(product):
+    print("fffff")
     # job_pattern = re.compile('salt/job/\d+/ret/')
     mine_pattern = re.compile(r'"fun": "mine.update"')
     saltutil_pattern = re.compile(r'"fun": "saltutil.find_job"')
     running_pattern = re.compile(r'"fun": "saltutil.running"')
     lookup_pattern = re.compile(r'"fun": "runner.jobs.lookup_jid"')
-    whell_pattern = re.compile(r'"fun": "wheel.key.list_all"')
     event_pattern = re.compile(r'"tag": "salt/event/new_client"')
     event_audit = re.compile(r'"tag": "salt/auth"')
+    whell_pattern = re.compile(r'"fun": "wheel.key.list_all"')
     salt_api = salt_api_for_product(product)
     event_response = salt_api.events()
     client = sseclient.SSEClient(event_response)
@@ -72,12 +74,11 @@ def sse_worker(product):
             pass
         elif event_pattern.search(event.data):
             pass
-        elif event_audit.split(event.data):
+        elif event_audit.search(event.data):
             pass
-        elif whell_pattern.split(event.data):
+        elif whell_pattern.search(event.data):
             pass
         else:
-            print(event.data)
             event_dict = ast.literal_eval(event.data.replace('true', 'True').replace('false', 'False').
                                           replace('null', '""'))
             event_dict['data']['_stamp'] = utc_to_local(event_dict['data']['_stamp'] + "Z")
