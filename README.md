@@ -53,7 +53,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
     - 安装Redis： 建议使用Docker命令如下：
     
         ```sh
-        $ docker run -p 0.0.0.0:6379:6379 --name saltshaker_redis -e REDIS_PASSWORD=saltshaker -d yueyongyue/redis:05
+        $ docker run -p 0.0.0.0:6379:6379 --name saltshaker_redis -e REDIS_PASSWORD=saltshaker -d yueyongyue/redis:08
         ```
 
     - 安装RabbitMQ： 建议使用Docker命令如下：
