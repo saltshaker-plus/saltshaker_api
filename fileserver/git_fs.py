@@ -28,9 +28,12 @@ def gitlab_project(product_id, project_type):
                                timeout=120,
                                api_version=None if product.get("api_version") is "" else product.get("api_version")
                                )
-
-            project = gl.projects.get(product.get(project_type))
-            return project, product.get(project_type)
+            projects = gl.projects.list()
+            for pr in projects:
+                if pr.__dict__.get('_attrs').get('path_with_namespace') == product.get(project_type):
+                    project = gl.projects.get(pr.__dict__.get('_attrs').get('id'))
+                    return project, product.get(project_type)
+            return {"status": False, "message": "Project not found"}, ""
         else:
             return {"status": False, "message": "File server is not gitfs"}, ""
     except Exception as e:
