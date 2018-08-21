@@ -42,7 +42,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
 - Redis（无版本要求）
 - RabbitMQ （无版本要求）
 - Python 软件包见requirements.txt
-- Supervisor (4.0.0.dev0 版本)
+- Supervisor (4.0.0.dev0 版本) 安装：pip install git+https://github.com/Supervisor/supervisor@master
 - GitLab >= 9.0
 
 ## 安装
