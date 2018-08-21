@@ -42,7 +42,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
 - Redis（无版本要求）
 - RabbitMQ （无版本要求）
 - Python 软件包见requirements.txt
-- Supervisor (4.0.0.dev0 版本) 安装：pip install git+https://github.com/Supervisor/supervisor@master
+- Supervisor (4.0.0.dev0 版本 默认pip安装的不支持python3) 请使用此命令安装：pip install git+https://github.com/Supervisor/supervisor@master
 - GitLab >= 9.0
 
 ## 安装
@@ -105,7 +105,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
         Successful
     ```
 
-6. 启动Flask App
+6. 启动Flask App, 成功启动后会启动8000的端口
     - 开发模式
     
         ```sh
@@ -119,6 +119,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
     - 生产模式
     
         ```sh
+        supervisord.conf 里面的directory配置项修改为自己对应的代码路径
         $ /usr/local/bin/supervisord -c $Home/saltshaker_api/supervisord.conf
         ```
     
@@ -126,6 +127,10 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
 
     ```sh
     $ cd $Home/saltshaker_api/ && celery -A app.celery worker --loglevel=info
+    ```
+8. 结合前端项目
+    ```
+    https://github.com/yueyongyue/saltshaker_frontend
     ```
     
 ## 配置Salt Master
