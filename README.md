@@ -105,7 +105,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
         Successful
     ```
 
-6. 启动Flask App, 成功启动后会启动8000的端口
+6. 启动Flask App, 成功启动后会启动9000的端口
     - 开发模式
     
         ```sh
