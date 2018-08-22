@@ -12,7 +12,7 @@ config = configparser.ConfigParser()
 conf_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 config.read(conf_path + "/saltshaker.conf")
 from_addr = config.get("Mail", "FROM_ADDR")
-password = config.get("Mail", "PASSWORD")
+password = config.get("Mail", "MAIL_PASSWORD")
 smtp_server = config.get("Mail", "SMTP_SERVER")
 
 
