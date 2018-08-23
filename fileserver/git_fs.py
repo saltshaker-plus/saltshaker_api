@@ -28,7 +28,10 @@ def gitlab_project(product_id, project_type):
                                timeout=120,
                                api_version=None if product.get("api_version") is "" else product.get("api_version")
                                )
-            projects = gl.projects.list()
+            # project = gl.projects.get(product.get(project_type))
+            # return project, product.get(project_type)
+            # 項目过多会慢
+            projects = gl.projects.list(all=True)
             for pr in projects:
                 if pr.__dict__.get('_attrs').get('path_with_namespace') == product.get(project_type):
                     project = gl.projects.get(pr.__dict__.get('_attrs').get('id'))
