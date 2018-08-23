@@ -47,21 +47,44 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
 
 ## 安装
 
-安装Saltshaker，你需要首先准备Python环境
-
-1. 准备工作（相关依赖及配置见saltshaker.conf）:
+准备工作（相关依赖及配置见saltshaker.conf）:
     - 安装Redis： 建议使用Docker命令如下：
-    
         ```sh
         $ docker run -p 0.0.0.0:6379:6379 --name saltshaker_redis -e REDIS_PASSWORD=saltshaker -d yueyongyue/redis:08
         ```
-
     - 安装RabbitMQ： 建议使用Docker命令如下：
-    
+        
         ```sh
         $ docker run -d --name saltshaker_rabbitmq -e RABBITMQ_DEFAULT_USER=saltshaker -e RABBITMQ_DEFAULT_PASS=saltshaker -p 15672:15672 -p 5672:5672 rabbitmq:3-management
         ```
     - 安装Mysql: 请自行安装
+    
+一、使用Docker镜像安装
+        ```sh
+        $ docker run -d -p 0.0.0.0:9000:9000 --name saltshaker_api \
+-e REDIS_HOST=192.168.10.100 \
+-e REDIS_PORT=6379 \
+-e REDIS_PASSWORD=saltshaker \
+-e MYSQL_HOST=192.168.10.100 \
+-e MYSQL_PORT=3306 \
+-e MYSQL_USER=root \
+-e MYSQL_PASSWORD=123456 \
+-e MYSQL_DB=saltshaker_plus \
+-e MYSQL_CHARSET=utf8 \
+-e BROKER_HOST=192.168.10.100 \
+-e BROKER_PORT=5672 \
+-e BROKER_USER=saltshaker \
+-e BROKER_PASSWORD=saltshaker \
+-e FROM_ADDR=test@saltshaker.com \
+-e MAIL_PASSWORD=123345 \
+-e SMTP_SERVER=smtp.saltshaker.com \
+yueyongyue/saltshaker_api
+        ```
+        - REDIS_HOST： Redis主机
+
+
+二、手动部署
+安装Saltshaker，你需要首先准备Python环境
 
 2. 下载:
 
@@ -132,7 +155,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
     ```
     https://github.com/yueyongyue/saltshaker_frontend
     ```
-    
+ 
 ## 配置Salt Master
 
 1. 使用GitLab作为FileServer:
