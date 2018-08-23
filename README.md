@@ -59,7 +59,8 @@ $ docker run -d --name saltshaker_rabbitmq -e RABBITMQ_DEFAULT_USER=saltshaker -
 ```
 - 安装Mysql: 请自行安装
     
-一、使用Docker镜像安装
+### 使用Docker镜像安装
+1. 后端API服务
 ```sh
 $ docker run -d -p 0.0.0.0:9000:9000 --name saltshaker_api \
 -e REDIS_HOST=192.168.10.100 \
@@ -97,28 +98,40 @@ yueyongyue/saltshaker_api
 - MAIL_PASSWORD：    邮箱密码
 - SMTP_SERVER：      SMTP服务器地址
 
-二、手动部署
+2. 前端服务
+```sh
+$ docker run -d -p 0.0.0.0:80:80 --name saltshaker_frontend \
+-e DOMAIN=192.168.10.100  \
+-e API_ADDR=192.168.10.100 \
+-e Nginx_PROXY_PASS=192.168.10.100:9000 \
+yueyongyue/saltshaker_frontend
+```
+- DOMAIN: 部署服务器的IP地址（最终通过这个地址进行浏览器访问）
+- API_ADDR： 后端API服务器的地址
+- Nginx_PROXY_PASS：后端API服务器的地址加端口
+
+### 手动部署
 安装Saltshaker，你需要首先准备Python环境
 
-2. 下载:
+1. 下载:
 
     ```sh
     $ git clone https://github.com/yueyongyue/saltshaker_api.git
     ```
 
-3. 安装依赖:
+2. 安装依赖:
 
     ```sh
     $ pip install -r requirements.txt
     ```
 
-4. 导入FLASK_APP环境变量以便使用Flask CLI工具,路径为所部署的app的路径
+3. 导入FLASK_APP环境变量以便使用Flask CLI工具,路径为所部署的app的路径
 
     ```sh
     $ export FLASK_APP=$Home/saltshaker_api/app.py
     ```
 
-5. 初始化数据库表及相关信息，键入超级管理员用户名和密码（数据库的配置见saltshaker.conf，请确保数据库可以连接并已经创建对应的数据库）
+4. 初始化数据库表及相关信息，键入超级管理员用户名和密码（数据库的配置见saltshaker.conf，请确保数据库可以连接并已经创建对应的数据库）
 
     ```sh
     $ mkdir /var/log/saltshaker_plus
@@ -142,7 +155,7 @@ yueyongyue/saltshaker_api
         Successful
     ```
 
-6. 启动Flask App, 成功启动后会启动9000的端口
+5. 启动Flask App, 成功启动后会启动9000的端口
     - 开发模式
     
         ```sh
@@ -160,12 +173,12 @@ yueyongyue/saltshaker_api
         $ /usr/local/bin/supervisord -c $Home/saltshaker_api/supervisord.conf
         ```
     
-7. 启动Celery （使用生产模式的忽略此步骤，因为在Supervisor里面已经启动Celery）
+6. 启动Celery （使用生产模式的忽略此步骤，因为在Supervisor里面已经启动Celery）
 
     ```sh
     $ cd $Home/saltshaker_api/ && celery -A app.celery worker --loglevel=info
     ```
-8. 结合前端项目
+7. 结合前端项目
     ```
     https://github.com/yueyongyue/saltshaker_frontend
     ```
