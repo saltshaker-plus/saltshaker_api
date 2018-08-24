@@ -140,7 +140,7 @@ yueyongyue/saltshaker_frontend:01
     
     ```
     输出如下：
-        Enter the initial administrators username [admin]: 
+        Enter the initial administrators username [admin]: admin
         Enter the initial Administrators password: 
         Repeat for confirmation: 
         Create user table is successful
@@ -150,9 +150,25 @@ yueyongyue/saltshaker_frontend:01
         Create product table is successful
         Create audit_log table is successful
         Create event table is successful
-        Init role successful
+        Create cmd_history table is successful
+        Create host table is successful
+        Create grains table is successful
+        Create period_task table is successful
+        Create period_result table is successful
+        Create period_audit table is successful
+        Create sls table is successful
+        Init 超级管理员 role successful
+        Init 普通用户 role successful
+        Init 产品管理员 role successful
+        Init 用户管理员 role successful
+        Init 访问控制管理员 role successful
         Init user successful
         Successful
+    ```
+    也可以直接导入数据库文件saltshaker_plus.sql
+    ```sh
+    mysql> user saltshaker_plus;
+    mysql> source $HOME/saltshaker_api/saltshaker_plus.sql;
     ```
 
 5. 启动Flask App, 成功启动后会启动9000的端口
