@@ -165,7 +165,7 @@ yueyongyue/saltshaker_frontend:01
         Init user successful
         Successful
     ```
-    也可以直接导入数据库文件saltshaker_plus.sql
+    也可以直接导入数据库文件saltshaker_plus.sql, 初始化用户名：admin 密码：admin
     ```sh
     mysql> user saltshaker_plus;
     mysql> source $HOME/saltshaker_api/saltshaker_plus.sql;
