@@ -57,7 +57,10 @@ $ docker run -p 0.0.0.0:6379:6379 --name saltshaker_redis -e REDIS_PASSWORD=salt
 ```sh
 $ docker run -d --name saltshaker_rabbitmq -e RABBITMQ_DEFAULT_USER=saltshaker -e RABBITMQ_DEFAULT_PASS=saltshaker -p 15672:15672 -p 5672:5672 rabbitmq:3-management
 ```
-- 安装Mysql: 请自行安装
+- 安装Mysql(初始化管理用户名：admin 密码：admin)
+```sh
+$ docker run -p 0.0.0.0:3306:3306 --name saltshaker_mysql -e MYSQL_ROOT_PASSWORD=123456 -d yueyongyue/saltshaker_mysql:10 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+```
     
 ### 使用Docker镜像安装
 1. 后端API服务
@@ -167,7 +170,6 @@ yueyongyue/saltshaker_frontend:01
     ```
     也可以直接导入数据库文件saltshaker_plus.sql, 初始化用户名：admin 密码：admin
     ```sh
-    mysql> use saltshaker_plus;
     mysql> source $HOME/saltshaker_api/saltshaker_plus.sql;
     ```
 

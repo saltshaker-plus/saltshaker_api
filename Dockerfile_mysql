@@ -1,0 +1,7 @@
+FROM mysql:5.7.23
+MAINTAINER  yongpeng1 for sina as <yueyongyue@sina.cn>
+
+RUN set -xe \
+    && cp /usr/share/zoneinfo/PRC /etc/localtime
+
+COPY saltshaker_plus.sql /docker-entrypoint-initdb.d

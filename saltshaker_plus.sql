@@ -18,6 +18,9 @@
 --
 -- Table structure for table `acl`
 --
+CREATE DATABASE IF NOT EXISTS saltshaker_plus DEFAULT CHARSET UTF8 COLLATE UTF8_GENERAL_CI;
+
+USE saltshaker_plus;
 
 DROP TABLE IF EXISTS `acl`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
