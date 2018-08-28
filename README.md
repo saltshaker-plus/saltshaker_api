@@ -204,7 +204,7 @@ yueyongyue/saltshaker_frontend:01
 ## 配置Salt Master （需要安装 salt-api）
 
 1. 配置saltstack api
-    拷贝 saltapi.conf 到 master配置文件下，开启salt-api的Restful借口
+    拷贝 saltapi.conf 到 master配置文件下，开启salt-api的Restful接口
 
 2. 使用GitLab作为FileServer:
     官方配置gitfs说明 请查看此[链接](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)需要 pygit2 或者 GitPython 包用于支持git, 如果都存在优先选择pygit2
