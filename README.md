@@ -201,9 +201,12 @@ yueyongyue/saltshaker_frontend:01
     https://github.com/yueyongyue/saltshaker_frontend
     ```
  
-## 配置Salt Master
+## 配置Salt Master （需要安装 salt-api）
 
-1. 使用GitLab作为FileServer:
+1. 配置saltstack api
+    拷贝 saltapi.conf 到 master配置文件下，开启salt-api的Restful借口
+
+2. 使用GitLab作为FileServer:
     官方配置gitfs说明 请查看此[链接](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)需要 pygit2 或者 GitPython 包用于支持git, 如果都存在优先选择pygit2
     Saltstack state及pillar SLS文件采用GitLab进行存储及管理，使用前务必已经存在GitLab
     
@@ -228,7 +231,7 @@ yueyongyue/saltshaker_frontend:01
           - mountpoint: salt://
     ```
 
-2. 后端文件服务器文件更新:
+3. 后端文件服务器文件更新:
 
     - master 配置文件修改如下内容 (不建议)
     
