@@ -27,7 +27,6 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
         - [State](#state)
         - [Pillar](#pillar)
     - [产品管理](#产品管理)
-    - [产品管理](#产品管理)
     - [ACL管理](#acl管理)
     - [系统管理](#acl管理)
         - [用户管理](#用户管理)
@@ -351,7 +350,7 @@ Job管理，如果执行了某些长时间驻留的任务，如ping，top这种�
 
 ### 产品管理
 
-支持多产品的管理，不同产品线使用不同的master,可以分别进行管理，方便其他产品接入
+支持多产品的管理，不同产品线使用不同的master,可以分别进行管理，方便其他产品接入， 注：Gitlab API 版本请填4
 
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/product.gif)
 
