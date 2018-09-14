@@ -51,7 +51,7 @@ class FilesList(Resource):
         else:
             file_list = []
             try:
-                items = project.repository_tree(path=args["path"], ref_name=args["branch"])
+                items = project.repository_tree(path=args["path"], ref_name=args["branch"], all=True)
             except Exception as e:
                 logger.error("Get file list error: %s" % e)
                 return {"status": False, "message": str(e)}, 404
