@@ -311,7 +311,7 @@ Job管理，如果执行了某些长时间驻留的任务，如ping，top这种�
 
 ### 主机管理
 
-同意key后的minion会自动加到主机管理中，在主机管理中可以对主机打标签等操作
+在key管理里面点击`Accepted`后，此minion id会自动同步到主机管理，如果不是在页面点击的`Accepted`可以使用`同步主机`进行同步，或者发现管理的minion可主机的数量不相同，也可以点击`同步主机`同步，此功能会根据salt maste已经接受的minion进行主机的同步
 
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/host.gif)
 
@@ -351,7 +351,7 @@ Job管理，如果执行了某些长时间驻留的任务，如ping，top这种�
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/pillar.gif)
 
 ### 产品线管理
-
+`项目初始完成后首先需要配置的`
 支持多产品线的管理，不同产品线使用不同的salt-master,可以分别进行管理，方便多master的接入
  - 产品线名：为管理的salt-master起个名字
  - 描述：描述
