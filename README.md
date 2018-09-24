@@ -304,14 +304,14 @@ Job管理，如果执行了某些长时间驻留的任务，如ping，top这种�
 
 #### Grains
 
-展示minion Grains 信息
+展示minion Grains 信息；此功能根据salt master已经接受的minion进行Grains的生成，`同步Grains`使用了异步方式进行同步，同步之前请确保celery worker已经启动
 
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/minion_grains.gif)
 
 
 ### 主机管理
 
-在key管理里面点击`Accepted`后，此minion id会自动同步到主机管理，如果不是在页面点击的`Accepted`可以使用`同步主机`进行同步，或者发现管理的minion可主机的数量不相同，也可以点击`同步主机`同步，此功能会根据salt maste已经接受的minion进行主机的同步
+在key管理里面点击`Accepted`后，此minion id会自动同步到主机管理，如果不是在页面点击的`Accepted`可以使用`同步主机`进行同步，或者发现管理的minion于主机的数量不相同，也可以点击`同步主机`同步，此功能会根据salt maste已经接受的minion进行主机的同步
 
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/host.gif)
 
@@ -370,7 +370,7 @@ Job管理，如果执行了某些长时间驻留的任务，如ping，top这种�
 
 ### ACL管理
 
-对执行的shell进行ACL,避免执行敏感命令，如reboot、shutdown等，现在只支持黑名单（拒绝的,只有Shell有效，SLS的文件暂时不支持）
+对执行的shell进行ACL,避免执行敏感命令，如reboot、shutdown等，现在只支持`黑名单（拒绝的,只有Shell有效，SLS的文件暂时不支持）`
 
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/acl.gif)
 
@@ -395,6 +395,6 @@ Job管理，如果执行了某些长时间驻留的任务，如ping，top这种�
 
 #### 系统工具
 
-event工具用于对saltstack event进行记录，每添加一个产品重启一次，如果发现celery worker的数量的数量多于产品线数量，job历史可能重复
+event工具用于对saltstack event进行记录，每添加一个产品线重启一次，如果发现celery worker的数量的数量多于产品线数量，job历史可能重复
 
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/tools.gif)
