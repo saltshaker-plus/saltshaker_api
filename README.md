@@ -28,7 +28,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
         - [Shell](#shell)
         - [State](#state)
         - [Pillar](#pillar)
-    - [产品管理](#产品管理)
+    - [产品线管理](#产品线管理)
     - [ACL管理](#acl管理)
     - [系统管理](#acl管理)
         - [用户管理](#用户管理)
@@ -350,10 +350,21 @@ Job管理，如果执行了某些长时间驻留的任务，如ping，top这种�
 
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/pillar.gif)
 
-### 产品管理
+### 产品线管理
 
-支持多产品的管理，不同产品线使用不同的master,可以分别进行管理，方便其他产品接入， 注：Gitlab API 版本请填4，项目填： xxx/项目名
-
+支持多产品线的管理，不同产品线使用不同的salt-master,可以分别进行管理，方便多master的接入， 注：Gitlab API 版本请填4，项目填： xxx/项目名
+ - 产品线名：为管理的salt-master起个名字
+ - 描述
+ - Master ID：salt-master所在的服务器也是要部署salt-minion的，此ID为这台服务器上salt-minion的ID，用于管理salt-master服务器
+ - Master API 地址：salt-api的地址；如：http://192.168.10.10:8000
+ - Master API 用户名：salt-api的用户名
+ - Master API 密码： salt-api的密码
+ - 文件服务器： 现只支持GitLab模式，默认勾就可以了，选择GitLab后saltstack的后端文件服务将是使用GitLab
+ - GitLab 地址：Gitlab服务的地址；如：http://git.saltshaker.com.cn
+ - GitLab API 版本：此版本为GitLab API的版本，不是GitLab的版本，填4即可
+ - GitLab Token：访问GitLab的Token，可以去GitLab的页面生成
+ - GitLab State 项目：salt state项目的地址；如：xxx/项目名 
+ - GitLab Pillar 项目：salt pillar项目的地址；如：xxx/项目名
 ![image](https://github.com/yueyongyue/saltshaker_api/blob/master/screenshots/product.gif)
 
 ### ACL管理
