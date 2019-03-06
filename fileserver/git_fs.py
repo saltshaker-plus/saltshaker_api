@@ -33,8 +33,8 @@ def gitlab_project(product_id, project_type):
             # 項目过多会慢
             projects = gl.projects.list(all=True)
             for pr in projects:
-                if pr.__dict__.get('_attrs').get('path_with_namespace') == product.get(project_type):
-                    project = gl.projects.get(pr.__dict__.get('_attrs').get('id'))
+                if pr.__dict__.get('path_with_namespace') == product.get(project_type):
+                    project = gl.projects.get(pr.__dict__.get('id'))
                     return project, product.get(project_type)
             return {"status": False, "message": "Project not found"}, ""
         else:

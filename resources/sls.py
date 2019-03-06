@@ -89,7 +89,7 @@ class SLSCreate(Resource):
                                 yaml += file
                 project, _ = gitlab_project(args["product_id"], args["project_type"])
                 data = {
-                    'branch': args["branch"],
+                    'branch_name': args["branch"],
                     'commit_message': args["action"] + " " + args["path"],
                     'actions': [
                         {

@@ -44,7 +44,7 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
 - RabbitMQ （无版本要求）
 - Python 软件包见requirements.txt
 - Supervisor (4.0.0.dev0 版本 默认pip安装的不支持python3) 请使用此命令安装：pip install git+https://github.com/Supervisor/supervisor@master
-- GitLab >= 9.0
+- GitLab >= 8 && GitLab < 9
 
 ## 安装
 
@@ -205,31 +205,26 @@ yueyongyue/saltshaker_frontend:01
 ## 配置Salt Master （需要安装 salt-api）
 
 1. 配置saltstack api
-    拷贝 saltapi.conf 到 master配置文件下，开启salt-api的Restful接口
+    1.开启salt-api的Restful接口, 拷贝saltapi.conf 到 master配置文件目录(/etc/salt/master.d/)下
+    2.重启SALT MASTER 服务，systemctl restart salt-master
 
 2. 使用GitLab作为FileServer:
     官方配置gitfs说明 请查看此[链接](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)需要 pygit2 或者 GitPython 包用于支持git, 如果都存在优先选择pygit2
     Saltstack state及pillar SLS文件采用GitLab进行存储及管理，使用前务必已经存在GitLab
-    
+
+    在SALT-MATER机器上更改/etc/salt/master文件，添加内容
     ```sh
     fileserver_backend:
-      - roots
-      - git   # git和roots表示既支持本地又支持git 先后顺序决定了当sls文件冲突时,使用哪个sls文件(谁在前面用谁的)
-      
+      - gitfs   # git和roots表示既支持本地又支持git 先后顺序决定了当sls文件冲突时,使用哪个sls文件(谁在前面用谁的)
+
     gitfs_remotes:
-      - http://test.com.cn:9000/root/salt_sls.git: # GitLab项目地址 格式https://<user>:<password>@<url>
-        - mountpoint: salt://  # 很重要，否则在使用file.managed等相关文件管理的时候会找不到GitLab上的文件 https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html
-      
-    gitfs_base: master   # git分支默认master
-    
-    pillar_roots:         
+      - https://gitlab.XXX.com/XXX/XXX.git # GitLab项目地址
+
+    file_roots:
       base:
-        - /srv/pillar
-        
-    ext_pillar:  # 配置pillar使用gitfs, 需要配置top.sls
-      - git:
-        - http://test.com.cn:9000/root/salt_pillar.git：
-          - mountpoint: salt://
+        - /srv/salt/
+        - /srv/salt/foo
+        - /srv/salt/bar
     ```
 
 3. 后端文件服务器文件更新:
@@ -242,10 +237,11 @@ yueyongyue/saltshaker_frontend:01
     - Saltshaker页面通过Webhook提供刷新功能, 使用reactor监听event, 当event的tag中出现gitfs/update的时候更新fiilerserve
     
         ```sh
-        a. 在master上开启saltstack reactor
+        a. 在master上开启saltstack reactor,/etc/salt/master文件，添加内容
            reactor:
              - 'salt/netapi/hook/gitfs/*':
                - /srv/reactor/gitfs.sls
+
         b. 编写/srv/reactor/gitfs.sls
             {% if 'gitfs/update' in tag %}
             gitfs_update: 
