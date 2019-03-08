@@ -1,4 +1,4 @@
-Flask==0.12.2
+Flask==0.12.3
 Flask-RESTful==0.3.6
 itsdangerous==0.24
 passlib==1.7.1
