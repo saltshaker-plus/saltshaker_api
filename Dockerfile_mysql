@@ -1,4 +1,4 @@
-FROM mysql:5.7.23
+FROM mysql:5.7.25
 MAINTAINER  yongpeng1 for sina as <yueyongyue@sina.cn>
 
 RUN set -xe \
