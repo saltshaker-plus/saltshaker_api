@@ -3,8 +3,6 @@ MAINTAINER  yongpeng1 for sina as <yueyongyue@sina.cn>
 ENV TZ "Asia/Shanghai"
 ENV S "saltshaker.conf"
 
-ADD saltshaker_api/requirements.txt /tmp/config/
-
 RUN set -xe \
     && echo "https://mirror.tuna.tsinghua.edu.cn/alpine/v3.4/main" > /etc/apk/repositories \
     && apk --no-cache add gcc \
@@ -12,15 +10,14 @@ RUN set -xe \
                       libc-dev \
                       git \
                       tzdata \
-    && pip install -r /tmp/config/requirements.txt \
+    && git clone https://github.com/yueyongyue/saltshaker_api.git -b master /data0/saltshaker_api \
+    && pip install -r /data0/saltshaker_api/requirements.txt \
     && mkdir -p /var/log/saltshaker_plus \
     && mkdir -p /var/log/gunicorn \
-    && mkdir -p /data0/saltshaker_api \
     && echo "${TZ}" > /etc/timezone \
     && ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \
     && pip install git+https://github.com/Supervisor/supervisor@master
 
-ADD saltshaker_api /data0/saltshaker_api
 CMD cd /data0/saltshaker_api/ && \
 sed -i "s/\(MYSQL_HOST = \).*/\1${MYSQL_HOST}/g" ${S} && \
 sed -i "s/\(MYSQL_PORT = \).*/\1${MYSQL_PORT}/g" ${S} && \
