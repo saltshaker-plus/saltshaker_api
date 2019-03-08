@@ -15,3 +15,4 @@ gunicorn==19.8.1
 Flask-Celery-Helper==1.1.0
 Flask-APScheduler==1.8.0
 SQLAlchemy==1.2.9
+pycrypto==2.6.1
