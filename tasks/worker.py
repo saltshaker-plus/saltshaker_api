@@ -262,7 +262,6 @@ def get_period(period_id, product_id):
         return period_result, minion_list, salt_api
     else:
         logger.error("Get period and minion error: %s" % period_result)
-        raise
 
 
 # 结果信息放到period_result表
