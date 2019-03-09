@@ -10,6 +10,8 @@ import json
 from system.user import update_user_privilege, update_user_product
 from common.const import role_dict
 from fileserver.rsync_fs import rsync_config
+from common.saltstack_api import SaltAPI
+import gitlab
 
 logger = loggers()
 
@@ -179,4 +181,46 @@ class ProductList(Resource):
             return {"status": False, "message": result}, 500
 
 
+class ProductCheck(Resource):
+    @access_required(role_dict["common_user"])
+    def post(self, name):
+        args = parser.parse_args()
+        if name == "salt_api":
+            if args["salt_master_url"] is "":
+                return {"status": False, "message": "Salt API address is empty"}, 200
+            salt_api = SaltAPI(
+                url=args["salt_master_url"],
+                user=args["salt_master_user"],
+                passwd=args["salt_master_password"]
+            )
+            if isinstance(salt_api, dict):
+                return {"status": False, "message": salt_api}, 200
+            else:
+                result = salt_api.shell_remote_execution(args["salt_master_id"], "echo true")
+                if result:
+                    try:
+                        if result['status'] is False:
+                            return {"status": False, "message": result['message']}, 200
+                    except KeyError:
+                        return {"data": "", "status": True, "message": ""}, 200
+                else:
+                    return {"data": "", "status": False,
+                            "message": "Execute echo command on Master ID is not returned"}, 200
+        else:
+            if args["gitlab_url"] is "":
+                return {"status": False, "message": "GitLab API address is empty"}, 200
+            if args["api_version"] is "":
+                return {"status": False, "message": "GitLab API version is empty"}, 200
+            if args["state_project"] is "":
+                return {"status": False, "message": "GitLab State is empty"}, 200
+            try:
+                gl = gitlab.Gitlab(url=args["gitlab_url"],
+                                   private_token=args["private_token"],
+                                   timeout=120,
+                                   api_version=args["api_version"],
+                                   )
 
+                gl.projects.get(args["state_project"])
+                return {"data": "", "status": True, "message": ""}, 200
+            except Exception as e:
+                return {"data": "", "status": False, "message": str(e)}, 200
