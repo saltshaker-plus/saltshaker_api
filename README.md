@@ -83,7 +83,7 @@ $ docker run -d -p 0.0.0.0:9000:9000 --name saltshaker_api \
 -e FROM_ADDR=test@saltshaker.com \
 -e MAIL_PASSWORD=123345 \
 -e SMTP_SERVER=smtp.saltshaker.com \
-yueyongyue/saltshaker_api:03
+yueyongyue/saltshaker_api:1.11
 ```
 - REDIS_HOST：       Redis主机地址
 - REDIS_PORT：       Redis端口
