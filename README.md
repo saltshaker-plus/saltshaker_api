@@ -108,7 +108,7 @@ $ docker run -d -p 0.0.0.0:80:80 --name saltshaker_frontend \
 -e DOMAIN=192.168.10.100  \
 -e API_ADDR=192.168.10.100 \
 -e Nginx_PROXY_PASS=192.168.10.100:9000 \
-yueyongyue/saltshaker_frontend:01
+yueyongyue/saltshaker_frontend:1.11
 ```
 - DOMAIN: 部署服务器的IP地址（最终通过这个地址进行浏览器访问）
 - API_ADDR： 后端API服务器的地址
