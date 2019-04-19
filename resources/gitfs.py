@@ -120,7 +120,7 @@ class Commit(Resource):
         project, _ = gitlab_project(args["product_id"], args["project_type"])
         # 支持的action create, delete, move, update
         data = {
-            'branch': args["branch"],
+            'branch_name': args["branch"],
             'commit_message': args["action"] + " " + args["path"],
             'actions': [
                 {
