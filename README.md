@@ -204,7 +204,7 @@ yueyongyue/saltshaker_frontend:1.11
     https://github.com/yueyongyue/saltshaker_frontend
     ```
  
-## 配置Salt Master （如下是以 CentOS 7 版本进行安装配置的，其他版本的操作系统请替换对应的命令，一下操作都是在salt master服务器上完成）
+## 配置Salt Master （如下是以 CentOS 7 版本进行安装配置的，其他版本的操作系统请替换对应的命令，以下操作都是在salt master服务器上完成）
 1. 安装salt-api 具体安装方法请查看官方文档（[https://repo.saltstack.com/](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)）
     ```sh
     sudo yum install salt-api
@@ -219,7 +219,7 @@ yueyongyue/saltshaker_frontend:1.11
 3. 配置saltstack api
     拷贝 saltshaker_api/saltapi.conf 到 master配置文件下，开启salt-api的Restful接口(端口为8000)
     ```sh
-    sudo $HOME/saltshaker_api/saltapi.conf /etc/salt/master.d/
+    sudo cp $HOME/saltshaker_api/saltapi.conf /etc/salt/master.d/
     sudo systemctl restart salt-master
     sudo systemctl restart salt-api
     ```
