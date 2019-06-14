@@ -116,11 +116,12 @@ yueyongyue/saltshaker_frontend:1.11
 - Nginx_PROXY_PASS：后端API服务器的地址加端口
 
 ### 手动部署
-安装Saltshaker，你需要首先准备Python环境
+安装Saltshaker，你需要首先准备Python 3的环境（假定项目clone到你的家目录即$HOME下面，若果不是请对应修改相关路径）
 
 1. 下载:
 
     ```sh
+    $ cd $HOME
     $ git clone https://github.com/yueyongyue/saltshaker_api.git
     ```
 
@@ -170,7 +171,7 @@ yueyongyue/saltshaker_frontend:1.11
         Init user successful
         Successful
     ```
-    也可以直接导入数据库文件saltshaker_plus.sql, 初始化用户名：admin 密码：admin
+    也可以直接导入数据库文件saltshaker_plus.sql, 初始化管理员用户名：admin 密码：admin
     ```sh
     mysql> source $HOME/saltshaker_api/saltshaker_plus.sql;
     ```
@@ -203,12 +204,27 @@ yueyongyue/saltshaker_frontend:1.11
     https://github.com/yueyongyue/saltshaker_frontend
     ```
  
-## 配置Salt Master （需要安装 salt-api）
+## 配置Salt Master （如下是以 CentOS 7 版本进行安装配置的，其他版本的操作系统请替换对应的命令，一下操作都是在salt master服务器上完成）
+1. 安装salt-api 具体安装方法请查看官方文档（[https://repo.saltstack.com/](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)）
+    ```sh
+    sudo yum install salt-api
+    ```
+    
+2. 创建salt api 认证用户名密码，使用pam认证方式
+    ```sh
+    sudo useradd admin          # 必须是admin，如果是其他用户，需要对应修改$HOME/saltshaker_api/saltapi.conf里面的admin
+    sudo passwd admin           # 记住admin的密码，稍后配置产品线的时候需要填写
+    ```
+        
+3. 配置saltstack api
+    拷贝 saltshaker_api/saltapi.conf 到 master配置文件下，开启salt-api的Restful接口(端口为8000)
+    ```sh
+    sudo $HOME/saltshaker_api/saltapi.conf /etc/salt/master.d/
+    sudo systemctl restart salt-master
+    sudo systemctl restart salt-api
+    ```
 
-1. 配置saltstack api
-    拷贝 saltapi.conf 到 master配置文件下，开启salt-api的Restful接口
-
-2. 使用GitLab作为FileServer:
+4. 使用GitLab作为FileServer:
     官方配置gitfs说明 请查看此[链接](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)需要 pygit2 或者 GitPython 包用于支持git, 如果都存在优先选择pygit2
     Saltstack state及pillar SLS文件采用GitLab进行存储及管理，使用前务必已经存在GitLab
     
@@ -233,7 +249,7 @@ yueyongyue/saltshaker_frontend:1.11
           - mountpoint: salt://
     ```
 
-3. 后端文件服务器文件更新:
+5. 后端文件服务器文件更新:
 
     - master 配置文件修改如下内容 (不建议)
     
