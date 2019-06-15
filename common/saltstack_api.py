@@ -45,8 +45,7 @@ class SaltAPI(object):
         params = {'client': 'wheel', 'fun': 'key.list_all'}
         content = self.post_request(params)
         if isinstance(content, dict):
-            minions = content['return'][0]['data']['return']
-            return minions
+            return content['return'][0]['data']['return']
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
@@ -54,8 +53,7 @@ class SaltAPI(object):
         params = {'client': 'wheel', 'fun': 'key.delete', 'match': node_name}
         content = self.post_request(params)
         if isinstance(content, dict):
-            ret = content['return'][0]['data']['success']
-            return ret
+            return content['return'][0]['data']['success']
         else:
             return {"status": False, "message": "salt api error : " + content}
 
@@ -63,8 +61,7 @@ class SaltAPI(object):
         params = {'client': 'wheel', 'fun': 'key.accept', 'match': node_name}
         content = self.post_request(params)
         if isinstance(content, dict):
-            ret = content['return'][0]['data']['success']
-            return ret
+            return content['return'][0]['data']['success']
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
@@ -72,57 +69,72 @@ class SaltAPI(object):
         params = {'client': 'wheel', 'fun': 'key.reject', 'match': node_name}
         content = self.post_request(params)
         if isinstance(content, dict):
-            ret = content['return'][0]['data']['success']
-            return ret
+            return content['return'][0]['data']['success']
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
-    def remote_noarg_execution(self, tgt, fun):
+    def remote_noarg_execution(self, tgt, fun, types="tgt_type"):
         # Execute commands without parameters
-        params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'expr_form': 'list'}
+        params = {'client': 'local', 'tgt': tgt, 'fun': fun, types: 'list'}
         content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0][tgt]
+            # 如果返回结果是空，说明salt可能版本小于2017.7.0的版本，使用次方法处理
+            if not ret and types != "expr_form":  # types != "expr_form" 很重要确保最多执行两次，否则肯能发送死循环
+                return self.remote_noarg_execution(tgt, fun, types="expr_form")
             return ret
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
-    def remote_noarg_execution_notgt(self, tgt, fun):
+    def remote_noarg_execution_notgt(self, tgt, fun, types="tgt_type"):
         # Execute commands without parameters
-        params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'expr_form': 'list'}
+        params = {'client': 'local', 'tgt': tgt, 'fun': fun, types: 'list'}
         content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]
+            # 如果返回结果是空，说明salt可能版本小于2017.7.0的版本，使用次方法处理
+            if not ret and types != "expr_form":  # types != "expr_form" 很重要确保最多执行两次，否则肯能发送死循环
+                return self.remote_noarg_execution_notgt(tgt, fun, types="expr_form")
             return ret
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
-    def remote_execution(self, tgt, fun, arg):
+    def remote_execution(self, tgt, fun, arg, types="tgt_type"):
         # Command execution with parameters
-        params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'arg': arg, 'expr_form': 'list'}
+        params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'arg': arg, types: 'list'}
         content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0][tgt]
+            # 如果返回结果是空，说明salt可能版本小于2017.7.0的版本，使用次方法处理
+            if not ret and types != "expr_form":  # types != "expr_form" 很重要确保最多执行两次，否则肯能发送死循环
+                return self.remote_execution(tgt, fun, arg, types="expr_form")
             return ret
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
-    def remote_execution_notgt(self, tgt, fun, arg):
+    def remote_execution_notgt(self, tgt, fun, arg, types="tgt_type"):
         # Command execution with parameters
-        params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'arg': arg, 'expr_form': 'list'}
+        params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'arg': arg, types: 'list'}
         content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]
+            # 如果返回结果是空，说明salt可能版本小于2017.7.0的版本，使用次方法处理
+            if not ret and types != "expr_form":  # types != "expr_form" 很重要确保最多执行两次，否则肯能发送死循环
+                return self.remote_execution_notgt(tgt, fun, arg, types="expr_form")
             return ret
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
-    def shell_remote_execution(self, tgt, arg):
+    def shell_remote_execution(self, tgt, arg, types="tgt_type"):
         # Shell command execution with parameters
-        params = {'client': 'local', 'tgt': tgt, 'fun': 'cmd.run', 'arg': arg, 'expr_form': 'list'}
+        # Changed in version 2017.7.0: Renamed from expr_form to tgt_type
+        params = {'client': 'local', 'tgt': tgt, 'fun': 'cmd.run', 'arg': arg, types: 'list'}
         content = self.post_request(params)
         if isinstance(content, dict):
             ret = content['return'][0]
+            # 如果返回结果是空，说明salt可能版本小于2017.7.0的版本，使用次方法处理
+            if not ret and types != "expr_form":  # types != "expr_form" 很重要确保最多执行两次，否则肯能发送死循环
+                return self.shell_remote_execution(tgt, arg, types="expr_form")
             return ret
         else:
             return {"status": False, "message": "Salt API Error : " + content}
@@ -132,8 +144,7 @@ class SaltAPI(object):
         params = {'client': 'local', 'tgt': tgt, 'fun': 'grains.item', 'arg': arg}
         content = self.post_request(params)
         if isinstance(content, dict):
-            ret = content['return'][0]
-            return ret
+            return content['return'][0]
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
@@ -142,59 +153,64 @@ class SaltAPI(object):
         params = {'client': 'local', 'tgt': tgt, 'fun': 'grains.items'}
         content = self.post_request(params)
         if isinstance(content, dict):
-            ret = content['return'][0]
-            return {"status": True, "message": "", "data": ret}
+            return {"status": True, "message": "", "data": content['return'][0]}
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
-    def target_remote_execution(self, tgt, fun, arg):
-        # Use targeting for remote execution
-        params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'arg': arg, 'expr_form': 'nodegroup'}
-        content = self.post_request(params)
-        if isinstance(content, dict):
-            jid = content['return'][0]['jid']
-            return jid
-        else:
-            return {"status": False, "message": "Salt API Error : " + content}
+    # def target_remote_execution(self, tgt, fun, arg):
+    #     # Use targeting for remote execution
+    #     params = {'client': 'local', 'tgt': tgt, 'fun': fun, 'arg': arg, 'expr_form': 'nodegroup'}
+    #     content = self.post_request(params)
+    #     if isinstance(content, dict):
+    #         jid = content['return'][0]['jid']
+    #         return jid
+    #     else:
+    #         return {"status": False, "message": "Salt API Error : " + content}
 
     def deploy(self, tgt, arg):
         # Module deployment
         params = {'client': 'local', 'tgt': tgt, 'fun': 'state.sls', 'arg': arg}
-        content = self.post_request(params)
-        return content
+        return self.post_request(params)
 
     def async_deploy(self, tgt, arg):
         # Asynchronously send a command to connected minions
         params = {'client': 'local_async', 'tgt': tgt, 'fun': 'state.sls', 'arg': arg}
         content = self.post_request(params)
         if isinstance(content, dict):
-            jid = content['return'][0]['jid']
-            return jid
+            return content['return'][0]['jid']
         else:
             return {"status": False, "message": "salt api error : " + content}
 
-    def target_deploy(self, tgt, arg):
+    def target_deploy(self, tgt, arg, types="tgt_type"):
         # Based on the list forms deployment
-        params = {'client': 'local', 'tgt': tgt, 'fun': 'state.sls', 'arg': arg, 'expr_form': 'list'}
+        params = {'client': 'local', 'tgt': tgt, 'fun': 'state.sls', 'arg': arg, types: 'list'}
         content = self.post_request(params)
         if isinstance(content, dict):
             try:
-                return content.get("return")[0]
+                ret = content.get("return")[0]
+                # 如果返回结果是空，说明salt可能版本小于2017.7.0的版本，使用次方法处理
+                if not ret and types != "expr_form":  # types != "expr_form" 很重要确保最多执行两次，否则肯能发送死循环
+                    return self.target_deploy(tgt, arg, types="expr_form")
+                return ret
             except Exception as e:
                 return {"status": False, "message": str(e)}
         else:
             return {"status": False, "message": "Salt API Error : " + content}
 
-    def pillar_items(self, tgt, arg=[]):
+    def pillar_items(self, tgt, arg=[], types="tgt_type"):
         # Get pillar item
         if arg:
-            params = {'client': 'local', 'tgt': tgt, 'fun': 'pillar.item', 'arg': arg, 'expr_form': 'list'}
+            params = {'client': 'local', 'tgt': tgt, 'fun': 'pillar.item', 'arg': arg, types: 'list'}
         else:
-            params = {'client': 'local', 'tgt': tgt, 'fun': 'pillar.items', 'arg': arg, 'expr_form': 'list'}
+            params = {'client': 'local', 'tgt': tgt, 'fun': 'pillar.items', 'arg': arg, types: 'list'}
         content = self.post_request(params)
         if isinstance(content, dict):
             try:
-                return content.get("return")[0]
+                ret = content.get("return")[0]
+                # 如果返回结果是空，说明salt可能版本小于2017.7.0的版本，使用次方法处理
+                if not ret and types != "expr_form":  # types != "expr_form" 很重要确保最多执行两次，否则肯能发送死循环
+                    return self.pillar_items(tgt, arg=[], types="expr_form")
+                return ret
             except Exception as e:
                 return {"status": False, "message": str(e)}
         else:
