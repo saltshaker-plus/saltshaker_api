@@ -55,8 +55,12 @@ class ExecuteShell(Resource):
             audit_log(user_info["username"], minion_id, args["product_id"], "minion", "shell")
 
             minion_count = str(len(minion_id))
-            cmd_succeed = str(len(result))
-            cmd_failure = str(len(minion_id) - len(result))
+            result_len = len(result)
+            for k, v in result.items():
+                if not v:
+                    result_len -= 1
+            cmd_succeed = str(result_len)
+            cmd_failure = str(len(minion_id) - result_len)
             succeed_minion = []
             for i in result:
                 succeed_minion.append(i)
@@ -110,8 +114,12 @@ class ExecuteSLS(Resource):
         audit_log(user_info["username"], minion_id, args["product_id"], "minion", "sls")
 
         minion_count = str(len(minion_id))
-        cmd_succeed = str(len(result))
-        cmd_failure = str(len(minion_id) - len(result))
+        result_len = len(result)
+        for k, v in result.items():
+            if not v:
+                result_len -= 1
+        cmd_succeed = str(result_len)
+        cmd_failure = str(len(minion_id) - result_len)
         succeed_minion = []
         for i in result:
             succeed_minion.append(i)
