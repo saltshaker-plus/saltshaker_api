@@ -91,7 +91,8 @@ class DB(object):
 
     def update_by_id(self, table, data, id):
         sql = "UPDATE %s SET data='%s' WHERE data -> '$.id'='%s'" % (table, data.replace("'", r"\'").
-                                                                     replace(r"\n", r'\\n').replace(r'\"', r''), id)
+                                                                     replace(r"\n", r'\\n').replace(r'\"', r'').
+                                                                     replace(r'\\', r'/'), id)
         logger.info(sql)
         try:
             self.cursor.execute(sql)
@@ -115,9 +116,9 @@ class DB(object):
             return False, str(e)
 
     def insert(self, table, data):
-        # 转义'
+        # 转义
         sql = "INSERT INTO %s(data) VALUES('%s') " % (table, data.replace("'", r"\'").replace(r"\n", r'\\n').
-                                                      replace(r'\"', r''))
+                                                      replace(r'\"', r'').replace(r'\\', r'/'))
         logger.info(sql)
         try:
             self.cursor.execute(sql)
