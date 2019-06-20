@@ -12,7 +12,6 @@ Saltshaker是基于saltstack开发的以Web方式进行配置管理的运维工�
 - [安装](#安装)
 - [配置Salt Master](#配置salt-master)
 - [Restful API](#restful-api)
-- [Saltshaker 交流学习QQ群:622806083](#Saltshaker 交流学习QQ群:622806083)
 - [功能介绍](#功能介绍)
     - [Job](#job)
         - [Job创建](#job创建)
