@@ -225,7 +225,7 @@ yueyongyue/saltshaker_frontend:1.12
 
 4. 使用GitLab作为FileServer:
     官方配置gitfs说明 请查看此[链接](https://docs.saltstack.com/en/latest/topics/tutorials/gitfs.html#simple-configuration)需要 pygit2 或者 GitPython 包用于支持git, 如果都存在优先选择pygit2
-    Saltstack state及pillar SLS文件采用GitLab进行存储及管理，使用前务必已经存在GitLab
+    Saltstack state及pillar SLS文件采用GitLab进行存储及管理，使用前务必已经存在GitLab，如下配置在/etc/salt/master进行添加修改
     
     ```sh
     fileserver_backend:
