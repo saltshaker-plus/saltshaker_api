@@ -36,5 +36,6 @@ sed -i "s/\(BROKER_PASSWORD = \).*/\1${BROKER_PASSWORD}/g" ${S} && \
 sed -i "s/\(FROM_ADDR = \).*/\1${FROM_ADDR}/g" ${S} && \
 sed -i "s/\(MAIL_PASSWORD = \).*/\1${MAIL_PASSWORD}/g" ${S} && \
 sed -i "s/\(SMTP_SERVER = \).*/\1${SMTP_SERVER}/g" ${S} && \
+sed -i "s/\(SMTP_PORT = \).*/\1${SMTP_PORT}/g" ${S} && \
 supervisord -c supervisord.conf
 EXPOSE 9000
