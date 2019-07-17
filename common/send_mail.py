@@ -21,7 +21,8 @@ def send_mail(to_addr, sub, content):
     msg['From'] = "Saltshaker <%s>" % from_addr
     msg['To'] = to_addr
     msg['Subject'] = Header(sub, "utf-8")
-
+    if not smtp_port：
+        smtp_port = 25
     server = smtplib.SMTP(smtp_server, smtp_port)
     # server.set_debuglevel(1)
     server.login(from_addr, password)
